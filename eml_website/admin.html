@@ -19,14 +19,15 @@
       </div>
     </div>
     <nav class="top-actions" aria-label="관리자 작업" data-admin-actions hidden>
-      <span class="cloud-state" role="status" aria-live="polite" data-cloud-state>Cloud 연결 확인 중</span>
+      <span class="cloud-state" role="status" aria-live="polite" data-local-state>Git 연결 확인 중</span>
       <span class="admin-user" data-admin-user></span>
+      <button class="top-save" type="button" data-top-save disabled>Save Changes</button>
       <a href="index.html#home" target="_blank" rel="noreferrer">Preview Site</a>
       <button type="button" data-export>Export JSON</button>
       <button type="button" data-import-trigger>Import JSON</button>
       <input type="file" accept="application/json" data-import hidden />
       <button type="button" data-reset>Load Starter Data</button>
-      <button type="button" data-logout>Logout</button>
+      <button type="button" data-logout hidden>Logout</button>
     </nav>
   </header>
 
@@ -34,29 +35,15 @@
     <section class="auth-card">
       <img src="assets/eml-logo-dark.svg" alt="EML" />
       <div data-auth-loading>
-        <h1>관리자 연결 확인 중</h1>
-        <p>로그인 상태와 클라우드 연결을 확인하고 있습니다.</p>
+        <h1>콘텐츠 저장소 연결 중</h1>
+        <p>Git 기반 홈페이지 데이터와 관리자 인증 상태를 확인하고 있습니다.</p>
       </div>
-      <div data-setup-panel hidden>
-        <h1>클라우드 설정이 필요합니다</h1>
-        <p><code>supabase/setup.sql</code>을 실행하고 <code>supabase-config.js</code>에 Project URL과 Publishable key를 입력하세요.</p>
+      <div data-login-panel hidden>
+        <h1>관리자 인증이 필요합니다</h1>
+        <p>허용된 GitHub 계정으로 로그인하면 홈페이지 콘텐츠를 편집하고 Git 저장소에 반영할 수 있습니다.</p>
+        <p class="auth-message" role="status" aria-live="polite" data-login-message hidden></p>
+        <a class="primary auth-submit" href="/api/auth/login">GitHub로 관리자 로그인</a>
       </div>
-      <form class="login-form" data-login-form hidden>
-        <div>
-          <h1>관리자 로그인</h1>
-          <p>등록된 연구실 관리자 계정만 콘텐츠를 수정할 수 있습니다.</p>
-        </div>
-        <label class="field">
-          <span>아이디</span>
-          <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required data-login-id />
-        </label>
-        <label class="field">
-          <span>비밀번호</span>
-          <input type="password" autocomplete="current-password" required data-login-password />
-        </label>
-        <button class="primary auth-submit" type="submit" data-login-submit>Login</button>
-        <p class="auth-message" role="status" aria-live="polite" data-auth-message></p>
-      </form>
       <div data-auth-error hidden>
         <h1>관리자 페이지를 열 수 없습니다</h1>
         <p data-auth-error-message></p>
@@ -81,10 +68,10 @@
     </aside>
     <section class="admin-main">
       <div class="notice">
-        <strong data-cloud-heading>클라우드 홈페이지 관리</strong>
-        <p data-cloud-detail>저장한 내용은 데이터베이스에 기록되고 모든 방문자에게 반영됩니다.</p>
+        <strong data-local-heading>Git 홈페이지 콘텐츠 관리</strong>
+        <p data-local-detail>저장하면 홈페이지 데이터 파일이 갱신되고 자동 배포가 시작됩니다.</p>
         <div class="notice-actions">
-          <button class="secondary" type="button" data-reload-cloud>최신 내용 다시 불러오기</button>
+          <button class="secondary" type="button" data-reload-content>저장소 최신 내용 다시 불러오기</button>
           <button class="secondary" type="button" data-import-legacy hidden>기존 브라우저 초안 가져오기</button>
           <button class="secondary" type="button" data-export-session-draft hidden>충돌 초안 JSON 다운로드</button>
         </div>
@@ -95,9 +82,7 @@
 
   <script src="data/site-data.js"></script>
   <script src="data-validation.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.min.js"></script>
-  <script src="supabase-config.js"></script>
-  <script src="cloud-data.js"></script>
+  <script src="local-content-store.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

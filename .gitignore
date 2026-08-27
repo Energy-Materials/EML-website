@@ -3,7 +3,7 @@
 .vscode/
 *.iml
 
-# Keep admin, Supabase, content data, assets, and operations docs tracked for handoff.
+# Admin UI, Cloudflare Functions, content data, assets, and operations docs are intentionally tracked for handoff.
 
 # Local browser/UI test output (never production source)
 .test-artifacts/
@@ -14,6 +14,30 @@ coverage/
 # Optional local tooling caches and dependencies
 node_modules/
 .npm/
+
+# Deterministic build output (Cloudflare rebuilds this from source)
+dist/
+
+# Cloudflare/Wrangler local state and secrets (share only the examples)
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Generic environment files can contain credentials
+.env
+.env.*
+!.env.example
+
+# Private keys, certificates, and service credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials*.json
+*service-account*.json
 
 # Local process output
 *.log

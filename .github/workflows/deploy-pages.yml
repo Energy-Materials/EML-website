@@ -1,48 +1,74 @@
-name: Deploy EML website to GitHub Pages
+name: Validate EML website for Cloudflare Pages
 
 on:
   push:
     branches:
       - develop
+    paths:
+      - "eml_website/**"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - "eml_website/**"
+      - ".github/workflows/deploy-pages.yml"
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: github-pages
+  group: eml-website-validation-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: eml_website
     steps:
-      - name: Check out develop
+      - name: Check out source
         uses: actions/checkout@v6
-        with:
-          ref: develop
 
-      - name: Verify static site files
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Validate canonical content and assets
+        run: npm run check
+
+      - name: Validate local admin server contract
+        run: npm run admin -- --check
+
+      - name: Validate Pages Functions syntax
         shell: bash
         run: |
-          test -f eml_website/index.html
-          test -f eml_website/admin.html
-          test -f eml_website/styles.css
-          test -f eml_website/app.js
+          find functions -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+      - name: Test Pages Functions security and Git publishing contract
+        run: node tests/pages-functions.test.mjs
 
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: eml_website
+      - name: Build deterministic Cloudflare output
+        run: npm run build
 
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Verify public artifact boundaries
+        shell: bash
+        run: |
+          test -f dist/index.html
+          test -f dist/admin.html
+          test -f dist/local-content-store.js
+          test -f dist/data/site-data.js
+          test -f dist/_headers
+          test -f dist/_routes.json
+          grep -F "img-src 'self' data: blob:" dist/_headers
+          grep -F "X-Robots-Tag: noindex, nofollow, noarchive" dist/_headers
+          grep -F '"include": ["/api/*"]' dist/_routes.json
+          test ! -e dist/tools
+          test ! -e dist/tests
+          test ! -e dist/functions
+          test ! -e dist/supabase-config.js
+          test ! -e dist/cloud-data.js

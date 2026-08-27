@@ -1,0 +1,11 @@
+# Copy this file to .dev.vars for local Wrangler testing only.
+# Never commit .dev.vars or real secret values.
+GITHUB_CLIENT_ID=replace-with-github-app-client-id
+GITHUB_CLIENT_SECRET=replace-with-github-app-client-secret
+SESSION_SECRET=replace-with-at-least-32-random-characters
+GITHUB_OWNER=EML-lab2022
+GITHUB_REPO=EML-website
+GITHUB_BRANCH=develop
+GITHUB_CONTENT_PATH=eml_website/data/site-data.json
+GITHUB_REPOSITORY_ID=1348328666
+PUBLIC_ORIGIN=http://localhost:8788

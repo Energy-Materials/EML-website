@@ -44,13 +44,42 @@
 
     if (Array.isArray(value.gallery)) {
       value.gallery.forEach((item, index) => {
-        if (isRecord(item) && item.images != null) {
+        if (isRecord(item)) {
           if (!Array.isArray(item.images)) {
             errors.push(`gallery.${index}.images는 배열이어야 합니다.`);
-          } else if (!item.images.every((image) => typeof image === 'string')) {
-            errors.push(`gallery.${index}.images의 모든 항목은 문자열이어야 합니다.`);
+          } else if (item.images.length === 0) {
+            errors.push(`gallery.${index}에는 이미지를 한 장 이상 추가해야 합니다.`);
+          } else if (!item.images.every((image) => typeof image === 'string' && image.trim() !== '')) {
+            errors.push(`gallery.${index}.images의 모든 항목은 비어 있지 않은 이미지여야 합니다.`);
           }
+          if (Array.isArray(item.images) && item.images.length > 0 && item.image !== item.images[0]) {
+            errors.push(`gallery.${index}.image는 첫 번째 갤러리 이미지와 같아야 합니다.`);
+          }
+          ['date', 'title'].forEach((field) => {
+            if (typeof item[field] !== 'string' || item[field].trim() === '') {
+              errors.push(`gallery.${index}.${field}는 필수 항목입니다.`);
+            }
+          });
         }
+      });
+    }
+
+    if (Array.isArray(value.publications)) {
+      const seenNumbers = new Set();
+      value.publications.forEach((item, index) => {
+        if (!isRecord(item)) return;
+        if (!Number.isInteger(item.number) || item.number <= 0) {
+          errors.push(`publications.${index}.number는 1 이상의 정수여야 합니다.`);
+        } else if (seenNumbers.has(item.number)) {
+          errors.push(`publications.${index}.number ${item.number}가 중복되었습니다.`);
+        } else {
+          seenNumbers.add(item.number);
+        }
+        ['year', 'title', 'authors', 'journal'].forEach((field) => {
+          if (typeof item[field] !== 'string' || item[field].trim() === '') {
+            errors.push(`publications.${index}.${field}는 필수 항목입니다.`);
+          }
+        });
       });
     }
 

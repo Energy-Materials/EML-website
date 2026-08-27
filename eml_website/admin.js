@@ -4,13 +4,13 @@
   const content = document.querySelector('[data-admin-content]');
   const authShell = document.querySelector('[data-auth-shell]');
   const authLoading = document.querySelector('[data-auth-loading]');
-  const setupPanel = document.querySelector('[data-setup-panel]');
-  const loginForm = document.querySelector('[data-login-form]');
+  const loginPanel = document.querySelector('[data-login-panel]');
   const authError = document.querySelector('[data-auth-error]');
   const adminApp = document.querySelector('[data-admin-app]');
   const adminActions = document.querySelector('[data-admin-actions]');
-  const cloudState = document.querySelector('[data-cloud-state]');
+  const localState = document.querySelector('[data-local-state]');
   const adminUser = document.querySelector('[data-admin-user]');
+  const topSave = document.querySelector('[data-top-save]');
   const sessionDraftExport = document.querySelector('[data-export-session-draft]');
   let activeSection = 'dashboard';
   let dragImage = null;
@@ -24,8 +24,8 @@
   let editSequence = 0;
   let sessionDraft = null;
   let activeUserId = null;
+  let editorMode = 'local';
   let editorEpoch = 0;
-  let authWatcherStarted = false;
   let busyOwner = null;
   const embeddedUploadCache = new Map();
 
@@ -47,18 +47,18 @@
     }
   }
 
-  function setCloudState(message, type = '') {
-    cloudState.textContent = message;
-    cloudState.classList.toggle('is-saving', type === 'saving');
-    cloudState.classList.toggle('is-error', type === 'error');
+  function setStorageState(message, type = '') {
+    localState.textContent = message;
+    localState.classList.toggle('is-saving', type === 'saving');
+    localState.classList.toggle('is-error', type === 'error');
   }
 
-  function setBusy(busy, message = 'Cloud 연결됨') {
+  function setBusy(busy, message = 'Git 콘텐츠 연결됨') {
     document.body.classList.toggle('is-busy', busy);
     adminApp.inert = busy;
     adminActions.inert = busy;
     adminApp.setAttribute('aria-busy', String(busy));
-    if (busy) setCloudState(message, 'saving');
+    if (busy) setStorageState(message, 'saving');
   }
 
   function beginBusy(message) {
@@ -76,8 +76,9 @@
 
   function markDirty() {
     isDirty = true;
+    topSave.disabled = false;
     editSequence += 1;
-    setCloudState('저장되지 않은 변경', 'saving');
+    setStorageState('저장되지 않은 변경', 'saving');
   }
 
   function formatUpdatedAt(value) {
@@ -89,15 +90,26 @@
     }
   }
 
-  function updateCloudNotice(message = '') {
-    const heading = document.querySelector('[data-cloud-heading]');
-    const detail = document.querySelector('[data-cloud-detail]');
-    if (heading) heading.textContent = hasPublishedContent ? '클라우드 홈페이지 관리' : '첫 게시 준비 완료';
+  function updateStorageNotice(message = '') {
+    const heading = document.querySelector('[data-local-heading]');
+    const detail = document.querySelector('[data-local-detail]');
+    if (heading) heading.textContent = hasPublishedContent ? 'Git 홈페이지 콘텐츠 관리' : '첫 저장 준비 완료';
     if (detail) {
       detail.textContent = message || (hasPublishedContent
-        ? `현재 클라우드 버전 ${loadedRevision} · 마지막 저장 ${formatUpdatedAt(loadedUpdatedAt)}`
-        : '아직 게시된 클라우드 데이터가 없습니다. 기본 데이터를 확인한 뒤 Save Changes를 눌러 처음 게시하세요.');
+        ? `현재 Git 버전 ${formatRevision(loadedRevision)} · 마지막 저장 ${formatUpdatedAt(loadedUpdatedAt)}`
+        : '아직 저장된 Git 콘텐츠가 없습니다. 기본 데이터를 확인한 뒤 Save Changes를 눌러 처음 저장하세요.');
     }
+  }
+
+  function formatRevision(value) {
+    const revision = String(value ?? '0');
+    if (revision.length <= 20) return revision;
+    if (revision.startsWith('sha256:')) return `sha256:${revision.slice(7, 19)}…`;
+    return `${revision.slice(0, 16)}…`;
+  }
+
+  function revisionFileLabel(value) {
+    return String(value ?? '0').replace(/[^a-z0-9_-]+/gi, '-').slice(0, 40) || 'unknown';
   }
 
   function escapeHTML(value) {
@@ -126,10 +138,10 @@
   }
 
   async function migrateEmbeddedImages(value, path = 'legacy') {
-    if (typeof value === 'string' && /^data:image\/(jpeg|png|webp|gif);base64,/i.test(value)) {
-      setCloudState('기존 이미지 업로드 중', 'saving');
+    if (typeof value === 'string' && /^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(value)) {
+      setStorageState('기존 이미지 파일 처리 중', 'saving');
       if (!embeddedUploadCache.has(value)) {
-        const upload = window.EMLCloud
+        const upload = window.EMLLocalContent
           .uploadDataUrl(value, path.replace(/[^a-z0-9_-]+/gi, '-'))
           .catch((error) => {
             embeddedUploadCache.delete(value);
@@ -158,6 +170,20 @@
 
   async function saveData(show = true) {
     if (!editorReady) return false;
+    const invalidField = content.querySelector(':invalid');
+    if (invalidField) {
+      const collapsedCard = invalidField.closest('details:not([open])');
+      if (collapsedCard) collapsedCard.open = true;
+      invalidField.reportValidity();
+      invalidField.focus({ preventScroll: true });
+      invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('필수 항목과 숫자 형식을 확인하세요.');
+      return false;
+    }
+    if (!isDirty && hasPublishedContent) {
+      if (show) toast('저장할 변경사항이 없습니다.');
+      return true;
+    }
     if (saveInFlight && saveInFlight.epoch === editorEpoch) return saveInFlight.promise;
     // keep gallery thumbnail synced with the first image
     (data.gallery || []).forEach((item) => {
@@ -168,7 +194,7 @@
     const snapshotRevision = loadedRevision;
     const snapshotEpoch = editorEpoch;
     const snapshotUserId = activeUserId;
-    const saveBusyOwner = beginBusy('Cloud 저장 중');
+    const saveBusyOwner = beginBusy('Git 콘텐츠 저장 중');
     const operation = { epoch: snapshotEpoch, promise: null };
     saveInFlight = operation;
     operation.promise = (async () => {
@@ -178,7 +204,7 @@
         if (editorEpoch !== snapshotEpoch || activeUserId !== snapshotUserId || !editorReady) {
           return false;
         }
-        const saved = await window.EMLCloud.saveContent(prepared, snapshotRevision);
+        const saved = await window.EMLLocalContent.saveContent(prepared, snapshotRevision);
         if (editorEpoch !== snapshotEpoch || activeUserId !== snapshotUserId || !editorReady) {
           return false;
         }
@@ -188,25 +214,43 @@
         if (editSequence === snapshotSequence) {
           data = clone(saved.content);
           isDirty = false;
-          setCloudState('Cloud 저장 완료');
-          updateCloudNotice();
+          topSave.disabled = true;
+          sessionDraft = null;
+          sessionDraftExport.hidden = true;
+          setStorageState('Git 저장 완료');
+          updateStorageNotice();
           render();
-          if (show) toast('저장되었습니다. 모든 방문자에게 반영됩니다.');
+          if (show) toast(editorMode === 'local'
+            ? '저장소 파일에 저장했습니다. 커밋 후 배포할 수 있습니다.'
+            : 'Git 저장소에 저장했습니다. 자동 배포가 시작됩니다.');
           return true;
         }
-        setCloudState('추가 변경 저장 필요', 'saving');
-        updateCloudNotice('저장 중 생긴 추가 변경사항이 남아 있습니다. Save Changes를 다시 눌러주세요.');
+        setStorageState('추가 변경 저장 필요', 'saving');
+        updateStorageNotice('저장 중 생긴 추가 변경사항이 남아 있습니다. Save Changes를 다시 눌러주세요.');
         return false;
       } catch (error) {
         console.error(error);
         if (editorEpoch !== snapshotEpoch || activeUserId !== snapshotUserId || !editorReady) {
           return false;
         }
+        if (error.code === 'EML_CONTENT_CONFLICT' || error.code === 'EML_AUTH_REQUIRED') {
+          sessionDraft = { content: snapshot, baseRevision: snapshotRevision, userId: snapshotUserId };
+          sessionDraftExport.hidden = false;
+        }
         const message = error.code === 'EML_CONTENT_CONFLICT'
-          ? error.message
-          : `저장 실패: ${error.message}`;
-        setCloudState('저장 실패', 'error');
-        updateCloudNotice(message);
+          ? `${error.message} 현재 초안은 유지되며 JSON으로 내려받을 수 있습니다.`
+          : error.code === 'EML_AUTH_REQUIRED'
+            ? 'GitHub 로그인이 만료되었습니다. 먼저 충돌 초안 JSON을 내려받고 페이지를 새로고침해 다시 로그인하세요.'
+            : `저장 실패: ${error.message}`;
+        setStorageState(
+          error.code === 'EML_CONTENT_CONFLICT'
+            ? '버전 충돌 · 확인 필요'
+            : error.code === 'EML_AUTH_REQUIRED'
+              ? 'GitHub 로그인 만료'
+              : '저장 실패',
+          'error',
+        );
+        updateStorageNotice(message);
         toast(message);
         return false;
       } finally {
@@ -221,12 +265,17 @@
     return `<div class="section-heading"><div><h1>${escapeHTML(title)}</h1><p>${escapeHTML(description)}</p></div><div class="actions">${actions}</div></div>`;
   }
 
-  function inputField(path, label, value = '', type = 'text') {
-    return `<label class="field"><span>${escapeHTML(label)}</span><input type="${escapeAttr(type)}" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" /></label>`;
+  function inputField(path, label, value = '', type = 'text', options = {}) {
+    const numberAttributes = type === 'number' ? ' min="1" step="1" inputmode="numeric"' : '';
+    const requiredAttributes = options.required ? ' required aria-required="true"' : '';
+    const marker = options.required ? '<em class="required-mark">필수</em>' : '';
+    return `<label class="field"><span>${escapeHTML(label)}${marker}</span><input type="${escapeAttr(type)}" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}"${numberAttributes}${requiredAttributes} /></label>`;
   }
 
-  function textareaField(path, label, value = '') {
-    return `<label class="field"><span>${escapeHTML(label)}</span><textarea data-path="${escapeAttr(path)}">${escapeHTML(value ?? '')}</textarea></label>`;
+  function textareaField(path, label, value = '', options = {}) {
+    const requiredAttributes = options.required ? ' required aria-required="true"' : '';
+    const marker = options.required ? '<em class="required-mark">필수</em>' : '';
+    return `<label class="field"><span>${escapeHTML(label)}${marker}</span><textarea data-path="${escapeAttr(path)}"${requiredAttributes}>${escapeHTML(value ?? '')}</textarea></label>`;
   }
 
   function arrayField(path, label, value = []) {
@@ -242,10 +291,10 @@
         <img src="${escapeAttr(preview)}" alt="${escapeAttr(label)} preview" data-upload-preview />
         <div class="dropzone-text">
           <strong>이미지를 드래그하거나 파일을 선택하세요.</strong>
-          <p>JPG, PNG, WebP, GIF 파일을 선택하면 클라우드 저장소에 업로드됩니다.</p>
+          <p>JPG·PNG·WebP는 최대 2560px, 보통 약 700KB(최대 2MB)로 자동 최적화합니다. 움직이는 GIF는 2MB 이하만 원본 그대로 사용합니다.</p>
           <button class="secondary" type="button" data-upload-button>Choose Image</button>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload-input hidden />
-          <input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" placeholder="assets/example.png 또는 이미지 URL" />
+          <input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" placeholder="assets/example.png 형식의 저장소 경로" />
         </div>
       </div>
     </div>`;
@@ -273,6 +322,17 @@
     content.innerHTML = renderMap[activeSection]();
     document.querySelector('[data-admin-logo]').src = (data.site && data.site.logoWhite) || 'assets/eml-logo-white.svg';
     bindCommon();
+  }
+
+  function renderPreservingPosition() {
+    const openDetails = Array.from(content.querySelectorAll('details.item-card'), (details, index) => ({ index, open: details.open }));
+    const scrollTop = window.scrollY;
+    render();
+    const nextDetails = content.querySelectorAll('details.item-card');
+    openDetails.forEach(({ index, open }) => {
+      if (nextDetails[index]) nextDetails[index].open = open;
+    });
+    window.requestAnimationFrame(() => window.scrollTo({ top: scrollTop, behavior: 'auto' }));
   }
 
   function renderDashboard() {
@@ -467,15 +527,15 @@
       <h3>Papers (${data.publications.length})</h3>
       <div class="item-list" style="margin-top:14px">
         ${data.publications.map((p, i) => `<details class="item-card">
-          <summary>#${escapeHTML(p.number || '')} · ${escapeHTML(p.year)} · ${escapeHTML(p.title)}</summary>
+          <summary>#${escapeHTML(p.number ?? '')} · ${escapeHTML(p.year)} · ${escapeHTML(p.title)}</summary>
           <div class="item-fields">
             <div class="grid-3">
-              ${inputField(`publications.${i}.number`, 'No.', p.number || '')}
-              ${inputField(`publications.${i}.year`, 'Year', p.year)}
-              ${inputField(`publications.${i}.journal`, 'Journal', p.journal)}
+              ${inputField(`publications.${i}.number`, 'No.', p.number ?? '', 'number', { required: true })}
+              ${inputField(`publications.${i}.year`, 'Year', p.year, 'text', { required: true })}
+              ${inputField(`publications.${i}.journal`, 'Journal', p.journal, 'text', { required: true })}
             </div>
-            ${textareaField(`publications.${i}.title`, 'Title', p.title)}
-            ${textareaField(`publications.${i}.authors`, 'Authors', p.authors)}
+            ${textareaField(`publications.${i}.title`, 'Title', p.title, { required: true })}
+            ${textareaField(`publications.${i}.authors`, 'Authors', p.authors, { required: true })}
             ${inputField(`publications.${i}.note`, 'Note', p.note || '')}
             <div class="inline-actions">
               <button class="ghost-btn" type="button" data-move="publication" data-index="${i}" data-dir="-1">↑ Move up</button>
@@ -528,7 +588,7 @@
         <img src="assets/gallery-placeholder-1.svg" alt="Upload preview" />
         <div class="dropzone-text">
           <strong>여러 장의 이미지를 드래그하거나 선택하세요.</strong>
-          <p>첫 번째 이미지가 대표 썸네일로 사용됩니다. 아래 이미지 타일을 드래그하거나 버튼으로 순서를 변경할 수 있습니다.</p>
+          <p>첫 이미지가 대표 썸네일입니다. 한 번에 최대 10장(원본 합계 80MB), 게시할 새 이미지 합계는 최적화 후 8MB까지입니다.</p>
           <button class="secondary" type="button" data-multi-upload-button>Add Images</button>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple data-multi-upload-input hidden />
         </div>
@@ -547,8 +607,8 @@
             <summary>${escapeHTML(g.date || '')} · ${escapeHTML(g.title || 'Gallery Post')} · ${images.length} photos</summary>
             <div class="item-fields">
               <div class="grid-3">
-                ${inputField(`gallery.${i}.date`, 'Date', g.date)}
-                ${inputField(`gallery.${i}.title`, 'Title', g.title)}
+                ${inputField(`gallery.${i}.date`, 'Date', g.date, 'text', { required: true })}
+                ${inputField(`gallery.${i}.title`, 'Title', g.title, 'text', { required: true })}
                 ${inputField(`gallery.${i}.summary`, 'Summary', g.summary)}
               </div>
               ${textareaField(`gallery.${i}.body`, 'Detail Body', g.body)}
@@ -578,7 +638,16 @@
   function bindCommon() {
     content.querySelectorAll('[data-path]').forEach((field) => {
       field.addEventListener('input', () => {
-        setPath(field.dataset.path, field.value);
+        let value = field.value;
+        if (field.type === 'number') {
+          const normalized = field.value.trim();
+          const numeric = Number(normalized);
+          const valid = /^\d+$/.test(normalized) && Number.isSafeInteger(numeric) && numeric > 0;
+          value = valid ? numeric : null;
+          field.setCustomValidity(valid ? '' : '1 이상의 정수를 입력하세요.');
+          field.setAttribute('aria-invalid', String(!valid));
+        }
+        setPath(field.dataset.path, value);
         markDirty();
       });
     });
@@ -596,9 +665,9 @@
       if (!saved && previewWindow) previewWindow.close();
       if (saved && !previewWindow) toast('저장되었지만 팝업이 차단되었습니다. 상단 Preview Site를 눌러주세요.');
     }));
-    content.querySelectorAll('[data-add]').forEach((button) => button.addEventListener('click', async () => addItem(button.dataset.add)));
-    content.querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', async () => deleteItem(button.dataset.delete, Number(button.dataset.index))));
-    content.querySelectorAll('[data-move]').forEach((button) => button.addEventListener('click', async () => moveItem(button.dataset.move, Number(button.dataset.index), Number(button.dataset.dir))));
+    content.querySelectorAll('[data-add]').forEach((button) => button.addEventListener('click', () => addItem(button.dataset.add)));
+    content.querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', () => deleteItem(button.dataset.delete, Number(button.dataset.index))));
+    content.querySelectorAll('[data-move]').forEach((button) => button.addEventListener('click', () => moveItem(button.dataset.move, Number(button.dataset.index), Number(button.dataset.dir))));
     bindUploads();
     bindMultiUploads();
     bindImageActions();
@@ -615,7 +684,11 @@
       const dropzone = field.querySelector('[data-dropzone]');
       const preview = field.querySelector('[data-upload-preview]');
       button.addEventListener('click', () => input.click());
-      input.addEventListener('change', () => readSingleFile(input.files[0], path, preview));
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        input.value = '';
+        readSingleFile(file, path, preview);
+      });
       dropzone.addEventListener('dragover', (event) => { event.preventDefault(); dropzone.classList.add('is-dragover'); });
       dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
       dropzone.addEventListener('drop', (event) => {
@@ -630,22 +703,27 @@
     if (!file) return;
     const uploadEpoch = editorEpoch;
     const uploadUserId = activeUserId;
-    const uploadBusyOwner = beginBusy('이미지 업로드 중');
+    const uploadBusyOwner = beginBusy('이미지 최적화 중');
     try {
-      const imageUrl = await window.EMLCloud.uploadImage(file);
+      const imageUrl = await window.EMLLocalContent.uploadImage(file);
       if (editorEpoch !== uploadEpoch || activeUserId !== uploadUserId || !editorReady) return;
+      const previousValue = getPath(path);
       setPath(path, imageUrl);
+      try {
+        window.EMLLocalContent.validatePendingImages(data);
+      } catch (error) {
+        setPath(path, previousValue);
+        throw error;
+      }
       markDirty();
       if (preview) preview.src = imageUrl;
       const pathInput = Array.from(content.querySelectorAll('[data-path]')).find((el) => el.dataset.path === path);
       if (pathInput) pathInput.value = imageUrl;
-      endBusy(uploadBusyOwner);
-      const saved = await saveData(false);
-      if (saved) toast('이미지가 업로드되고 저장되었습니다.');
+      toast('이미지가 초안에 추가되었습니다. Save Changes를 눌러 게시하세요.');
     } catch (error) {
       console.error(error);
       if (editorEpoch !== uploadEpoch || activeUserId !== uploadUserId || !editorReady) return;
-      setCloudState('이미지 업로드 실패', 'error');
+      setStorageState('이미지 추가 실패', 'error');
       toast(`이미지 업로드 실패: ${error.message}`);
     } finally {
       endBusy(uploadBusyOwner);
@@ -659,7 +737,11 @@
       const button = field.querySelector('[data-multi-upload-button]');
       const dropzone = field.querySelector('[data-dropzone]');
       button.addEventListener('click', () => input.click());
-      input.addEventListener('change', () => addFilesToImages(path, Array.from(input.files || [])));
+      input.addEventListener('change', () => {
+        const files = Array.from(input.files || []);
+        input.value = '';
+        addFilesToImages(path, files);
+      });
       dropzone.addEventListener('dragover', (event) => { event.preventDefault(); dropzone.classList.add('is-dragover'); });
       dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
       dropzone.addEventListener('drop', (event) => {
@@ -674,36 +756,32 @@
     const images = getPath(path) || [];
     const uploadEpoch = editorEpoch;
     const uploadUserId = activeUserId;
-    const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
-    const imageFiles = files.filter((file) => allowedTypes.has(file.type));
-    if (!imageFiles.length) {
-      toast('JPG, PNG, WebP 또는 GIF 이미지를 선택하세요.');
-      return;
-    }
+    let imageFiles;
     try {
-      imageFiles.forEach((file) => window.EMLCloud.validateImage(file));
+      imageFiles = window.EMLLocalContent.validateImageSelection(files);
     } catch (error) {
       toast(error.message);
       return;
     }
-    const uploadBusyOwner = beginBusy(`${imageFiles.length}개 이미지 업로드 중`);
+    const uploadBusyOwner = beginBusy(`${imageFiles.length}개 이미지 최적화 중`);
     try {
-      const results = await Promise.allSettled(imageFiles.map((file) => window.EMLCloud.uploadImage(file)));
-      const imageUrls = results.filter((result) => result.status === 'fulfilled').map((result) => result.value);
-      const failures = results.filter((result) => result.status === 'rejected');
-      if (!imageUrls.length) throw failures[0].reason;
+      const imageUrls = await window.EMLLocalContent.uploadImages(imageFiles);
       if (editorEpoch !== uploadEpoch || activeUserId !== uploadUserId || !editorReady) return;
-      setPath(path, [...images, ...imageUrls]);
+      const nextImages = [...images, ...imageUrls];
+      setPath(path, nextImages);
+      try {
+        window.EMLLocalContent.validatePendingImages(data);
+      } catch (error) {
+        setPath(path, images);
+        throw error;
+      }
       markDirty();
-      render();
-      endBusy(uploadBusyOwner);
-      const saved = await saveData(false);
-      if (saved && !failures.length) toast(`${imageFiles.length}개 이미지가 업로드되고 저장되었습니다.`);
-      if (saved && failures.length) toast(`${imageUrls.length}개는 저장했고 ${failures.length}개는 업로드하지 못했습니다.`);
+      renderPreservingPosition();
+      toast(`${imageFiles.length}개 이미지가 최적화되어 초안에 추가되었습니다. Save Changes를 눌러 게시하세요.`);
     } catch (error) {
       console.error(error);
       if (editorEpoch !== uploadEpoch || activeUserId !== uploadUserId || !editorReady) return;
-      setCloudState('이미지 업로드 실패', 'error');
+      setStorageState('이미지 추가 실패', 'error');
       toast(`이미지 업로드 실패: ${error.message}`);
     } finally {
       endBusy(uploadBusyOwner);
@@ -712,17 +790,18 @@
 
   function bindImageActions() {
     content.querySelectorAll('[data-image-action]').forEach((button) => {
-      button.addEventListener('click', async () => {
+      button.addEventListener('click', () => {
         const path = button.dataset.imagePath;
         const index = Number(button.dataset.index);
         const images = getPath(path) || [];
-        if (button.dataset.imageAction === 'delete') images.splice(index, 1);
+        const deleted = button.dataset.imageAction === 'delete';
+        if (deleted) images.splice(index, 1);
         if (button.dataset.imageAction === 'up' && index > 0) [images[index - 1], images[index]] = [images[index], images[index - 1]];
         if (button.dataset.imageAction === 'down' && index < images.length - 1) [images[index + 1], images[index]] = [images[index], images[index + 1]];
         setPath(path, images);
         markDirty();
-        render();
-        await saveData(false);
+        renderPreservingPosition();
+        toast(deleted ? '이미지 삭제가 초안에 반영되었습니다.' : '이미지 순서 변경이 초안에 반영되었습니다.');
       });
     });
     content.querySelectorAll('.image-tile[draggable="true"]').forEach((tile) => {
@@ -733,7 +812,7 @@
       });
       tile.addEventListener('dragend', () => tile.classList.remove('is-dragging'));
       tile.addEventListener('dragover', (event) => event.preventDefault());
-      tile.addEventListener('drop', async (event) => {
+      tile.addEventListener('drop', (event) => {
         event.preventDefault();
         if (!dragImage || dragImage.path !== tile.dataset.imagePath) return;
         const targetIndex = Number(tile.dataset.imageIndex);
@@ -743,27 +822,29 @@
         setPath(dragImage.path, images);
         dragImage = null;
         markDirty();
-        render();
-        await saveData(false);
+        renderPreservingPosition();
+        toast('이미지 순서 변경이 초안에 반영되었습니다.');
       });
     });
   }
 
-  async function addItem(type) {
+  function addItem(type) {
     const now = new Date().toISOString().slice(0, 10).replaceAll('-', '.');
     if (type === 'research') data.researchTopics.push({ id: `topic-${Date.now()}`, title: 'New Research Topic', short: 'Short description', image: 'assets/research-electrode-interface.svg', description: 'Detailed description.' });
     if (type === 'member') data.members.push({ name: 'New Member', role: 'Graduate Student', period: '2026.03. - present', email: '', research: 'Research interest', photo: 'assets/person-placeholder.svg' });
     if (type === 'alumni') data.alumni.push({ date: '2026.02', name: 'Name', next: '-' });
-    if (type === 'publication') data.publications.unshift({ number: (data.publications[0]?.number || data.publications.length) + 1, year: String(new Date().getFullYear()), title: 'New paper title', authors: 'Authors', journal: 'Journal information', note: '' });
+    if (type === 'publication') {
+      const nextNumber = Math.max(0, ...data.publications.map((publication) => Number.isInteger(publication.number) ? publication.number : 0)) + 1;
+      data.publications.unshift({ number: nextNumber, year: String(new Date().getFullYear()), title: '', authors: '', journal: '', note: '' });
+    }
     if (type === 'patent') data.patents.unshift({ year: String(new Date().getFullYear()), title: 'New patent title', inventors: 'Inventors', number: 'Patent number' });
-    if (type === 'gallery') data.gallery.unshift({ date: now, title: 'New gallery post', summary: 'Short summary', image: 'assets/gallery-placeholder-1.svg', images: ['assets/gallery-placeholder-1.svg'], body: 'Detailed content.' });
+    if (type === 'gallery') data.gallery.unshift({ date: now, title: '', summary: '', image: '', images: [], body: '' });
     markDirty();
     render();
-    const saved = await saveData(false);
-    if (saved) toast('새 항목이 추가되고 저장되었습니다.');
+    toast('새 항목이 초안에 추가되었습니다. 내용을 작성한 뒤 Save Changes를 눌러 게시하세요.');
   }
 
-  async function deleteItem(type, index) {
+  function deleteItem(type, index) {
     const map = { research: 'researchTopics', member: 'members', alumni: 'alumni', publication: 'publications', patent: 'patents', gallery: 'gallery' };
     const key = map[type];
     if (!key || !Array.isArray(data[key])) return;
@@ -771,11 +852,10 @@
     data[key].splice(index, 1);
     markDirty();
     render();
-    const saved = await saveData(false);
-    if (saved) toast('삭제되었습니다.');
+    toast('삭제가 초안에 반영되었습니다. Save Changes를 눌러 게시하세요.');
   }
 
-  async function moveItem(type, index, dir) {
+  function moveItem(type, index, dir) {
     const map = { research: 'researchTopics', member: 'members', alumni: 'alumni', publication: 'publications', patent: 'patents', gallery: 'gallery' };
     const key = map[type];
     const arr = data[key];
@@ -785,18 +865,17 @@
     [arr[index], arr[next]] = [arr[next], arr[index]];
     markDirty();
     render();
-    await saveData(false);
+    toast('순서 변경이 초안에 반영되었습니다.');
   }
 
-  async function applyRaw() {
+  function applyRaw() {
     try {
       const parsed = JSON.parse(content.querySelector('[data-raw-json]').value);
       window.EMLDataSchema.assertValid(parsed);
       data = parsed;
       markDirty();
       render();
-      const saved = await saveData(false);
-      if (saved) toast('JSON 데이터가 적용되고 저장되었습니다.');
+      toast('JSON 데이터가 초안에 적용되었습니다. Save Changes를 눌러 게시하세요.');
     } catch (error) {
       alert(`JSON 형식 오류입니다. ${error.message}`);
     }
@@ -819,7 +898,7 @@
     if (!sessionDraft) return;
     downloadJson(
       sessionDraft.content,
-      `eml-session-draft-revision-${sessionDraft.baseRevision}.json`,
+      `eml-session-draft-revision-${revisionFileLabel(sessionDraft.baseRevision)}.json`,
     );
     toast('충돌 초안을 내려받았습니다. 최신 데이터와 비교한 뒤 필요한 내용만 다시 반영하세요.');
   }
@@ -842,7 +921,7 @@
         data = parsed;
         markDirty();
         render();
-        toast('JSON을 초안으로 불러왔습니다. Save Changes를 눌러 게시하세요.');
+        toast('JSON을 초안으로 불러왔습니다. Save Changes를 눌러 Git 콘텐츠에 저장하세요.');
       } catch (error) {
         alert(`JSON 파일을 읽을 수 없습니다. ${error.message}`);
       }
@@ -865,7 +944,7 @@
     editorEpoch += 1;
     busyOwner = null;
     setBusy(false);
-    [authLoading, setupPanel, loginForm, authError].forEach((element) => {
+    [authLoading, loginPanel, authError].forEach((element) => {
       element.hidden = element !== panel;
     });
     authShell.hidden = false;
@@ -875,11 +954,34 @@
   }
 
   function showLogin(message = '') {
-    showAuthPanel(loginForm);
-    document.querySelector('[data-auth-message]').textContent = message;
-    const loginId = String(window.EMLCloud?.config?.adminLoginId || '').trim();
-    if (loginId) document.querySelector('[data-login-id]').value = loginId;
-    document.querySelector('[data-login-password]').value = '';
+    showAuthPanel(loginPanel);
+    const feedback = document.querySelector('[data-login-message]');
+    feedback.textContent = message;
+    feedback.hidden = !message;
+  }
+
+  function consumeAuthFeedback() {
+    const url = new URL(window.location.href);
+    const result = url.searchParams.get('auth');
+    const reason = url.searchParams.get('reason') || '';
+    if (!result) return '';
+    url.searchParams.delete('auth');
+    url.searchParams.delete('reason');
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    if (result !== 'error') return '';
+    const messages = {
+      oauth_denied: 'GitHub 로그인이 취소되었습니다. 다시 시도해 주세요.',
+      invalid_oauth_state: '로그인 요청이 만료되었습니다. 다시 로그인해 주세요.',
+      oauth_state_mismatch: '로그인 확인값이 일치하지 않습니다. 새로고침 후 다시 시도해 주세요.',
+      github_permission_denied: '이 GitHub 계정에는 홈페이지 저장소 게시 권한이 없습니다.',
+      push_permission_required: '이 GitHub 계정에는 EML-website 저장소의 push 권한이 없습니다.',
+      wrong_repository: 'GitHub App이 EML-website 저장소에 설치되어 있지 않습니다.',
+      wrong_repository_id: 'GitHub App 저장소와 배포 설정의 저장소 ID가 일치하지 않습니다.',
+      github_resource_not_found: 'GitHub App의 저장소 설치 또는 Contents 권한을 확인해 주세요.',
+      github_app_required: '저장소 전용 GitHub App 설정을 확인해 주세요.',
+      server_not_configured: 'Cloudflare 관리자 인증 환경 변수가 아직 설정되지 않았습니다.',
+    };
+    return messages[reason] || `GitHub 관리자 로그인에 실패했습니다${reason ? ` (${reason})` : ''}. 다시 시도해 주세요.`;
   }
 
   function showAuthError(message) {
@@ -895,27 +997,22 @@
     loadedRevision = remote.revision;
     loadedUpdatedAt = remote.updatedAt;
     isDirty = false;
+    topSave.disabled = true;
     editSequence += 1;
   }
 
   async function openEditor(session) {
     showAuthPanel(authLoading);
     const openEpoch = editorEpoch;
-    activeUserId = session.user.id || null;
-    const allowed = await window.EMLCloud.isAdmin();
-    if (editorEpoch !== openEpoch) return;
-    if (!allowed) {
-      await window.EMLCloud.signOut();
-      showLogin('이 계정에는 홈페이지 관리자 권한이 없습니다.');
-      return;
-    }
-    const remote = await window.EMLCloud.loadContent();
+    editorMode = session.mode || 'remote';
+    activeUserId = session.user?.login || (editorMode === 'local' ? 'Local Git Editor' : null);
+    const remote = await window.EMLLocalContent.loadContent();
     if (editorEpoch !== openEpoch) return;
     applyRemoteData(remote);
     let restoredDraft = false;
     let conflictedDraft = false;
     if (sessionDraft && sessionDraft.userId === activeUserId) {
-      if (Number(sessionDraft.baseRevision) === loadedRevision) {
+      if (sessionDraft.baseRevision === loadedRevision) {
         data = clone(sessionDraft.content);
         sessionDraft = null;
         markDirty();
@@ -930,16 +1027,17 @@
     authShell.hidden = true;
     adminApp.hidden = false;
     adminActions.hidden = false;
-    adminUser.textContent = window.EMLCloud.config.adminLoginId || session.user.email || 'Administrator';
+    adminUser.textContent = activeUserId || 'GitHub Administrator';
+    document.querySelector('[data-logout]').hidden = editorMode === 'local';
     sessionDraftExport.hidden = !conflictedDraft;
-    setCloudState('Cloud 연결됨');
-    updateCloudNotice();
+    setStorageState(editorMode === 'local' ? 'Local Git Editor' : 'GitHub 연결됨');
+    updateStorageNotice();
     if (restoredDraft) {
-      setCloudState('복구된 초안 · 저장 필요', 'saving');
-      updateCloudNotice('로그인 세션이 끝나기 전의 초안을 복구했습니다. 내용을 확인하고 Save Changes를 누르세요.');
+      setStorageState('복구된 초안 · 저장 필요', 'saving');
+      updateStorageNotice('이전 작업의 초안을 복구했습니다. 내용을 확인하고 Save Changes를 누르세요.');
     } else if (conflictedDraft) {
-      setCloudState('초안 충돌 · 확인 필요', 'error');
-      updateCloudNotice(`세션이 종료된 사이 클라우드 버전이 ${sessionDraft.baseRevision}에서 ${loadedRevision}(으)로 변경되었습니다. 예전 초안은 자동 복구하지 않았습니다. JSON을 내려받아 최신 내용과 비교하세요.`);
+      setStorageState('초안 충돌 · 확인 필요', 'error');
+      updateStorageNotice(`작업 중 Git 버전이 ${formatRevision(sessionDraft.baseRevision)}에서 ${formatRevision(loadedRevision)}(으)로 변경되었습니다. 예전 초안은 자동 복구하지 않았습니다. JSON을 내려받아 최신 내용과 비교하세요.`);
     }
     document.querySelector('[data-import-legacy]').hidden = !getLegacyDraft();
     render();
@@ -947,63 +1045,51 @@
 
   async function initializeAdmin() {
     showAuthPanel(authLoading);
-    if (!window.EMLCloud || !window.EMLCloud.isConfigured()) {
-      showAuthPanel(setupPanel);
+    const authFeedback = consumeAuthFeedback();
+    if (!window.EMLLocalContent) {
+      showAuthError('관리자 콘텐츠 모듈을 불러오지 못했습니다. local-content-store.js 배포 여부를 확인하세요.');
       return;
     }
-    const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
-    if (window.location.protocol !== 'https:' && !localHost) {
-      showAuthError('관리자 로그인은 HTTPS 주소에서만 사용할 수 있습니다. 운영 서버에 HTTPS를 적용하세요.');
+    const localHost = window.EMLLocalContent.isLocalhost();
+    if (!localHost && window.location.protocol !== 'https:') {
+      showAuthError('GitHub 관리자 로그인은 HTTPS 주소에서만 사용할 수 있습니다. 배포 주소를 확인하세요.');
       return;
     }
     try {
-      if (!authWatcherStarted) {
-        window.EMLCloud.onAuthStateChange((event) => {
-          if (event !== 'SIGNED_OUT') return;
-          if (editorReady && isDirty) {
-            sessionDraft = {
-              content: clone(data),
-              baseRevision: loadedRevision,
-              userId: activeUserId,
-            };
-          }
-          activeUserId = null;
-          showLogin(sessionDraft
-            ? '로그인 세션이 종료되었습니다. 다시 로그인하면 저장하지 않은 초안을 복구합니다.'
-            : '로그인 세션이 종료되었습니다. 다시 로그인하세요.');
-        });
-        authWatcherStarted = true;
-      }
-      const session = await window.EMLCloud.getSession();
-      if (!session) {
-        showLogin();
+      const session = await window.EMLLocalContent.getSession();
+      if (!session.authenticated) {
+        showLogin(authFeedback || session.message);
         return;
       }
       await openEditor(session);
     } catch (error) {
       console.error(error);
-      showAuthError(`${error.message} 설정 파일과 setup.sql 실행 여부를 확인하세요.`);
+      if (error.code === 'EML_AUTH_REQUIRED') {
+        showLogin();
+        return;
+      }
+      showAuthError(`${error.message} 로컬 관리 서버 또는 Cloudflare Functions 설정을 확인하세요.`);
     }
   }
 
-  async function reloadCloudData() {
-    if (isDirty && !confirm('저장하지 않은 변경사항을 버리고 클라우드의 최신 내용을 다시 불러올까요?')) return;
+  async function reloadStoredData() {
+    if (isDirty && !confirm('저장하지 않은 변경사항을 버리고 Git 저장소의 최신 내용을 다시 불러올까요?')) return;
     const reloadEpoch = editorEpoch;
     const reloadUserId = activeUserId;
     const reloadBusyOwner = beginBusy('최신 내용 불러오는 중');
     try {
-      const remote = await window.EMLCloud.loadContent();
+      const remote = await window.EMLLocalContent.loadContent();
       if (editorEpoch !== reloadEpoch || activeUserId !== reloadUserId || !editorReady) return;
       applyRemoteData(remote);
-      setCloudState('Cloud 연결됨');
-      updateCloudNotice();
+      setStorageState(editorMode === 'local' ? 'Local Git Editor' : 'GitHub 연결됨');
+      updateStorageNotice();
       render();
-      toast('클라우드의 최신 내용을 불러왔습니다.');
+      toast('Git 저장소의 최신 내용을 불러왔습니다.');
     } catch (error) {
       console.error(error);
       if (editorEpoch !== reloadEpoch || activeUserId !== reloadUserId || !editorReady) return;
-      setCloudState('불러오기 실패', 'error');
-      updateCloudNotice(`불러오기 실패: ${error.message}`);
+      setStorageState('불러오기 실패', 'error');
+      updateStorageNotice(`불러오기 실패: ${error.message}`);
       toast(`불러오기 실패: ${error.message}`);
     } finally {
       endBusy(reloadBusyOwner);
@@ -1023,6 +1109,7 @@
     render();
   });
   document.querySelector('[data-export]').addEventListener('click', exportData);
+  topSave.addEventListener('click', async () => saveData(true));
   document.querySelector('[data-import-trigger]').addEventListener('click', () => {
     document.querySelector('[data-import]').click();
   });
@@ -1031,13 +1118,13 @@
     event.target.value = '';
   });
   document.querySelector('[data-reset]').addEventListener('click', () => {
-    if (!confirm('현재 편집 내용을 기본 데이터로 바꿀까요? Save Changes를 누르기 전에는 클라우드에 반영되지 않습니다.')) return;
+    if (!confirm('현재 편집 내용을 기본 데이터로 바꿀까요? Save Changes를 누르기 전에는 Git 저장소에 반영되지 않습니다.')) return;
     data = clone(window.EML_DATA || {});
     markDirty();
     render();
     toast('기본 데이터를 초안으로 불러왔습니다.');
   });
-  document.querySelector('[data-reload-cloud]').addEventListener('click', reloadCloudData);
+  document.querySelector('[data-reload-content]').addEventListener('click', reloadStoredData);
   sessionDraftExport.addEventListener('click', exportSessionDraft);
   document.querySelector('[data-import-legacy]').addEventListener('click', () => {
     const legacy = getLegacyDraft();
@@ -1049,41 +1136,22 @@
     data = clone(legacy);
     markDirty();
     render();
-    toast('기존 초안을 불러왔습니다. Save Changes를 눌러 클라우드에 게시하세요.');
+    toast('기존 초안을 불러왔습니다. Save Changes를 눌러 Git 콘텐츠에 저장하세요.');
   });
   document.querySelector('[data-logout]').addEventListener('click', async () => {
     if (isDirty && !confirm('저장하지 않은 변경사항이 있습니다. 로그아웃할까요?')) return;
-    isDirty = false;
-    sessionDraft = null;
-    sessionDraftExport.hidden = true;
-    const logoutBusyOwner = beginBusy('로그아웃 중');
+    const logoutBusyOwner = beginBusy('GitHub 로그아웃 중');
     try {
-      await window.EMLCloud.signOut();
-      showLogin('로그아웃되었습니다.');
+      await window.EMLLocalContent.signOut();
+      isDirty = false;
+      sessionDraft = null;
+      sessionDraftExport.hidden = true;
+      activeUserId = null;
+      window.location.reload();
     } catch (error) {
       toast(`로그아웃 실패: ${error.message}`);
     } finally {
       endBusy(logoutBusyOwner);
-    }
-  });
-  loginForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const submit = document.querySelector('[data-login-submit]');
-    const message = document.querySelector('[data-auth-message]');
-    submit.disabled = true;
-    message.textContent = '로그인 중입니다.';
-    try {
-      const session = await window.EMLCloud.signIn(
-        document.querySelector('[data-login-id]').value.trim(),
-        document.querySelector('[data-login-password]').value,
-      );
-      if (!session) throw new Error('로그인 세션을 만들지 못했습니다.');
-      await openEditor(session);
-    } catch (error) {
-      console.error(error);
-      showLogin(`로그인 실패: ${error.message}`);
-    } finally {
-      submit.disabled = false;
     }
   });
   document.querySelector('[data-auth-retry]').addEventListener('click', initializeAdmin);
