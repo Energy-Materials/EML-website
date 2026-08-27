@@ -1,0 +1,26 @@
+# Personal IDE metadata
+.idea/
+.vscode/
+*.iml
+
+# Keep admin, Supabase, content data, assets, and operations docs tracked for handoff.
+
+# Local browser/UI test output (never production source)
+.test-artifacts/
+playwright-report/
+test-results/
+coverage/
+
+# Optional local tooling caches and dependencies
+node_modules/
+.npm/
+
+# Local process output
+*.log
+*.pid
+*.tmp
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

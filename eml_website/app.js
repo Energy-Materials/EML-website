@@ -4,6 +4,7 @@
   const modal = document.querySelector('[data-modal]');
   const modalContent = document.querySelector('[data-modal-content]');
   const lightbox = document.querySelector('[data-lightbox]');
+  const siteShell = document.querySelector('.site-shell');
   let particleFrame = null;
   let particleCanvas = null;
   let particleResize = null;
@@ -11,7 +12,18 @@
   let cloudRevision = 0;
   let cloudPollTimer = null;
   let cloudRealtimeStarted = false;
-  let lightboxState = { itemIndex: 0, imageIndex: 0, touchX: null };
+  let lightboxState = { itemIndex: 0, imageIndex: 0, touchX: null, touchY: null };
+  let modalReturnFocus = null;
+  let lightboxReturnFocus = null;
+
+  const focusableSelector = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(',');
 
   function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
@@ -51,7 +63,10 @@
 
   function setActiveRoute(route) {
     document.querySelectorAll('[data-route]').forEach((link) => {
-      link.classList.toggle('is-active', link.dataset.route === route);
+      const isActive = link.dataset.route === route;
+      link.classList.toggle('is-active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
     });
   }
 
@@ -143,8 +158,8 @@
           <p class="hero-subtitle">${escapeHTML(h.subtitleKr || s.labNameKr || '')}</p>
           <p class="hero-copy">${escapeHTML(h.intro || '')}</p>
           <div class="hero-actions">
-            <button class="btn primary" type="button" data-go="research">${escapeHTML(h.ctaPrimary || 'Explore Research')} <span>→</span></button>
-            <button class="btn ghost" type="button" data-go="${escapeAttr(secondRoute)}">${escapeHTML(h.ctaSecondary || 'Contact')} <span>→</span></button>
+            <button class="btn primary" type="button" data-go="research">${escapeHTML(h.ctaPrimary || 'Explore Research')} <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn ghost" type="button" data-go="${escapeAttr(secondRoute)}">${escapeHTML(h.ctaSecondary || 'Contact')} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
         </div>
         <div class="scroll-indicator"><span></span> Scroll</div>
@@ -165,7 +180,7 @@
             <h2 class="section-title">Our Research</h2>
             <h3 class="research-theme-title">Battery materials and interface science</h3>
             <p class="section-lead">Research, Publications, and Gallery are connected from the home page so visitors can quickly enter the main content.</p>
-            <button class="btn secondary" type="button" data-go="research" style="margin-top:24px">View Research <span>→</span></button>
+            <button class="btn secondary" type="button" data-go="research" style="margin-top:24px">View Research <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
           <div class="research-card-grid">
             ${topics.map((topic) => `
@@ -174,7 +189,7 @@
                 <div class="research-card-body">
                   <h3>${escapeHTML(topic.title)}</h3>
                   <p>${escapeHTML(topic.short)}</p>
-                  <button class="link-more" type="button" data-go="research">View More <span>→</span></button>
+                  <button class="link-more" type="button" data-go="research" aria-label="View more about ${escapeAttr(topic.title || 'this research topic')}">View More <span class="button-icon" aria-hidden="true">→</span></button>
                 </div>
               </article>
             `).join('')}
@@ -195,7 +210,7 @@
                 </button>
               `).join('')}
             </div>
-            <button class="btn ghost" type="button" data-go="publications">View Publications <span>→</span></button>
+            <button class="btn ghost" type="button" data-go="publications">View Publications <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
           <div class="panel reveal">
             <p class="section-kicker">Gallery</p>
@@ -211,7 +226,7 @@
                 `;
               }).join('')}
             </div>
-            <button class="btn ghost" type="button" data-go="gallery">View Gallery <span>→</span></button>
+            <button class="btn ghost" type="button" data-go="gallery">View Gallery <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
         </div>
       </section>
@@ -274,12 +289,12 @@
     return `
       ${renderSubHero('Members', 'Professor, current members, and alumni in one consistent card system.')}
       <div class="sub-tabs" role="tablist" aria-label="Members tabs">
-        <button class="sub-tab is-active" type="button" data-member-tab="professor">Professor</button>
-        <button class="sub-tab" type="button" data-member-tab="members">Members</button>
-        <button class="sub-tab" type="button" data-member-tab="alumni">Alumni</button>
+        <button class="sub-tab is-active" id="members-tab-professor" type="button" role="tab" aria-selected="true" aria-controls="members-tabpanel" tabindex="0" data-member-tab="professor">Professor</button>
+        <button class="sub-tab" id="members-tab-members" type="button" role="tab" aria-selected="false" aria-controls="members-tabpanel" tabindex="-1" data-member-tab="members">Members</button>
+        <button class="sub-tab" id="members-tab-alumni" type="button" role="tab" aria-selected="false" aria-controls="members-tabpanel" tabindex="-1" data-member-tab="alumni">Alumni</button>
       </div>
       <section class="section compact">
-        <div class="container member-tabs-body" data-member-body>${renderProfessor()}</div>
+        <div class="container member-tabs-body" id="members-tabpanel" role="tabpanel" aria-labelledby="members-tab-professor" data-member-body>${renderProfessor()}</div>
       </section>
     `;
   }
@@ -350,13 +365,13 @@
     return `
       ${renderSubHero('Publications', 'Journal articles and patents are organized for easy update from admin data.')}
       <div class="sub-tabs" role="tablist" aria-label="Publication tabs">
-        <button class="sub-tab is-active" type="button" data-pub-tab="papers">Papers</button>
-        <button class="sub-tab" type="button" data-pub-tab="patents">Patents</button>
+        <button class="sub-tab is-active" id="publications-tab-papers" type="button" role="tab" aria-selected="true" aria-controls="publications-tabpanel" tabindex="0" data-pub-tab="papers">Papers</button>
+        <button class="sub-tab" id="publications-tab-patents" type="button" role="tab" aria-selected="false" aria-controls="publications-tabpanel" tabindex="-1" data-pub-tab="patents">Patents</button>
       </div>
       <section class="section compact">
-        <div class="container">
+        <div class="container" id="publications-tabpanel" role="tabpanel" aria-labelledby="publications-tab-papers" data-publication-panel>
           <div class="publication-controls reveal">
-            <input class="search-input" type="search" placeholder="Search title, author, journal..." data-publication-search />
+            <input class="search-input" type="search" aria-label="Search publications" placeholder="Search title, author, journal..." data-publication-search />
           </div>
           <div data-publication-body>${renderPaperList(data.publications || [])}</div>
         </div>
@@ -412,7 +427,7 @@
               const imgs = imagesForGallery(item);
               return `
                 <button class="gallery-card reveal" type="button" data-gallery-index="${index}">
-                  <img src="${escapeAttr(asset(imgs[0], 'assets/gallery-placeholder-1.svg'))}" alt="${escapeAttr(item.title)}" />
+                  <img src="${escapeAttr(asset(imgs[0], 'assets/gallery-placeholder-1.svg'))}" alt="" />
                   <div class="gallery-card-body">
                     <div class="gallery-date">${escapeHTML(item.date)} · ${imgs.length} photos</div>
                     <h3>${escapeHTML(item.title)}</h3>
@@ -455,6 +470,41 @@
     `;
   }
 
+  function bindTabList(tabList, onActivate) {
+    if (!tabList) return;
+    const tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+    if (!tabs.length) return;
+
+    function activateTab(tab, options = {}) {
+      if (!tabs.includes(tab)) return;
+      const changed = tab.getAttribute('aria-selected') !== 'true';
+      tabs.forEach((item) => {
+        const isSelected = item === tab;
+        item.classList.toggle('is-active', isSelected);
+        item.setAttribute('aria-selected', String(isSelected));
+        item.tabIndex = isSelected ? 0 : -1;
+      });
+      if (changed) onActivate(tab);
+      if (options.focus) tab.focus({ preventScroll: true });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
+        const currentIndex = tabs.indexOf(event.currentTarget);
+        let nextIndex = currentIndex;
+        if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        activateTab(tabs[nextIndex], { focus: true });
+      });
+    });
+  }
+
   function bindPageEvents(route) {
     app.querySelectorAll('[data-go]').forEach((button) => {
       button.addEventListener('click', () => navigate(button.dataset.go));
@@ -465,18 +515,17 @@
     if (route === 'members') {
       const body = app.querySelector('[data-member-body]');
       const tabRender = { professor: renderProfessor, members: renderMemberCards, alumni: renderAlumni };
-      app.querySelectorAll('[data-member-tab]').forEach((tab) => {
-        tab.addEventListener('click', () => {
-          app.querySelectorAll('[data-member-tab]').forEach((el) => el.classList.remove('is-active'));
-          tab.classList.add('is-active');
-          body.innerHTML = tabRender[tab.dataset.memberTab]();
-          initReveal();
-        });
+      bindTabList(app.querySelector('[role="tablist"]'), (tab) => {
+        body.setAttribute('aria-labelledby', tab.id);
+        body.innerHTML = tabRender[tab.dataset.memberTab]();
+        initReveal();
       });
     }
 
     if (route === 'publications') {
       const body = app.querySelector('[data-publication-body]');
+      const panel = app.querySelector('[data-publication-panel]');
+      const controls = app.querySelector('.publication-controls');
       let active = 'papers';
       const search = app.querySelector('[data-publication-search]');
       function updateList() {
@@ -490,14 +539,11 @@
         initReveal();
       }
       search.addEventListener('input', updateList);
-      app.querySelectorAll('[data-pub-tab]').forEach((tab) => {
-        tab.addEventListener('click', () => {
-          app.querySelectorAll('[data-pub-tab]').forEach((el) => el.classList.remove('is-active'));
-          tab.classList.add('is-active');
-          active = tab.dataset.pubTab;
-          search.style.display = active === 'papers' ? '' : 'none';
-          updateList();
-        });
+      bindTabList(app.querySelector('[role="tablist"]'), (tab) => {
+        active = tab.dataset.pubTab;
+        panel.setAttribute('aria-labelledby', tab.id);
+        controls.hidden = active !== 'papers';
+        updateList();
       });
     }
 
@@ -506,29 +552,110 @@
     });
   }
 
+  function isOverlayOpen(overlay) {
+    return Boolean(overlay && overlay.classList.contains('is-open'));
+  }
+
+  function getActiveOverlay() {
+    if (isOverlayOpen(lightbox)) return lightbox;
+    if (isOverlayOpen(modal)) return modal;
+    return null;
+  }
+
+  function getFocusableElements(overlay) {
+    return Array.from(overlay.querySelectorAll(focusableSelector)).filter((element) => (
+      !element.hasAttribute('disabled')
+      && !element.hasAttribute('hidden')
+      && element.getAttribute('aria-hidden') !== 'true'
+    ));
+  }
+
+  function focusOverlay(overlay) {
+    if (!isOverlayOpen(overlay)) return;
+    const preferred = overlay === lightbox
+      ? overlay.querySelector('.lightbox-close')
+      : overlay.querySelector('.modal-close');
+    const target = preferred || getFocusableElements(overlay)[0] || overlay.querySelector('[role="dialog"]');
+    if (target) target.focus({ preventScroll: true });
+  }
+
+  function queueOverlayFocus(overlay) {
+    window.requestAnimationFrame(() => focusOverlay(overlay));
+  }
+
+  function syncOverlayState() {
+    const hasOpenOverlay = Boolean(getActiveOverlay());
+    document.body.classList.toggle('no-scroll', hasOpenOverlay);
+    if (siteShell) siteShell.inert = hasOpenOverlay;
+  }
+
+  function restoreFocusAfterClose(returnFocus) {
+    window.requestAnimationFrame(() => {
+      const activeOverlay = getActiveOverlay();
+      if (activeOverlay) {
+        focusOverlay(activeOverlay);
+        return;
+      }
+      if (returnFocus && returnFocus.isConnected && !returnFocus.hasAttribute('disabled')) {
+        returnFocus.focus({ preventScroll: true });
+      }
+    });
+  }
+
+  function trapOverlayFocus(event, overlay) {
+    const focusable = getFocusableElements(overlay);
+    if (!focusable.length) {
+      event.preventDefault();
+      focusOverlay(overlay);
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (!overlay.contains(active)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus({ preventScroll: true });
+    } else if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus({ preventScroll: true });
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+    }
+  }
+
   function openModal(html) {
+    if (!modal || !modalContent) return;
+    if (!isOverlayOpen(modal)) modalReturnFocus = document.activeElement;
     modalContent.innerHTML = html;
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('no-scroll');
+    syncOverlayState();
+    queueOverlayFocus(modal);
   }
 
-  function closeModal() {
+  function closeModal(options = {}) {
     if (!modal) return;
+    const wasOpen = isOverlayOpen(modal);
+    const returnFocus = modalReturnFocus;
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     if (modalContent) modalContent.innerHTML = '';
-    if (!lightbox.classList.contains('is-open')) document.body.classList.remove('no-scroll');
+    modalReturnFocus = null;
+    syncOverlayState();
+    if (wasOpen && options.restoreFocus !== false) restoreFocusAfterClose(returnFocus);
   }
 
   function openGalleryLightbox(itemIndex, imageIndex) {
     const item = (data.gallery || [])[itemIndex];
     if (!item) return;
-    lightboxState = { itemIndex, imageIndex, touchX: null };
+    if (!isOverlayOpen(lightbox)) lightboxReturnFocus = document.activeElement;
+    lightboxState = { itemIndex, imageIndex, touchX: null, touchY: null };
     lightbox.classList.add('is-open');
     lightbox.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('no-scroll');
     updateLightbox();
+    syncOverlayState();
+    queueOverlayFocus(lightbox);
   }
 
   function updateLightbox() {
@@ -544,6 +671,10 @@
     lightbox.querySelector('[data-lightbox-title]').textContent = item.title || '';
     lightbox.querySelector('[data-lightbox-meta]').textContent = `${item.date || ''}${item.summary ? ' · ' + item.summary : ''}`;
     lightbox.querySelector('[data-lightbox-body]').textContent = item.body || '';
+    lightbox.querySelectorAll('[data-lightbox-prev], [data-lightbox-next]').forEach((button) => {
+      button.hidden = images.length < 2;
+      button.disabled = images.length < 2;
+    });
   }
 
   function nextLightbox(delta) {
@@ -553,32 +684,51 @@
     updateLightbox();
   }
 
-  function closeLightbox() {
+  function closeLightbox(options = {}) {
     if (!lightbox) return;
+    const wasOpen = isOverlayOpen(lightbox);
+    const returnFocus = lightboxReturnFocus;
     lightbox.classList.remove('is-open');
     lightbox.setAttribute('aria-hidden', 'true');
-    if (!modal.classList.contains('is-open')) document.body.classList.remove('no-scroll');
+    lightboxState.touchX = null;
+    lightboxState.touchY = null;
+    lightboxReturnFocus = null;
+    syncOverlayState();
+    if (wasOpen && options.restoreFocus !== false) restoreFocusAfterClose(returnFocus);
   }
 
   function initHeader() {
     const header = document.querySelector('[data-header]');
     const nav = document.querySelector('[data-nav]');
     const menu = document.querySelector('[data-menu-toggle]');
+    function setMenuOpen(open, options = {}) {
+      nav.classList.toggle('is-open', open);
+      menu.setAttribute('aria-expanded', String(open));
+      menu.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      if (!open && options.restoreFocus) menu.focus({ preventScroll: true });
+    }
     function onScroll() {
       header.classList.toggle('is-scrolled', window.scrollY > 40);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     menu.addEventListener('click', () => {
-      const open = !nav.classList.contains('is-open');
-      nav.classList.toggle('is-open', open);
-      menu.setAttribute('aria-expanded', String(open));
+      setMenuOpen(!nav.classList.contains('is-open'));
     });
     nav.addEventListener('click', (event) => {
-      if (event.target.closest('a')) {
-        nav.classList.remove('is-open');
-        menu.setAttribute('aria-expanded', 'false');
+      if (event.target.closest('a')) setMenuOpen(false);
+    });
+    document.addEventListener('click', (event) => {
+      if (nav.classList.contains('is-open') && !header.contains(event.target)) setMenuOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && nav.classList.contains('is-open') && !getActiveOverlay()) {
+        event.preventDefault();
+        setMenuOpen(false, { restoreFocus: true });
       }
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1040 && nav.classList.contains('is-open')) setMenuOpen(false);
     });
   }
 
@@ -602,6 +752,7 @@
   function initParticles() {
     const canvas = document.querySelector('[data-particles]');
     if (!canvas) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     particleCanvas = canvas;
     const ctx = canvas.getContext('2d');
     const particles = [];
@@ -659,9 +810,20 @@
 
   function hasActivePageInteraction() {
     const active = document.activeElement;
+    const hasFocusedPageControl = Boolean(
+      active
+      && active !== document.body
+      && active !== document.documentElement
+      && active !== app
+      && app.contains(active)
+      && (
+        active.matches('button, a[href], input, textarea, select, [contenteditable]:not([contenteditable="false"])')
+        || active.closest('[contenteditable]:not([contenteditable="false"])')
+      )
+    );
     return modal.classList.contains('is-open')
       || lightbox.classList.contains('is-open')
-      || Boolean(active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName));
+      || hasFocusedPageControl;
   }
 
   function removeCloudUpdateNotice() {
@@ -763,25 +925,62 @@
     }
   }
 
-  modal.querySelectorAll('[data-modal-close]').forEach((el) => el.addEventListener('click', closeModal));
-  lightbox.querySelector('[data-lightbox-close]').addEventListener('click', closeLightbox);
-  lightbox.querySelector('.lightbox-backdrop').addEventListener('click', closeLightbox);
+  modal.addEventListener('click', (event) => {
+    if (event.target.closest('[data-modal-close]')) closeModal();
+  });
+  lightbox.addEventListener('click', (event) => {
+    if (event.target.closest('[data-lightbox-close]')) closeLightbox();
+  });
   lightbox.querySelector('[data-lightbox-prev]').addEventListener('click', () => nextLightbox(-1));
   lightbox.querySelector('[data-lightbox-next]').addEventListener('click', () => nextLightbox(1));
-  lightbox.addEventListener('touchstart', (event) => { lightboxState.touchX = event.touches[0].clientX; }, { passive: true });
+  lightbox.addEventListener('touchstart', (event) => {
+    const touch = event.touches[0];
+    if (!touch || !event.target.closest('[data-lightbox-image]')) {
+      lightboxState.touchX = null;
+      lightboxState.touchY = null;
+      return;
+    }
+    lightboxState.touchX = touch.clientX;
+    lightboxState.touchY = touch.clientY;
+  }, { passive: true });
   lightbox.addEventListener('touchend', (event) => {
-    if (lightboxState.touchX === null) return;
-    const delta = event.changedTouches[0].clientX - lightboxState.touchX;
-    if (Math.abs(delta) > 44) nextLightbox(delta > 0 ? -1 : 1);
+    const touch = event.changedTouches[0];
+    if (lightboxState.touchX === null || lightboxState.touchY === null || !touch) return;
+    const deltaX = touch.clientX - lightboxState.touchX;
+    const deltaY = touch.clientY - lightboxState.touchY;
+    if (Math.abs(deltaX) > 44 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
+      nextLightbox(deltaX > 0 ? -1 : 1);
+    }
     lightboxState.touchX = null;
+    lightboxState.touchY = null;
+  }, { passive: true });
+  lightbox.addEventListener('touchcancel', () => {
+    lightboxState.touchX = null;
+    lightboxState.touchY = null;
   }, { passive: true });
   document.addEventListener('keydown', (event) => {
+    if (event.isComposing) return;
+    const activeOverlay = getActiveOverlay();
+    if (!activeOverlay) return;
     if (event.key === 'Escape') {
-      closeModal();
-      closeLightbox();
+      event.preventDefault();
+      if (activeOverlay === lightbox) closeLightbox();
+      else closeModal();
+      return;
     }
-    if (lightbox.classList.contains('is-open') && event.key === 'ArrowRight') nextLightbox(1);
-    if (lightbox.classList.contains('is-open') && event.key === 'ArrowLeft') nextLightbox(-1);
+    if (event.key === 'Tab') {
+      trapOverlayFocus(event, activeOverlay);
+      return;
+    }
+    if (activeOverlay === lightbox && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        nextLightbox(1);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        nextLightbox(-1);
+      }
+    }
   });
 
   window.addEventListener('hashchange', () => {

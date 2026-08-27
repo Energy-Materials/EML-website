@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
+  <a class="skip-link" href="#admin-main">본문으로 건너뛰기</a>
   <header class="admin-topbar">
     <div class="admin-brand">
       <img src="assets/eml-logo-white.svg" alt="EML" data-admin-logo />
@@ -17,12 +18,13 @@
         <span>Website content dashboard</span>
       </div>
     </div>
-    <nav class="top-actions" data-admin-actions hidden>
-      <span class="cloud-state" data-cloud-state>Cloud 연결 확인 중</span>
+    <nav class="top-actions" aria-label="관리자 작업" data-admin-actions hidden>
+      <span class="cloud-state" role="status" aria-live="polite" data-cloud-state>Cloud 연결 확인 중</span>
       <span class="admin-user" data-admin-user></span>
       <a href="index.html#home" target="_blank" rel="noreferrer">Preview Site</a>
       <button type="button" data-export>Export JSON</button>
-      <label class="import-label">Import JSON<input type="file" accept="application/json" data-import hidden /></label>
+      <button type="button" data-import-trigger>Import JSON</button>
+      <input type="file" accept="application/json" data-import hidden />
       <button type="button" data-reset>Load Starter Data</button>
       <button type="button" data-logout>Logout</button>
     </nav>
@@ -63,9 +65,9 @@
     </section>
   </div>
 
-  <main class="admin-layout" data-admin-app hidden>
-    <aside class="admin-sidebar" data-sidebar>
-      <button class="is-active" type="button" data-section="dashboard">Dashboard</button>
+  <main class="admin-layout" id="admin-main" tabindex="-1" data-admin-app hidden>
+    <aside class="admin-sidebar" aria-label="편집 섹션" data-sidebar>
+      <button class="is-active" type="button" aria-current="page" data-section="dashboard">Dashboard</button>
       <button type="button" data-section="brand">Brand & Assets</button>
       <button type="button" data-section="site">Contact / Footer</button>
       <button type="button" data-section="home">Home</button>

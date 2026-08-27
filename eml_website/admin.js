@@ -851,8 +851,11 @@
   }
 
   function toast(message) {
+    document.querySelectorAll('.toast').forEach((item) => item.remove());
     const el = document.createElement('div');
     el.className = 'toast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
     el.textContent = message;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 2400);
@@ -1011,11 +1014,18 @@
     const button = event.target.closest('[data-section]');
     if (!button) return;
     activeSection = button.dataset.section;
-    sidebar.querySelectorAll('[data-section]').forEach((el) => el.classList.remove('is-active'));
-    button.classList.add('is-active');
+    sidebar.querySelectorAll('[data-section]').forEach((el) => {
+      const active = el === button;
+      el.classList.toggle('is-active', active);
+      if (active) el.setAttribute('aria-current', 'page');
+      else el.removeAttribute('aria-current');
+    });
     render();
   });
   document.querySelector('[data-export]').addEventListener('click', exportData);
+  document.querySelector('[data-import-trigger]').addEventListener('click', () => {
+    document.querySelector('[data-import]').click();
+  });
   document.querySelector('[data-import]').addEventListener('change', (event) => {
     importData(event.target.files[0]);
     event.target.value = '';
