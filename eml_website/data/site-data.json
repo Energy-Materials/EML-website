@@ -1,4 +1,4 @@
-window.EML_DATA = {
+{
   "alumni": [
     {
       "date": "2025.02",
@@ -581,4 +581,4 @@ window.EML_DATA = {
     "university": "Kongju National University",
     "universityKr": "국립공주대학교 화학공학부"
   }
-};
+}

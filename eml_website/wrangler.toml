@@ -1,0 +1,10 @@
+name = "energy-materials-lab"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-08-27"
+
+[vars]
+GITHUB_OWNER = "Energy-Materials"
+GITHUB_REPO = "EML-website"
+GITHUB_BRANCH = "develop"
+GITHUB_CONTENT_PATH = "eml_website/data/site-data.json"
+GITHUB_REPOSITORY_ID = "1348328666"

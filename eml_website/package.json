@@ -1,0 +1,15 @@
+{
+  "name": "eml-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Energy Materials Laboratory static website and local Git-backed content editor",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "admin": "node tools/admin-server.mjs",
+    "build": "node tools/build.mjs",
+    "check": "node tools/check-content.mjs"
+  }
+}

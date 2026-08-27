@@ -191,10 +191,12 @@ body.is-busy .cloud-state { color: #fff2b7; background: rgba(255, 201, 69, .14);
 .stat strong { display: block; margin-top: 12px; font-size: 34px; letter-spacing: -.06em; }
 .field { display: grid; min-width: 0; gap: 8px; }
 .field span { font-weight: 850; color: #274056; font-size: 13px; }
+.required-mark { margin-left: 7px; color: #a72b2b; font-size: 10px; font-style: normal; letter-spacing: .02em; }
 input, textarea, select { width: 100%; min-width: 0; max-width: 100%; border: 1px solid var(--line); border-radius: 16px; background: #fff; color: var(--ink); outline: none; transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease); }
 input, select { min-height: 48px; padding: 0 15px; }
 textarea { min-height: 116px; padding: 14px 15px; resize: vertical; }
 input:focus, textarea:focus, select:focus { border-color: rgba(95,145,191,.62); box-shadow: 0 0 0 4px rgba(95,145,191,.12); }
+input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:placeholder-shown), textarea:invalid:not(:placeholder-shown) { border-color: rgba(167,43,43,.65); box-shadow: 0 0 0 4px rgba(167,43,43,.08); }
 .array-field textarea { min-height: 150px; }
 .help { margin: 8px 0 0; color: #7a8a98; font-size: 12px; }
 

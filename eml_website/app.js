@@ -5,13 +5,10 @@
   const modalContent = document.querySelector('[data-modal-content]');
   const lightbox = document.querySelector('[data-lightbox]');
   const siteShell = document.querySelector('.site-shell');
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let particleFrame = null;
   let particleCanvas = null;
   let particleResize = null;
-  let pendingCloudData = null;
-  let cloudRevision = 0;
-  let cloudPollTimer = null;
-  let cloudRealtimeStarted = false;
   let lightboxState = { itemIndex: 0, imageIndex: 0, touchX: null, touchY: null };
   let modalReturnFocus = null;
   let lightboxReturnFocus = null;
@@ -26,10 +23,6 @@
   ].join(',');
 
   function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
-
-  function isValidSiteData(value) {
-    return Boolean(window.EMLDataSchema && window.EMLDataSchema.validate(value).valid);
-  }
 
   let data = clone(window.EML_DATA || {});
 
@@ -47,7 +40,7 @@
   function asset(path, fallback = '') {
     const raw = String(path || fallback || '').trim();
     if (!raw || /[\u0000-\u001f"'()\\]/.test(raw)) return fallback || '';
-    if (/^data:image\/(jpeg|png|webp|gif);base64,/i.test(raw)) return raw;
+    if (/^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(raw)) return raw;
     try {
       const resolved = new URL(raw, window.location.href);
       return ['http:', 'https:'].includes(resolved.protocol) ? raw : (fallback || '');
@@ -373,17 +366,18 @@
           <div class="publication-controls reveal">
             <input class="search-input" type="search" aria-label="Search publications" placeholder="Search title, author, journal..." data-publication-search />
           </div>
-          <div data-publication-body>${renderPaperList(data.publications || [])}</div>
+          <div data-publication-body aria-live="polite">${renderPaperList(data.publications || [])}</div>
         </div>
       </section>
     `;
   }
 
   function renderPaperList(list) {
+    if (!list.length) return '<div class="empty-state" role="status"><strong>표시할 논문이 없습니다.</strong><p>검색어를 바꾸거나 관리자에서 논문을 추가해 주세요.</p></div>';
     return `<div class="publication-stack">
       ${list.map((pub) => `
         <article class="publication-card reveal">
-          <div class="year-badge"><small>#${escapeHTML(pub.number || '')}</small>${escapeHTML(pub.year)}</div>
+          <div class="year-badge"><small>#${escapeHTML(pub.number ?? '')}</small>${escapeHTML(pub.year)}</div>
           <div>
             <h3>${escapeHTML(pub.title)}</h3>
             <p>${escapeHTML(pub.authors)}</p>
@@ -396,6 +390,7 @@
   }
 
   function renderPatentList() {
+    if (!(data.patents || []).length) return '<div class="empty-state" role="status"><strong>표시할 특허가 없습니다.</strong><p>관리자에서 특허를 추가하면 이곳에 표시됩니다.</p></div>';
     return `<div class="publication-stack">
       ${(data.patents || []).map((patent, index) => `
         <article class="publication-card reveal">
@@ -422,8 +417,8 @@
             </div>
             <p class="section-lead">Each gallery post can contain multiple photos. Click a card to open a larger carousel with keyboard, swipe, and previous/next controls.</p>
           </div>
-          <div class="gallery-grid">
-            ${(data.gallery || []).map((item, index) => {
+          <div class="gallery-grid" aria-live="polite">
+            ${(data.gallery || []).length ? (data.gallery || []).map((item, index) => {
               const imgs = imagesForGallery(item);
               return `
                 <button class="gallery-card reveal" type="button" data-gallery-index="${index}">
@@ -435,7 +430,7 @@
                   </div>
                 </button>
               `;
-            }).join('')}
+            }).join('') : '<div class="empty-state" role="status"><strong>등록된 갤러리가 없습니다.</strong><p>새 소식과 사진이 등록되면 이곳에 표시됩니다.</p></div>'}
           </div>
         </div>
       </section>
@@ -751,7 +746,7 @@
 
   function initParticles() {
     const canvas = document.querySelector('[data-particles]');
-    if (!canvas) return;
+    if (!canvas || reducedMotionQuery.matches) return;
     particleCanvas = canvas;
     const ctx = canvas.getContext('2d');
     const particles = [];
@@ -805,123 +800,6 @@
     particleFrame = null;
     particleCanvas = null;
     particleResize = null;
-  }
-
-  function hasActivePageInteraction() {
-    const active = document.activeElement;
-    const hasFocusedPageControl = Boolean(
-      active
-      && active !== document.body
-      && active !== document.documentElement
-      && active !== app
-      && app.contains(active)
-      && (
-        active.matches('button, a[href], input, textarea, select, [contenteditable]:not([contenteditable="false"])')
-        || active.closest('[contenteditable]:not([contenteditable="false"])')
-      )
-    );
-    return modal.classList.contains('is-open')
-      || lightbox.classList.contains('is-open')
-      || hasFocusedPageControl;
-  }
-
-  function removeCloudUpdateNotice() {
-    const notice = document.querySelector('[data-cloud-update-notice]');
-    if (notice) notice.remove();
-  }
-
-  function applyPendingCloudData() {
-    if (!pendingCloudData) return false;
-    data = pendingCloudData;
-    pendingCloudData = null;
-    removeCloudUpdateNotice();
-    return true;
-  }
-
-  function showCloudUpdateNotice() {
-    if (document.querySelector('[data-cloud-update-notice]')) return;
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'cloud-update-notice';
-    button.dataset.cloudUpdateNotice = '';
-    button.textContent = '새 내용이 등록되었습니다 · 지금 보기';
-    button.addEventListener('click', () => {
-      if (!applyPendingCloudData()) return;
-      render({ focus: false, scroll: false });
-    });
-    document.body.appendChild(button);
-  }
-
-  function receiveCloudData(next) {
-    if (!next || !next.content || !isValidSiteData(next.content)) return;
-    const revision = Number(next.revision || 0);
-    if (revision && revision <= cloudRevision) return;
-    cloudRevision = Math.max(cloudRevision, revision);
-    const nextData = clone(next.content);
-    if (hasActivePageInteraction()) {
-      pendingCloudData = nextData;
-      showCloudUpdateNotice();
-      return;
-    }
-    pendingCloudData = null;
-    removeCloudUpdateNotice();
-    data = nextData;
-    render({ resetView: false, focus: false, scroll: false });
-  }
-
-  async function refreshCloudData() {
-    try {
-      const latest = await window.EMLCloud.loadContent();
-      receiveCloudData(latest);
-    } catch (error) {
-      console.warn('Cloud content refresh failed.', error);
-    }
-  }
-
-  function startCloudPolling() {
-    if (cloudPollTimer) return;
-    refreshCloudData();
-    cloudPollTimer = window.setInterval(refreshCloudData, 60000);
-  }
-
-  function stopCloudPolling() {
-    if (cloudPollTimer) window.clearInterval(cloudPollTimer);
-    cloudPollTimer = null;
-  }
-
-  function connectCloudRealtime() {
-    if (cloudRealtimeStarted) return;
-    cloudRealtimeStarted = true;
-    try {
-      window.EMLCloud.subscribeContent((next) => {
-        receiveCloudData(next);
-      }, (status) => {
-        if (status === 'SUBSCRIBED') {
-          stopCloudPolling();
-          refreshCloudData();
-        }
-        if (['CHANNEL_ERROR', 'TIMED_OUT', 'CLOSED'].includes(status)) startCloudPolling();
-      });
-    } catch (error) {
-      cloudRealtimeStarted = false;
-      console.warn('Cloud realtime connection failed. Polling will be used.', error);
-      startCloudPolling();
-    }
-  }
-
-  async function loadCloudData() {
-    if (!window.EMLCloud || !window.EMLCloud.isConfigured()) return;
-    connectCloudRealtime();
-    try {
-      const remote = await window.EMLCloud.loadContent();
-      if (remote.content) {
-        if (!isValidSiteData(remote.content)) throw new Error('클라우드 홈페이지 데이터 형식이 올바르지 않습니다.');
-        receiveCloudData(remote);
-      }
-    } catch (error) {
-      console.error('Cloud content could not be loaded. Bundled content is being used.', error);
-      startCloudPolling();
-    }
   }
 
   modal.addEventListener('click', (event) => {
@@ -983,10 +861,13 @@
   });
 
   window.addEventListener('hashchange', () => {
-    applyPendingCloudData();
     render();
+  });
+  reducedMotionQuery.addEventListener?.('change', () => {
+    if (routeFromHash() !== 'home') return;
+    cancelParticles();
+    if (!reducedMotionQuery.matches) initParticles();
   });
   initHeader();
   render();
-  loadCloudData();
 })();
