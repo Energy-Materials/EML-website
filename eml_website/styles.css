@@ -425,8 +425,8 @@ select:focus-visible,
 .lightbox-figure p { color: #5a6d7f; word-break: keep-all; }
 .lightbox-nav { position: absolute; top: 50%; z-index: 6; transform: translateY(-50%); width: 58px; height: 58px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.34); border-radius: 50%; background: rgba(4,16,27,.46); color: #fff; font-size: 0; line-height: 1; backdrop-filter: blur(10px); transition: background var(--fast), transform var(--fast), opacity var(--fast), border-color var(--fast); }
 .lightbox-nav::before { content: ""; width: 13px; height: 13px; border-top: 3px solid currentColor; border-right: 3px solid currentColor; }
-.lightbox-nav.prev::before { transform: translateX(2px) rotate(-135deg); }
-.lightbox-nav.next::before { transform: translateX(-2px) rotate(45deg); }
+.lightbox-nav.prev::before { transform: translate(2px, 1px) rotate(-135deg); }
+.lightbox-nav.next::before { transform: translate(-2px, 1px) rotate(45deg); }
 .lightbox-nav:disabled { transform: translateY(-50%) !important; }
 .lightbox-nav.prev { left: 16px; }
 .lightbox-nav.next { right: 16px; }
@@ -611,7 +611,6 @@ select:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-  .hero-particles { display: none; }
   .reveal { opacity: 1; transform: none; }
   .cloud-update-notice,
   .main-nav a,

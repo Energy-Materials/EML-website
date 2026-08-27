@@ -752,7 +752,6 @@
   function initParticles() {
     const canvas = document.querySelector('[data-particles]');
     if (!canvas) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     particleCanvas = canvas;
     const ctx = canvas.getContext('2d');
     const particles = [];
