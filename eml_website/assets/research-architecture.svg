@@ -1,0 +1,37 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="r" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(210 260) rotate(45) scale(600)">
+      <stop stop-color="#2E8ACB" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#11243A" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#071522"/>
+    </radialGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#EAF6FF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#2E8ACB" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="900" height="620" rx="46" fill="url(#r)"/>
+  <g opacity="0.2">
+    <path d="M0 450C170 350 250 520 430 418C610 316 696 410 900 290" stroke="#DDF4FF"/>
+    <path d="M0 510C145 394 272 580 454 470C600 382 735 460 900 360" stroke="#DDF4FF"/>
+    <path d="M130 70L780 570" stroke="#DDF4FF"/>
+    <path d="M240 40L840 400" stroke="#DDF4FF"/>
+  </g>
+  <g transform="translate(130 170)" filter="url(#glow)">
+  <g stroke="url(#line)" stroke-width="3">
+    <path d="M0 120L90 60L180 120L90 180Z" fill="#102942"/>
+    <path d="M180 120L270 60L360 120L270 180Z" fill="#132F4A"/>
+    <path d="M90 60L180 0L270 60L180 120Z" fill="#183B5B"/>
+    <path d="M90 180L180 120L270 180L180 240Z" fill="#0E2439"/>
+    <path d="M360 120L450 60L540 120L450 180Z" fill="#183B5B"/>
+  </g>
+  <g fill="#EAF6FF">
+    <circle cx="90" cy="60" r="8"/><circle cx="180" cy="120" r="8"/><circle cx="270" cy="60" r="8"/><circle cx="360" cy="120" r="8"/><circle cx="450" cy="60" r="8"/>
+  </g>
+  <path d="M82 300H620" stroke="#EAF6FF" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round"/>
+  <path d="M126 330H500" stroke="#6EA6D8" stroke-opacity="0.65" stroke-width="4" stroke-linecap="round"/>
+</g>
+  <text x="54" y="84" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="40">Electrode Architecture</text>
+  <text x="56" y="124" fill="#9FC7EA" font-family="Arial, Helvetica, sans-serif" font-size="18" letter-spacing="4">ENERGY MATERIALS LAB</text>
+</svg>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EML | Energy Materials Laboratory</title>
+  <meta name="description" content="Energy Materials Laboratory at Kongju National University" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preload" href="assets/hero-concept-from-pdf.png" as="image" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header" data-header>
+      <a href="#home" class="brand" aria-label="Go to Home">
+        <img src="assets/eml-logo-white.svg" alt="EML Energy Materials Lab" class="brand-logo" data-brand-logo />
+      </a>
+      <button class="mobile-menu-button" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="main-nav" data-nav>
+        <a href="#home" data-route="home">Home</a>
+        <a href="#research" data-route="research">Research</a>
+        <a href="#members" data-route="members">Members</a>
+        <a href="#publications" data-route="publications">Publications</a>
+        <a href="#gallery" data-route="gallery">Gallery</a>
+        <a href="#contact" data-route="contact" class="nav-cta">Contact</a>
+      </nav>
+    </header>
+
+    <main id="app" class="app" tabindex="-1"></main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div class="footer-brand-block">
+            <img src="assets/eml-logo-white.svg" alt="EML" class="footer-logo" data-footer-logo />
+            <p>Energy Materials Laboratory<br />Kongju National University</p>
+          </div>
+          <div>
+            <h3>Address</h3>
+            <p data-footer-address></p>
+          </div>
+          <div>
+            <h3>E-mail</h3>
+            <p><a href="mailto:jhum@kongju.ac.kr" data-footer-email></a></p>
+          </div>
+        </div>
+        <p class="copyright" data-footer-copyright></p>
+      </div>
+    </footer>
+  </div>
+
+  <div class="modal" data-modal aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <article class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" data-modal-close aria-label="Close">×</button>
+      <div data-modal-content></div>
+    </article>
+  </div>
+
+  <div class="lightbox" data-lightbox aria-hidden="true">
+    <div class="lightbox-backdrop" data-lightbox-close></div>
+    <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-labelledby="lightbox-title">
+      <button class="lightbox-close" type="button" data-lightbox-close aria-label="Close gallery">×</button>
+      <button class="lightbox-nav prev" type="button" data-lightbox-prev aria-label="Previous image">‹</button>
+      <figure class="lightbox-figure">
+        <img src="" alt="" data-lightbox-image />
+        <figcaption>
+          <span data-lightbox-count></span>
+          <h2 id="lightbox-title" data-lightbox-title></h2>
+          <p data-lightbox-meta></p>
+          <p data-lightbox-body></p>
+        </figcaption>
+      </figure>
+      <button class="lightbox-nav next" type="button" data-lightbox-next aria-label="Next image">›</button>
+    </div>
+  </div>
+
+  <script src="data/site-data.js"></script>
+  <script src="data-validation.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="cloud-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

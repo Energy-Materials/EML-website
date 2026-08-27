@@ -1,0 +1,34 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="r" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(210 260) rotate(45) scale(600)">
+      <stop stop-color="#6EA6D8" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#11243A" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#071522"/>
+    </radialGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#EAF6FF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#6EA6D8" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="900" height="620" rx="46" fill="url(#r)"/>
+  <g opacity="0.2">
+    <path d="M0 450C170 350 250 520 430 418C610 316 696 410 900 290" stroke="#DDF4FF"/>
+    <path d="M0 510C145 394 272 580 454 470C600 382 735 460 900 360" stroke="#DDF4FF"/>
+    <path d="M130 70L780 570" stroke="#DDF4FF"/>
+    <path d="M240 40L840 400" stroke="#DDF4FF"/>
+  </g>
+  <g filter="url(#glow)">
+  <circle cx="330" cy="310" r="140" fill="#0B1D2F" stroke="url(#line)" stroke-width="4"/>
+  <circle cx="330" cy="310" r="84" stroke="#EAF6FF" stroke-opacity="0.42" stroke-width="2"/>
+  <path d="M260 300C306 254 365 258 411 310C362 363 305 363 260 300Z" fill="#224B72" stroke="#EAF6FF"/>
+  <circle cx="333" cy="306" r="34" fill="#071522" stroke="#6EA6D8" stroke-width="4"/>
+  <path d="M520 205H738" stroke="#EAF6FF" stroke-opacity="0.3" stroke-width="3"/>
+  <path d="M520 280H778" stroke="#EAF6FF" stroke-opacity="0.3" stroke-width="3"/>
+  <path d="M520 355H700" stroke="#EAF6FF" stroke-opacity="0.3" stroke-width="3"/>
+  <path d="M520 202C557 260 596 258 638 202C675 145 720 145 757 202" stroke="url(#line)" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="557" cy="260" r="10" fill="#EAF6FF"/><circle cx="638" cy="202" r="10" fill="#6EA6D8"/><circle cx="757" cy="202" r="10" fill="#EAF6FF"/>
+</g>
+  <text x="54" y="84" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="40">In-situ / Operando</text>
+  <text x="56" y="124" fill="#9FC7EA" font-family="Arial, Helvetica, sans-serif" font-size="18" letter-spacing="4">ENERGY MATERIALS LAB</text>
+</svg>

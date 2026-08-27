@@ -1,0 +1,32 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="r" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(210 260) rotate(45) scale(600)">
+      <stop stop-color="#4E90C0" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#11243A" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#071522"/>
+    </radialGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#EAF6FF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#4E90C0" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="900" height="620" rx="46" fill="url(#r)"/>
+  <g opacity="0.2">
+    <path d="M0 450C170 350 250 520 430 418C610 316 696 410 900 290" stroke="#DDF4FF"/>
+    <path d="M0 510C145 394 272 580 454 470C600 382 735 460 900 360" stroke="#DDF4FF"/>
+    <path d="M130 70L780 570" stroke="#DDF4FF"/>
+    <path d="M240 40L840 400" stroke="#DDF4FF"/>
+  </g>
+  <g filter="url(#glow)">
+  <g transform="translate(150 165)">
+    <circle cx="110" cy="120" r="48" fill="#2A6C9F"/><circle cx="210" cy="80" r="26" fill="#EAF6FF"/><circle cx="275" cy="170" r="34" fill="#5F91BF"/><circle cx="382" cy="100" r="42" fill="#89C7F2"/><circle cx="500" cy="180" r="24" fill="#EAF6FF"/>
+    <path d="M154 104L186 88M232 102L255 147M309 151L346 120M422 124L480 166" stroke="#EAF6FF" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
+    <path d="M34 305H620" stroke="#EAF6FF" stroke-width="3" stroke-opacity="0.35"/>
+    <path d="M34 345H550" stroke="#5F91BF" stroke-width="3" stroke-opacity="0.7"/>
+    <path d="M90 260C160 222 218 276 284 246C354 215 433 250 532 210" stroke="url(#line)" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</g>
+  <text x="54" y="84" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="40">Phase Dynamics</text>
+  <text x="56" y="124" fill="#9FC7EA" font-family="Arial, Helvetica, sans-serif" font-size="18" letter-spacing="4">ENERGY MATERIALS LAB</text>
+</svg>

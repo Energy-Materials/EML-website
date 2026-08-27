@@ -1,0 +1,24 @@
+<svg width="360" height="88" viewBox="0 0 360 88" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EML Energy Materials Lab">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="360" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EAF6FF"/>
+      <stop offset="0.52" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#6EA6D8"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#284D73"/>
+      <stop offset="1" stop-color="#78B7E8"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 10)">
+    <rect x="0" y="4" width="54" height="8" rx="1" fill="#EAF6FF"/>
+    <rect x="0" y="30" width="54" height="8" rx="1" fill="url(#blue)"/>
+    <path d="M0 56H54L48 64H0V56Z" fill="#EAF6FF"/>
+    <path d="M75 64V4H86L122 36L159 4H170V64H154V28L122 56L90 28V64H75Z" fill="url(#g)"/>
+    <path d="M191 4H207V51H272L263 64H191V4Z" fill="url(#g)"/>
+    <rect x="285" y="14" width="36" height="50" rx="7" stroke="#EAF6FF" stroke-width="5"/>
+    <rect x="297" y="7" width="12" height="9" rx="3" fill="#EAF6FF"/>
+    <rect x="307" y="38" width="7" height="20" rx="2" fill="#78B7E8"/>
+  </g>
+  <text x="30" y="84" fill="#DCEBFA" font-family="Arial, Helvetica, sans-serif" font-size="10" letter-spacing="7">ENERGY MATERIALS LAB</text>
+</svg>
