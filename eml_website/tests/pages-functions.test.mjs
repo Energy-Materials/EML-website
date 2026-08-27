@@ -18,7 +18,7 @@ const env = {
   GITHUB_CLIENT_ID: 'Iv1.test-client-id',
   GITHUB_CLIENT_SECRET: 'test-client-secret',
   GITHUB_REPOSITORY_ID: '1348328666',
-  GITHUB_OWNER: 'EML-lab2022',
+  GITHUB_OWNER: 'Energy-Materials',
   GITHUB_REPO: 'EML-website',
   GITHUB_BRANCH: 'develop',
   GITHUB_CONTENT_PATH: 'eml_website/data/site-data.json',
@@ -74,8 +74,8 @@ globalThis.fetch = async (input, init = {}) => {
   if (method === 'GET' && route === '/user') {
     return githubJson({ id: 42, login: 'authorized-user', name: 'Authorized User', avatar_url: 'https://avatars.example/user', html_url: 'https://github.com/authorized-user' });
   }
-  if (method === 'GET' && route === '/repos/EML-lab2022/EML-website') {
-    return githubJson({ id: 1348328666, full_name: 'EML-lab2022/EML-website', archived: false, disabled: false, permissions: { push: true } });
+  if (method === 'GET' && route === '/repos/Energy-Materials/EML-website') {
+    return githubJson({ id: 1348328666, full_name: 'Energy-Materials/EML-website', archived: false, disabled: false, permissions: { push: true } });
   }
   if (method === 'GET' && route.endsWith('/git/ref/heads/develop')) {
     return githubJson({ object: { sha: shas.head, type: 'commit' } });
@@ -106,7 +106,7 @@ globalThis.fetch = async (input, init = {}) => {
     return githubJson({ sha: shas.newTree }, 201);
   }
   if (method === 'POST' && route.endsWith('/git/commits')) {
-    return githubJson({ sha: shas.commit, html_url: `https://github.com/EML-lab2022/EML-website/commit/${shas.commit}`, committer: { date: '2026-08-27T13:00:00Z' } }, 201);
+    return githubJson({ sha: shas.commit, html_url: `https://github.com/Energy-Materials/EML-website/commit/${shas.commit}`, committer: { date: '2026-08-27T13:00:00Z' } }, 201);
   }
   if (method === 'PATCH' && route.endsWith('/git/refs/heads/develop')) {
     updatedRef = JSON.parse(init.body);

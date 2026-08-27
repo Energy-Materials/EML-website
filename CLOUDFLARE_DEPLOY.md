@@ -6,7 +6,7 @@
 
 | 구분 | 서비스 | 역할 |
 | --- | --- | --- |
-| 소스·콘텐츠 원본 | public GitHub 저장소 `EML-lab2022/EML-website` | 코드, `site-data.json`, 이미지, 변경 이력 |
+| 소스·콘텐츠 원본 | public GitHub 저장소 `Energy-Materials/EML-website` | 코드, `site-data.json`, 이미지, 변경 이력 |
 | 배포 | Cloudflare Pages | `develop` push 후 `dist/` 자동 배포 |
 | 관리자 API | Cloudflare Pages Functions | GitHub App 로그인, 검증, Git commit |
 | 공식 주소 | 기존 기관 도메인의 subdomain 또는 `*.pages.dev` | 방문자가 접속할 HTTPS 주소 |
@@ -33,7 +33,7 @@ Cloudflare Dashboard에서 `Workers & Pages` → `Create application` → `Pages
 ### 조직 저장소 승인
 
 1. GitHub 연결에서 `Configure Cloudflare Pages`를 선택합니다.
-2. GitHub 조직 `EML-lab2022`를 선택합니다.
+2. GitHub 저장소 소유 계정 `Energy-Materials`를 선택합니다.
 3. Repository access를 `Only select repositories`로 제한하고 `EML-website`만 선택합니다.
 4. 조직 정책상 설치 승인이 뜨면 조직 Owner 또는 GitHub Apps Manager가 승인해야 합니다.
 5. Cloudflare로 돌아와 저장소를 선택합니다.
@@ -88,7 +88,7 @@ Repository permissions에서 다음만 설정합니다.
 - `Metadata`: Read-only
 - 그 밖의 Repository, Organization, Account 권한: No access
 
-App을 만든 뒤 `Optional Features`에서 `User-to-server token expiration`이 활성화되어 있는지 확인합니다(새 App은 기본 활성화). `Install App`에서 `EML-lab2022`를 선택하고 **Only select repositories → EML-website 하나만** 설치합니다. 조직 승인이 필요한 경우 Owner가 설치를 승인합니다. 관리자 본인에게도 저장소 `push` 권한이 있어야 로그인 후 편집할 수 있습니다. 이 구성은 private key나 installation token을 사용하지 않으므로 private key를 생성할 필요가 없습니다.
+App을 만든 뒤 `Optional Features`에서 `User-to-server token expiration`이 활성화되어 있는지 확인합니다(새 App은 기본 활성화). `Install App`에서 `Energy-Materials`를 선택하고 **Only select repositories → EML-website 하나만** 설치합니다. 별도 승인이 필요한 경우 저장소 소유자가 설치를 승인합니다. 관리자 본인에게도 저장소 `push` 권한이 있어야 로그인 후 편집할 수 있습니다. 이 구성은 private key나 installation token을 사용하지 않으므로 private key를 생성할 필요가 없습니다.
 
 이 방식은 classic OAuth App이나 Personal Access Token 방식이 아닙니다. `repo` scope를 요청하지 않으며 GitHub App user access token은 기본 만료 시간을 사용합니다.
 
@@ -108,7 +108,7 @@ Cloudflare Pages 프로젝트의 `Settings` → `Variables and Secrets`에서 **
 
 | 이름 | 값 |
 | --- | --- |
-| `GITHUB_OWNER` | `EML-lab2022` |
+| `GITHUB_OWNER` | `Energy-Materials` |
 | `GITHUB_REPO` | `EML-website` |
 | `GITHUB_BRANCH` | `develop` |
 | `GITHUB_CONTENT_PATH` | `eml_website/data/site-data.json` |

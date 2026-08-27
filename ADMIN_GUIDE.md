@@ -29,7 +29,7 @@
 
 - Git
 - Node.js 20 이상(Node.js 22 권장)
-- `EML-lab2022/EML-website` 저장소 읽기·쓰기 권한
+- `Energy-Materials/EML-website` 저장소 읽기·쓰기 권한
 - 최신 웹 브라우저
 
 ### 작업 브랜치 만들기
@@ -117,7 +117,7 @@ git push --set-upstream origin content/2026-08-27-update
 1. `https://홈페이지주소/admin.html`을 엽니다.
 2. `GitHub로 관리자 로그인`을 누릅니다.
 3. GitHub에서 EML 관리자 GitHub App 사용을 승인합니다.
-4. 로그인한 GitHub 계정에 `EML-lab2022/EML-website` push 권한이 있어야 합니다.
+4. 로그인한 GitHub 계정에 `Energy-Materials/EML-website` push 권한이 있어야 합니다.
 
 GitHub App은 해당 저장소 하나에만 설치되고 `Contents: Read & write`, `Metadata: Read` 권한만 가져야 합니다. 브라우저에는 평문 GitHub token이 저장되지 않습니다. token은 최대 8시간짜리 암호화된 `HttpOnly`, `Secure`, `SameSite=Lax` 쿠키 안에서만 사용됩니다.
 

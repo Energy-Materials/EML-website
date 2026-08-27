@@ -51,7 +51,7 @@ function normalizeRepositoryPath(value) {
 }
 
 export function getRepositoryConfig(env) {
-  const owner = String(env?.GITHUB_OWNER || 'EML-lab2022').trim();
+  const owner = String(env?.GITHUB_OWNER || 'Energy-Materials').trim();
   const repo = String(env?.GITHUB_REPO || 'EML-website').trim();
   const branch = String(env?.GITHUB_BRANCH || 'develop').trim();
   const contentPath = normalizeRepositoryPath(env?.GITHUB_CONTENT_PATH || 'eml_website/data/site-data.json');
