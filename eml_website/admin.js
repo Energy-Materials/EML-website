@@ -28,6 +28,13 @@
   let editorEpoch = 0;
   let busyOwner = null;
   const embeddedUploadCache = new Map();
+  const pendingImagePreviews = new Map();
+  let deploymentPreviewRun = 0;
+  let deploymentReadyPromise = Promise.resolve({ ready: true, paths: [] });
+  let deploymentAbortController = null;
+  let deploymentInProgress = false;
+  let deploymentWatchSettled = true;
+  let pendingPublishedContent = null;
 
   function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
@@ -122,6 +129,102 @@
   }
   function escapeAttr(value) { return escapeHTML(value).replaceAll('`', '&#096;'); }
 
+  function imagePreviewSource(value) {
+    const publishedPath = String(value || '');
+    const pendingPreview = pendingImagePreviews.get(publishedPath);
+    if (pendingPreview) return pendingPreview;
+    if (!publishedPath.startsWith('assets/uploads/')) return publishedPath;
+    const revision = encodeURIComponent(String(loadedRevision || 'latest').slice(0, 48));
+    return `${publishedPath}?__eml_admin_revision=${revision}`;
+  }
+
+  function imageIsDeploying(value) {
+    return pendingImagePreviews.has(String(value || ''));
+  }
+
+  function rememberPendingImagePreviews(draft, published) {
+    if (editorMode === 'local' || !window.EMLLocalContent.collectPendingImagePreviews) return [];
+    const pending = window.EMLLocalContent.collectPendingImagePreviews(draft, published);
+    pending.forEach(({ path, preview }) => pendingImagePreviews.set(path, preview));
+    return pending;
+  }
+
+  function showPublishedImages(paths) {
+    const published = new Set(paths);
+    document.querySelectorAll('[data-published-src]').forEach((image) => {
+      const path = image.dataset.publishedSrc;
+      if (!published.has(path)) return;
+      image.src = imagePreviewSource(path);
+      const container = image.closest('.image-tile, .dropzone');
+      container?.classList.remove('is-deploying');
+      container?.querySelectorAll('[data-deployment-badge]').forEach((badge) => badge.remove());
+      container?.querySelectorAll('[data-deployment-note]').forEach((note) => note.remove());
+    });
+    document.querySelectorAll('[data-published-background]').forEach((element) => {
+      const path = element.dataset.publishedBackground;
+      if (!published.has(path)) return;
+      element.style.backgroundImage = `linear-gradient(90deg, rgba(5,16,28,.82), rgba(5,16,28,.26)), url('${imagePreviewSource(path)}')`;
+    });
+  }
+
+  function cancelDeploymentPreview() {
+    deploymentPreviewRun += 1;
+    deploymentAbortController?.abort();
+    deploymentAbortController = null;
+    deploymentInProgress = false;
+    deploymentWatchSettled = true;
+    pendingPublishedContent = null;
+    pendingImagePreviews.clear();
+    deploymentReadyPromise = Promise.resolve({ ready: true, paths: [] });
+  }
+
+  function startDeploymentWatch(publishedContent = pendingPublishedContent) {
+    const paths = [...pendingImagePreviews.keys()];
+    if (!publishedContent || editorMode === 'local') {
+      deploymentReadyPromise = Promise.resolve({ ready: true, paths: [] });
+      return deploymentReadyPromise;
+    }
+
+    deploymentAbortController?.abort();
+    deploymentAbortController = new AbortController();
+    const run = ++deploymentPreviewRun;
+    const watchEpoch = editorEpoch;
+    const watchUserId = activeUserId;
+    const signal = deploymentAbortController.signal;
+    pendingPublishedContent = clone(publishedContent);
+    deploymentInProgress = true;
+    deploymentWatchSettled = false;
+    deploymentReadyPromise = window.EMLLocalContent.waitForPublishedDeployment(pendingPublishedContent, paths, { signal })
+      .catch((error) => {
+        console.error(error);
+        return { ready: false, paths };
+      })
+      .then((result) => {
+        if (run !== deploymentPreviewRun || editorEpoch !== watchEpoch || activeUserId !== watchUserId || !editorReady) {
+          return result;
+        }
+        deploymentWatchSettled = true;
+        if (result.aborted) return result;
+        if (result.ready) {
+          result.paths.forEach((path) => pendingImagePreviews.delete(path));
+          showPublishedImages(result.paths);
+          deploymentInProgress = false;
+          pendingPublishedContent = null;
+          deploymentAbortController = null;
+          if (!isDirty) {
+            setStorageState('Git 저장 및 배포 완료');
+            updateStorageNotice('저장한 콘텐츠가 홈페이지에 배포되었습니다. Preview Site에서 확인할 수 있습니다.');
+          }
+          toast('홈페이지 배포가 완료되었습니다.');
+        } else if (!isDirty) {
+          setStorageState('Git 저장 완료 · 배포 확인 필요', 'saving');
+          updateStorageNotice('콘텐츠는 GitHub에 안전하게 저장되었습니다. Cloudflare 배포가 지연되고 있으니 잠시 후 Preview Site를 다시 눌러 확인하세요.');
+        }
+        return result;
+      });
+    return deploymentReadyPromise;
+  }
+
   function getPath(path) {
     return String(path).split('.').reduce((acc, key) => (acc == null ? undefined : acc[key]), data);
   }
@@ -212,17 +315,27 @@
         loadedUpdatedAt = saved.updatedAt;
         hasPublishedContent = true;
         if (editSequence === snapshotSequence) {
+          const pendingImages = rememberPendingImagePreviews(snapshot, saved.content);
           data = clone(saved.content);
           isDirty = false;
           topSave.disabled = true;
           sessionDraft = null;
           sessionDraftExport.hidden = true;
-          setStorageState('Git 저장 완료');
-          updateStorageNotice();
+          if (editorMode !== 'local' && pendingImages.length) {
+            setStorageState(`Git 저장 완료 · 이미지 ${pendingImages.length}개 배포 중`, 'saving');
+            updateStorageNotice('이미지는 GitHub에 저장되었습니다. Cloudflare 배포가 끝날 때까지 방금 선택한 미리보기를 유지합니다. 보통 1분 안에 완료됩니다.');
+          } else if (editorMode !== 'local') {
+            setStorageState('Git 저장 완료 · 홈페이지 배포 중', 'saving');
+            updateStorageNotice('콘텐츠는 GitHub에 저장되었습니다. Cloudflare 배포가 끝나는 즉시 Preview Site에서 확인할 수 있습니다.');
+          } else {
+            setStorageState('로컬 저장 완료');
+            updateStorageNotice();
+          }
           render();
+          if (editorMode !== 'local') startDeploymentWatch(saved.content);
           if (show) toast(editorMode === 'local'
             ? '저장소 파일에 저장했습니다. 커밋 후 배포할 수 있습니다.'
-            : 'Git 저장소에 저장했습니다. 자동 배포가 시작됩니다.');
+            : 'GitHub 저장 완료 · Cloudflare 배포를 확인하고 있습니다.');
           return true;
         }
         setStorageState('추가 변경 저장 필요', 'saving');
@@ -283,15 +396,19 @@
   }
 
   function uploadField(path, label, value = '', options = {}) {
-    const preview = value || options.placeholder || 'assets/gallery-placeholder-1.svg';
+    const publishedPath = String(value || '');
+    const preview = imagePreviewSource(publishedPath) || options.placeholder || 'assets/gallery-placeholder-1.svg';
+    const deploying = imageIsDeploying(publishedPath);
     const wide = options.wide ? ' preview-wide' : '';
     return `<div class="upload-field" data-upload-field data-upload-path="${escapeAttr(path)}">
       <span class="upload-label">${escapeHTML(label)}</span>
-      <div class="dropzone${wide}" data-dropzone>
-        <img src="${escapeAttr(preview)}" alt="${escapeAttr(label)} preview" data-upload-preview />
+      <div class="dropzone${wide}${deploying ? ' is-deploying' : ''}" data-dropzone>
+        <img src="${escapeAttr(preview)}" alt="${escapeAttr(label)} preview" data-upload-preview data-published-src="${escapeAttr(publishedPath)}" />
+        ${deploying ? '<span class="deployment-badge" data-deployment-badge>배포 중</span>' : ''}
         <div class="dropzone-text">
           <strong>이미지를 드래그하거나 파일을 선택하세요.</strong>
           <p>JPG·PNG·WebP는 최대 2560px, 보통 약 700KB(최대 2MB)로 자동 최적화합니다. 움직이는 GIF는 2MB 이하만 원본 그대로 사용합니다.</p>
+          ${deploying ? '<p class="deployment-note" data-deployment-note>GitHub 저장 완료 · Cloudflare 반영을 기다리는 중입니다.</p>' : ''}
           <button class="secondary" type="button" data-upload-button>Choose Image</button>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload-input hidden />
           <input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" placeholder="assets/example.png 형식의 저장소 경로" />
@@ -371,7 +488,7 @@
         ${uploadField('site.knuLogo', 'Kongju National University Logo', s.knuLogo, { placeholder: 'assets/knu-logo.png' })}
         ${uploadField('site.heroImage', 'Main Hero / Sub Banner Image', s.heroImage, { wide: true, placeholder: 'assets/hero-concept-from-pdf.png' })}
       </div>
-      <div class="hero-preview" style="background-image: linear-gradient(90deg, rgba(5,16,28,.82), rgba(5,16,28,.26)), url('${escapeAttr(s.heroImage || 'assets/hero-concept-from-pdf.png')}')"><div><p class="help" style="color:rgba(255,255,255,.76);margin:0 0 6px">Preview</p><h3>Energy Materials Laboratory</h3></div></div>
+      <div class="hero-preview" data-published-background="${escapeAttr(s.heroImage || '')}" style="background-image: linear-gradient(90deg, rgba(5,16,28,.82), rgba(5,16,28,.26)), url('${escapeAttr(imagePreviewSource(s.heroImage) || 'assets/hero-concept-from-pdf.png')}')"><div><p class="help" style="color:rgba(255,255,255,.76);margin:0 0 6px">Preview</p><h3>Energy Materials Laboratory</h3></div></div>
       ${saveBar()}
     </section>`;
   }
@@ -570,14 +687,18 @@
 
   function imageList(path, images = []) {
     return `<div class="image-list" data-image-list="${escapeAttr(path)}">
-      ${(images || []).map((src, index) => `<div class="image-tile" draggable="true" data-image-path="${escapeAttr(path)}" data-image-index="${index}">
-        <img src="${escapeAttr(src)}" alt="Gallery image ${index + 1}" />
+      ${(images || []).map((src, index) => {
+        const deploying = imageIsDeploying(src);
+        return `<div class="image-tile${deploying ? ' is-deploying' : ''}" draggable="true" data-image-path="${escapeAttr(path)}" data-image-index="${index}">
+        <img src="${escapeAttr(imagePreviewSource(src))}" alt="Gallery image ${index + 1}" data-published-src="${escapeAttr(src)}" />
+        ${deploying ? '<span class="deployment-badge" data-deployment-badge>배포 중</span>' : ''}
         <div class="tile-actions">
           <button type="button" data-image-action="up" data-image-path="${escapeAttr(path)}" data-index="${index}">↑</button>
           <button type="button" data-image-action="down" data-image-path="${escapeAttr(path)}" data-index="${index}">↓</button>
           <button type="button" data-image-action="delete" data-image-path="${escapeAttr(path)}" data-index="${index}">Delete</button>
         </div>
-      </div>`).join('')}
+      </div>`;
+      }).join('')}
     </div>`;
   }
 
@@ -635,6 +756,39 @@
     </section>`;
   }
 
+  function showPreviewWait(previewWindow, message = 'GitHub 저장과 Cloudflare 이미지 배포를 확인하고 있습니다.') {
+    if (!previewWindow || previewWindow.closed) return;
+    const previewDocument = previewWindow.document;
+    previewDocument.title = 'EML 미리보기 준비 중';
+    const shell = previewDocument.createElement('main');
+    shell.style.cssText = 'box-sizing:border-box;display:grid;place-items:center;min-height:100vh;padding:24px;background:#071522;color:#fff;font:700 16px/1.6 system-ui,sans-serif;text-align:center';
+    const text = previewDocument.createElement('p');
+    text.style.cssText = 'max-width:520px;margin:0';
+    text.textContent = message;
+    shell.appendChild(text);
+    previewDocument.body.replaceChildren(shell);
+  }
+
+  async function openPreviewAfterDeployment(previewWindow) {
+    if (!previewWindow || previewWindow.closed) return false;
+    if (deploymentInProgress) {
+      showPreviewWait(previewWindow);
+      if (deploymentWatchSettled && pendingPublishedContent) startDeploymentWatch(pendingPublishedContent);
+      const result = await deploymentReadyPromise;
+      if (!result.ready) {
+        showPreviewWait(previewWindow, '콘텐츠는 GitHub에 안전하게 저장되었지만 Cloudflare 배포가 지연되고 있습니다. 이 창을 닫고 잠시 후 Preview Site를 다시 눌러주세요.');
+        return false;
+      }
+    }
+    if (!previewWindow.closed) {
+      const previewUrl = new URL('index.html', window.location.href);
+      previewUrl.searchParams.set('__eml_admin_preview', String(Date.now()));
+      previewUrl.hash = 'home';
+      previewWindow.location.replace(previewUrl.href);
+    }
+    return true;
+  }
+
   function bindCommon() {
     content.querySelectorAll('[data-path]').forEach((field) => {
       field.addEventListener('input', () => {
@@ -660,8 +814,9 @@
     content.querySelectorAll('[data-save]').forEach((button) => button.addEventListener('click', async () => saveData(true)));
     content.querySelectorAll('[data-preview]').forEach((button) => button.addEventListener('click', async () => {
       const previewWindow = window.open('', '_blank');
+      if (previewWindow) showPreviewWait(previewWindow, '콘텐츠를 저장하고 있습니다.');
       const saved = await saveData(false);
-      if (saved && previewWindow) previewWindow.location.href = new URL('index.html#home', window.location.href).href;
+      if (saved && previewWindow) await openPreviewAfterDeployment(previewWindow);
       if (!saved && previewWindow) previewWindow.close();
       if (saved && !previewWindow) toast('저장되었지만 팝업이 차단되었습니다. 상단 Preview Site를 눌러주세요.');
     }));
@@ -671,9 +826,36 @@
     bindUploads();
     bindMultiUploads();
     bindImageActions();
+    bindPublishedImageFallbacks();
     const rawApply = content.querySelector('[data-apply-raw]');
     if (rawApply) rawApply.addEventListener('click', applyRaw);
     content.querySelectorAll('[data-export]').forEach((button) => button.addEventListener('click', exportData));
+  }
+
+  function bindPublishedImageFallbacks() {
+    content.querySelectorAll('img[data-published-src]').forEach((image) => {
+      image.addEventListener('error', () => {
+        const path = image.dataset.publishedSrc || '';
+        if (!path.startsWith('assets/uploads/') || image.dataset.deploymentFallback === 'true') return;
+        image.dataset.deploymentFallback = 'true';
+        pendingImagePreviews.set(path, 'assets/gallery-placeholder-2.svg');
+        image.src = 'assets/gallery-placeholder-2.svg';
+        const container = image.closest('.image-tile, .dropzone');
+        container?.classList.add('is-deploying');
+        if (container && !container.querySelector('[data-deployment-badge]')) {
+          const badge = document.createElement('span');
+          badge.className = 'deployment-badge';
+          badge.dataset.deploymentBadge = '';
+          badge.textContent = '배포 확인 중';
+          container.appendChild(badge);
+        }
+        if (!isDirty) {
+          setStorageState('Git 저장 완료 · 이미지 배포 확인 중', 'saving');
+          updateStorageNotice('이미지 파일은 GitHub에 저장되어 있습니다. Cloudflare에서 사용할 수 있게 되는 즉시 자동으로 표시합니다.');
+        }
+        startDeploymentWatch(data);
+      }, { once: true });
+    });
   }
 
   function bindUploads() {
@@ -941,6 +1123,7 @@
   }
 
   function showAuthPanel(panel) {
+    cancelDeploymentPreview();
     editorEpoch += 1;
     busyOwner = null;
     setBusy(false);
@@ -990,6 +1173,7 @@
   }
 
   function applyRemoteData(remote) {
+    cancelDeploymentPreview();
     const nextData = remote.content || window.EML_DATA || {};
     window.EMLDataSchema.assertValid(nextData);
     hasPublishedContent = Boolean(remote.content);
@@ -1110,6 +1294,16 @@
   });
   document.querySelector('[data-export]').addEventListener('click', exportData);
   topSave.addEventListener('click', async () => saveData(true));
+  document.querySelector('[data-preview-site]').addEventListener('click', async (event) => {
+    if (!deploymentInProgress) return;
+    event.preventDefault();
+    const previewWindow = window.open('', '_blank');
+    if (!previewWindow) {
+      toast('팝업이 차단되었습니다. 브라우저에서 이 사이트의 팝업을 허용해 주세요.');
+      return;
+    }
+    await openPreviewAfterDeployment(previewWindow);
+  });
   document.querySelector('[data-import-trigger]').addEventListener('click', () => {
     document.querySelector('[data-import]').click();
   });

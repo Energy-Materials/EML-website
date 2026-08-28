@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 
 import worker from '../worker.js';
 
 const origin = 'https://eml-website.em1939653.workers.dev';
+const wranglerConfig = await readFile(new URL('../wrangler.toml', import.meta.url), 'utf8');
+const staticHeaders = await readFile(new URL('../_headers', import.meta.url), 'utf8');
+assert.match(wranglerConfig, /run_worker_first\s*=\s*\[[^\]]*"\/assets\/uploads\/\*"[^\]]*\]/s);
+assert.match(staticHeaders, /\/assets\/uploads\/\*\s+Cache-Control:\s*no-store,\s*max-age=0/s);
+
 let assetRequests = 0;
 const env = {
   GITHUB_OWNER: 'Energy-Materials',
@@ -14,7 +20,17 @@ const env = {
   ASSETS: {
     async fetch(request) {
       assetRequests += 1;
-      return new Response(`asset:${new URL(request.url).pathname}`, { status: 200 });
+      const pathname = new URL(request.url).pathname;
+      if (pathname.endsWith('/pending.webp')) {
+        return new Response('missing', {
+          status: 404,
+          headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
+        });
+      }
+      return new Response(`asset:${pathname}`, {
+        status: 200,
+        headers: { 'Cache-Control': 'no-store, max-age=0' },
+      });
     },
   },
 };
@@ -29,6 +45,15 @@ assert.equal(asset.status, 200);
 assert.equal(await asset.text(), 'asset:/');
 assert.equal(assetRequests, 1);
 
+const publishedUpload = await request('/assets/uploads/2026-08-28/ready.webp');
+assert.equal(publishedUpload.status, 200);
+assert.equal(publishedUpload.headers.get('Cache-Control'), 'public, max-age=31536000, immutable');
+
+const pendingUpload = await request('/assets/uploads/2026-08-28/pending.webp');
+assert.equal(pendingUpload.status, 404);
+assert.equal(pendingUpload.headers.get('Cache-Control'), 'no-store, max-age=0');
+assert.equal(assetRequests, 3);
+
 const session = await request('/api/auth/session');
 assert.equal(session.status, 401);
 assert.match(session.headers.get('Content-Type') || '', /^application\/json/);
@@ -36,7 +61,7 @@ assert.equal(session.headers.get('Cache-Control'), 'no-store, max-age=0');
 assert.equal(session.headers.get('X-Content-Type-Options'), 'nosniff');
 assert.equal(session.headers.has('Access-Control-Allow-Origin'), false);
 assert.equal((await session.json()).code, 'auth_required');
-assert.equal(assetRequests, 1, 'API requests must not fall through to static assets');
+assert.equal(assetRequests, 3, 'API requests must not fall through to static assets');
 
 const invalidSessionMethod = await request('/api/auth/session', { method: 'POST' });
 assert.equal(invalidSessionMethod.status, 405);

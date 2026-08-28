@@ -132,6 +132,8 @@ GitHub App은 해당 저장소 하나에만 설치되고 `Contents: Read & write
 5. JSON, 결정적 `site-data.js`, 새 이미지 blob을 하나의 Git tree로 만듭니다.
 6. 한 개의 Git commit을 생성하고 `develop` ref를 `force: false`로 갱신합니다.
 
+이미지는 관리 화면이 `assets/uploads/YYYY-MM-DD/`에 자동으로 추가하므로 작업자가 Git 폴더에 직접 복사할 필요가 없습니다. GitHub 저장이 끝난 뒤 Cloudflare 자동 배포에는 보통 수십 초가 더 걸립니다. 이때 관리자 화면은 방금 선택한 미리보기와 `배포 중` 상태를 유지하고, 실제 이미지 URL이 준비되면 자동으로 전환합니다. `Save & Open Preview`도 새 이미지 배포 확인 후 홈페이지를 엽니다.
+
 다른 관리자가 먼저 저장했거나 게시 중 브랜치가 바뀌면 `409` 충돌로 중단됩니다. 현재 초안을 JSON으로 내려받고 최신 내용을 다시 불러온 뒤 병합합니다.
 
 원격 저장은 `develop`에 직접 commit하므로 GitHub ruleset에서 이를 허용해야 합니다. 조직 정책상 모든 변경에 PR이 필수라면 원격 저장을 사용하지 말고 앞의 로컬 브랜치·PR 방식을 사용합니다.
@@ -154,7 +156,7 @@ npm test
 npm run build
 ```
 
-이후 `dist/index.html`, `dist/admin.html`, `dist/_headers`가 존재하고 `dist/tools`, `dist/tests`, `dist/functions`, `dist/supabase-config.js`가 없는지 확인합니다. `worker.js`가 `functions/`의 API 모듈을 번들링하고, `wrangler.toml`의 `assets.run_worker_first`가 `/api/*` 요청만 Worker 코드로 보냅니다. 일반 홈페이지와 이미지는 정적 자산으로 직접 제공됩니다.
+이후 `dist/index.html`, `dist/admin.html`, `dist/_headers`가 존재하고 `dist/tools`, `dist/tests`, `dist/functions`, `dist/supabase-config.js`가 없는지 확인합니다. `worker.js`가 `functions/`의 API 모듈을 번들링하고, `wrangler.toml`의 `assets.run_worker_first`가 `/api/*`와 `/assets/uploads/*` 요청을 Worker 코드로 보냅니다. 업로드 이미지는 정상 응답만 장기 캐시하고, 아직 배포되지 않은 `404` 응답은 캐시하지 않습니다. 그 밖의 홈페이지 자산은 정적 자산으로 직접 제공됩니다.
 
 ### 로컬 UI 점검표
 
