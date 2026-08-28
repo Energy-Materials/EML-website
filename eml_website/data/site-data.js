@@ -45,12 +45,12 @@ window.EML_DATA = {
     {
       "body": "Award and conference news can be managed from the admin page.",
       "date": "2025.12.06",
-      "image": "assets/gallery-placeholder-1.svg",
+      "image": "assets/uploads/2026-08-28/image-c9GwSw6WMcKDZInNhJljhiq-.webp",
       "images": [
+        "assets/uploads/2026-08-28/image-c9GwSw6WMcKDZInNhJljhiq-.webp",
         "assets/gallery-placeholder-1.svg",
         "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg",
-        "assets/uploads/2026-08-28/image-QKneGpSLaZkW6E_bEdEKCfqo.webp"
+        "assets/gallery-placeholder-3.svg"
       ],
       "summary": "Best Oral Presentation Award 수상",
       "title": "ISChE 2025"
