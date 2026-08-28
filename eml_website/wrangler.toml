@@ -1,6 +1,13 @@
-name = "energy-materials-lab"
-pages_build_output_dir = "dist"
-compatibility_date = "2026-08-27"
+name = "eml-website"
+main = "worker.js"
+compatibility_date = "2026-08-28"
+keep_vars = true
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = ["/api", "/api/*"]
+not_found_handling = "none"
 
 [vars]
 GITHUB_OWNER = "Energy-Materials"
@@ -8,3 +15,4 @@ GITHUB_REPO = "EML-website"
 GITHUB_BRANCH = "develop"
 GITHUB_CONTENT_PATH = "eml_website/data/site-data.json"
 GITHUB_REPOSITORY_ID = "1348328666"
+PUBLIC_ORIGIN = "https://eml-website.em1939653.workers.dev"

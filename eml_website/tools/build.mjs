@@ -16,7 +16,7 @@ const REQUIRED_PUBLIC_ENTRIES = [
   'data/site-data.js',
   'assets'
 ];
-const OPTIONAL_PUBLIC_ENTRIES = ['_headers', '_redirects', '_routes.json'];
+const OPTIONAL_PUBLIC_ENTRIES = ['_headers', '_redirects'];
 const FORBIDDEN_OUTPUT_NAMES = new Set([
   'admin-local.cmd',
   'package.json',

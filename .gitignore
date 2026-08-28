@@ -3,7 +3,7 @@
 .vscode/
 *.iml
 
-# Admin UI, Cloudflare Functions, content data, assets, and operations docs are intentionally tracked for handoff.
+# Admin UI, Cloudflare Worker API, content data, assets, and operations docs are intentionally tracked for handoff.
 
 # Local browser/UI test output (never production source)
 .test-artifacts/

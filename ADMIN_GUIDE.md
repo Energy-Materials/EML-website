@@ -19,7 +19,7 @@
 - `eml_website/data/site-data.js`: 홈페이지가 읽는 결정적 생성 파일
 - `eml_website/assets/uploads/YYYY-MM-DD/`: 관리 화면에서 추가한 이미지
 - `eml_website/admin.html`, `admin.js`, `admin.css`, `local-content-store.js`: 관리자 화면 코드
-- `eml_website/functions/`: 배포 관리자용 GitHub 인증·게시 API
+- `eml_website/worker.js`, `functions/`: 배포 관리자용 GitHub 인증·게시 Worker API
 
 관리자 코드와 콘텐츠 파일은 다른 담당자에게 인계되어야 하므로 Git에서 제외하면 안 됩니다. 비밀번호, GitHub token, `SESSION_SECRET`, `.dev.vars`는 반대로 절대 commit하지 않습니다.
 
@@ -90,7 +90,7 @@ npm run admin
 ```powershell
 npm run check
 npm run admin -- --check
-node tests/pages-functions.test.mjs
+npm test
 npm run build
 git status --short
 git diff --check
@@ -108,7 +108,7 @@ git commit -m "content: update lab website"
 git push --set-upstream origin content/2026-08-27-update
 ```
 
-관리 화면 코드도 수정한 작업이라면 해당 파일을 별도로 `git add`합니다. GitHub에서 base 브랜치를 `develop`으로 하는 Pull Request를 만들고, 검증 workflow가 통과한 뒤 검토·병합합니다. `develop` 병합 후 Cloudflare Pages가 자동으로 새 버전을 배포합니다.
+관리 화면 코드도 수정한 작업이라면 해당 파일을 별도로 `git add`합니다. GitHub에서 base 브랜치를 `develop`으로 하는 Pull Request를 만들고, 검증 workflow가 통과한 뒤 검토·병합합니다. `develop` 병합 후 Cloudflare Workers Builds가 자동으로 새 버전을 배포합니다.
 
 ## 2. 배포된 관리자 페이지 사용
 
@@ -150,11 +150,11 @@ GitHub App은 해당 저장소 하나에만 설치되고 `Contents: Read & write
 cd C:\jun\eml_website
 npm run check
 npm run admin -- --check
-node tests/pages-functions.test.mjs
+npm test
 npm run build
 ```
 
-이후 `dist/index.html`, `dist/admin.html`, `dist/_headers`, `dist/_routes.json`이 존재하고 `dist/tools`, `dist/tests`, `dist/functions`, `dist/supabase-config.js`가 없는지 확인합니다. `functions/`는 Cloudflare가 별도로 번들링하며 정적 `dist/`에 노출되지 않습니다. `_routes.json`은 `/api/*` 요청만 Functions로 보내 공개 정적 페이지가 Functions 무료 quota를 사용하지 않게 합니다.
+이후 `dist/index.html`, `dist/admin.html`, `dist/_headers`가 존재하고 `dist/tools`, `dist/tests`, `dist/functions`, `dist/supabase-config.js`가 없는지 확인합니다. `worker.js`가 `functions/`의 API 모듈을 번들링하고, `wrangler.toml`의 `assets.run_worker_first`가 `/api/*` 요청만 Worker 코드로 보냅니다. 일반 홈페이지와 이미지는 정적 자산으로 직접 제공됩니다.
 
 ### 로컬 UI 점검표
 
@@ -193,7 +193,7 @@ npm run build
 | `413 images_too_large` | 한 저장의 신규 이미지 합계가 8MB 초과 | 여러 번에 나누어 게시합니다. |
 | `422 invalid_content` | 필수값·배열·논문 번호 등 데이터 오류 | 화면에 표시된 필드를 수정합니다. |
 | `422 missing_assets` | JSON이 저장소에 없는 이미지 참조 | 이미지를 다시 선택하거나 올바른 기존 경로를 사용합니다. |
-| Cloudflare `1102` / `Worker exceeded resource limits` | 무료 Functions의 요청당 CPU 한도를 초과 | 한 번에 저장하는 이미지를 더 작게·적게 나누거나 로컬 브랜치·PR 방식으로 게시합니다. 반복되면 Cloudflare Functions Metrics를 확인합니다. |
+| Cloudflare `1102` / `Worker exceeded resource limits` | 무료 Worker의 요청당 CPU 한도를 초과 | 한 번에 저장하는 이미지를 더 작게·적게 나누거나 로컬 브랜치·PR 방식으로 게시합니다. 반복되면 Cloudflare Worker Metrics를 확인합니다. |
 | 로컬 8767 포트 사용 중 | 이전 관리자 서버가 남아 있음 | 기존 터미널에서 `Ctrl+C` 후 다시 실행합니다. |
 | Cloudflare build 실패 | 검증·생성 파일 불일치 | build log 확인 후 로컬에서 `npm run check`, `npm run build`를 재현합니다. |
 
