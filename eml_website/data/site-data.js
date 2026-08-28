@@ -1,7 +1,7 @@
 window.EML_DATA = {
   "alumni": [
     {
-      "date": "2025.02",
+      "date": "2025.03",
       "name": "전민혁",
       "next": "원아테크"
     },
