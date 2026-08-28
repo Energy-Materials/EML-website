@@ -49,7 +49,8 @@ window.EML_DATA = {
       "images": [
         "assets/gallery-placeholder-1.svg",
         "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg"
+        "assets/gallery-placeholder-3.svg",
+        "assets/uploads/2026-08-28/image-Z-VYmWX-1GhmbDzYOGiKrYp9.webp"
       ],
       "summary": "Best Oral Presentation Award 수상",
       "title": "ISChE 2025"
