@@ -41,12 +41,31 @@ async function routeApi(request, env, executionContext) {
   );
 }
 
+async function serveUploadedAsset(request, assets) {
+  const response = await assets.fetch(request);
+  const headers = new Headers(response.headers);
+  headers.set(
+    'Cache-Control',
+    response.status >= 200 && response.status < 400
+      ? 'public, max-age=31536000, immutable'
+      : 'no-store, max-age=0',
+  );
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request, env, executionContext) {
     try {
       const pathname = new URL(request.url).pathname;
       if (pathname === '/api' || pathname.startsWith('/api/')) {
         return await routeApi(request, env, executionContext);
+      }
+      if (pathname.startsWith('/assets/uploads/')) {
+        return await serveUploadedAsset(request, env.ASSETS);
       }
       return env.ASSETS.fetch(request);
     } catch (error) {

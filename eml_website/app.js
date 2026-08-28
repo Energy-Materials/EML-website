@@ -43,7 +43,11 @@
     if (/^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(raw)) return raw;
     try {
       const resolved = new URL(raw, window.location.href);
-      return ['http:', 'https:'].includes(resolved.protocol) ? raw : (fallback || '');
+      if (!['http:', 'https:'].includes(resolved.protocol)) return fallback || '';
+      if (/^assets\/uploads\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+\.(?:jpe?g|png|webp|gif)$/i.test(raw)) {
+        return `${raw}?__eml_asset=1`;
+      }
+      return raw;
     } catch (error) {
       return fallback || '';
     }
@@ -660,7 +664,7 @@
     if (lightboxState.imageIndex < 0) lightboxState.imageIndex = images.length - 1;
     if (lightboxState.imageIndex >= images.length) lightboxState.imageIndex = 0;
     const img = lightbox.querySelector('[data-lightbox-image]');
-    img.src = images[lightboxState.imageIndex];
+    img.src = asset(images[lightboxState.imageIndex], 'assets/gallery-placeholder-1.svg');
     img.alt = item.title || 'Gallery image';
     lightbox.querySelector('[data-lightbox-count]').textContent = `${lightboxState.imageIndex + 1} / ${images.length}`;
     lightbox.querySelector('[data-lightbox-title]').textContent = item.title || '';

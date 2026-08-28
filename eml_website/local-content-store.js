@@ -23,6 +23,8 @@
   const maxOptimizedSelectionBytes = 8 * megabyte;
   const maxRemoteSaveRequestBytes = 12 * megabyte;
   const optimizationConcurrency = 2;
+  const embeddedImageDataPattern = /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,/i;
+  const uploadedImagePathPattern = /^assets\/uploads\/\d{4}-\d{2}-\d{2}\/[A-Za-z0-9._-]+\.(?:jpe?g|png|webp|gif)$/i;
   const optimizationQueue = [];
   const preparedDataUrls = new Set();
   let activeOptimizations = 0;
@@ -479,6 +481,140 @@
     return uploadPreparedImageLocally(prepared);
   }
 
+  function collectPendingImagePreviews(draft, published) {
+    const previews = new Map();
+
+    function visit(before, after) {
+      if (typeof before === 'string' && typeof after === 'string') {
+        if (embeddedImageDataPattern.test(before) && uploadedImagePathPattern.test(after)) {
+          previews.set(after, before);
+        }
+        return;
+      }
+      if (Array.isArray(before) && Array.isArray(after)) {
+        const length = Math.min(before.length, after.length);
+        for (let index = 0; index < length; index += 1) visit(before[index], after[index]);
+        return;
+      }
+      if (!before || !after || typeof before !== 'object' || typeof after !== 'object') return;
+      for (const key of Object.keys(before)) {
+        if (Object.prototype.hasOwnProperty.call(after, key)) visit(before[key], after[key]);
+      }
+    }
+
+    visit(draft, published);
+    return Array.from(previews, ([path, preview]) => ({ path, preview }));
+  }
+
+  function delay(milliseconds, signal) {
+    if (signal?.aborted) return Promise.resolve(false);
+    return new Promise((resolve) => {
+      const timeout = global.setTimeout(() => {
+        signal?.removeEventListener('abort', onAbort);
+        resolve(true);
+      }, milliseconds);
+      const onAbort = () => {
+        global.clearTimeout(timeout);
+        resolve(false);
+      };
+      signal?.addEventListener('abort', onAbort, { once: true });
+    });
+  }
+
+  async function uploadedImageIsReady(path, signal) {
+    if (signal?.aborted) return false;
+    try {
+      const url = new global.URL(path, global.location.href);
+      url.searchParams.set('__eml_deploy_check', String(Date.now()));
+      const response = await global.fetch(url, {
+        method: 'HEAD',
+        headers: { Accept: 'image/*' },
+        cache: 'no-store',
+        credentials: 'same-origin',
+        signal,
+      });
+      const contentType = response.headers.get('Content-Type') || '';
+      return response.ok && (!contentType || contentType.toLowerCase().startsWith('image/'));
+    } catch {
+      return false;
+    }
+  }
+
+  async function waitForUploadedImages(paths, options = {}) {
+    const uniquePaths = [...new Set((paths || []).filter((path) => uploadedImagePathPattern.test(String(path))))];
+    if (!uniquePaths.length || isLocalhost()) return { ready: true, paths: uniquePaths };
+
+    const requestedTimeout = Number(options.timeoutMs);
+    const requestedInterval = Number(options.intervalMs);
+    const timeoutMs = Number.isFinite(requestedTimeout) ? Math.max(0, Math.min(requestedTimeout, 180000)) : 120000;
+    const intervalMs = Number.isFinite(requestedInterval) ? Math.max(0, Math.min(requestedInterval, 10000)) : 2000;
+    const deadline = Date.now() + timeoutMs;
+    const sentinel = uniquePaths.at(-1);
+    const signal = options.signal;
+
+    while (true) {
+      if (signal?.aborted) return { ready: false, aborted: true, paths: uniquePaths };
+      if (await uploadedImageIsReady(sentinel, signal)) {
+        const checks = await Promise.all(uniquePaths.map((path) => uploadedImageIsReady(path, signal)));
+        if (checks.every(Boolean)) return { ready: true, paths: uniquePaths };
+      }
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) return { ready: false, paths: uniquePaths };
+      if (!await delay(Math.min(intervalMs, remaining), signal)) {
+        return { ready: false, aborted: true, paths: uniquePaths };
+      }
+    }
+  }
+
+  async function publishedContentIsReady(expectedJavascript, signal) {
+    if (signal?.aborted) return false;
+    try {
+      const url = new global.URL('/data/site-data.js', global.location.href);
+      url.searchParams.set('__eml_deploy_check', String(Date.now()));
+      const response = await global.fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'text/javascript, application/javascript' },
+        cache: 'no-store',
+        credentials: 'same-origin',
+        signal,
+      });
+      if (!response.ok) return false;
+      return (await response.text()).replaceAll('\r\n', '\n') === expectedJavascript;
+    } catch {
+      return false;
+    }
+  }
+
+  async function waitForPublishedDeployment(content, paths = [], options = {}) {
+    const uniquePaths = [...new Set((paths || []).filter((path) => uploadedImagePathPattern.test(String(path))))];
+    if (isLocalhost()) return { ready: true, paths: uniquePaths };
+    const expectedJavascript = `window.EML_DATA = ${JSON.stringify(content, null, 2)};\n`;
+    const requestedTimeout = Number(options.timeoutMs);
+    const requestedInterval = Number(options.intervalMs);
+    const timeoutMs = Number.isFinite(requestedTimeout) ? Math.max(0, Math.min(requestedTimeout, 180000)) : 120000;
+    const intervalMs = Number.isFinite(requestedInterval) ? Math.max(0, Math.min(requestedInterval, 10000)) : 2000;
+    const deadline = Date.now() + timeoutMs;
+    const signal = options.signal;
+
+    while (true) {
+      if (signal?.aborted) return { ready: false, aborted: true, paths: uniquePaths };
+      if (await publishedContentIsReady(expectedJavascript, signal)) {
+        if (!uniquePaths.length) return { ready: true, paths: uniquePaths };
+        const imageResult = await waitForUploadedImages(uniquePaths, {
+          timeoutMs: Math.max(0, deadline - Date.now()),
+          intervalMs,
+          signal,
+        });
+        return imageResult;
+      }
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) return { ready: false, paths: uniquePaths };
+      if (!await delay(Math.min(intervalMs, remaining), signal)) {
+        return { ready: false, aborted: true, paths: uniquePaths };
+      }
+    }
+  }
+
   async function getSession() {
     if (isLocalhost()) {
       return { authenticated: true, user: { login: 'Local Git Editor' }, mode: 'local' };
@@ -539,6 +675,9 @@
     uploadImage,
     uploadImages,
     uploadDataUrl,
+    collectPendingImagePreviews,
+    waitForUploadedImages,
+    waitForPublishedDeployment,
     imageLimits: Object.freeze({
       maxEdge: maxImageEdge,
       maxFileBytes: maxOptimizedImageBytes,

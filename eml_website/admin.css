@@ -234,12 +234,15 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:pl
 
 .upload-field { display: grid; gap: 8px; }
 .upload-label { font-weight: 850; color: #274056; font-size: 13px; }
-.dropzone { border: 1px dashed rgba(95,145,191,.55); border-radius: 20px; min-height: 156px; padding: 14px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: center; background: linear-gradient(135deg, rgba(234,246,255,.72), #fff); transition: border-color 180ms var(--ease), background 180ms var(--ease), transform 180ms var(--ease); }
+.dropzone { position: relative; border: 1px dashed rgba(95,145,191,.55); border-radius: 20px; min-height: 156px; padding: 14px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: center; background: linear-gradient(135deg, rgba(234,246,255,.72), #fff); transition: border-color 180ms var(--ease), background 180ms var(--ease), transform 180ms var(--ease); }
 .dropzone.is-dragover { border-color: #1d65c1; background: rgba(234,246,255,.95); transform: translateY(-2px); }
+.dropzone.is-deploying,
+.image-tile.is-deploying { border-color: rgba(31, 132, 188, .62); box-shadow: 0 0 0 4px rgba(95,145,191,.1); }
 .dropzone img { width: 150px; height: 112px; object-fit: contain; border-radius: 16px; background: #071522; border: 1px solid var(--line); }
 .dropzone-text strong { display: block; font-size: 14px; }
 .dropzone-text { min-width: 0; }
 .dropzone-text p { margin: 4px 0 12px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.dropzone-text .deployment-note { color: #17608f; font-weight: 780; }
 .dropzone .path-input { margin-top: 10px; }
 .preview-wide img { width: 180px; height: 112px; object-fit: cover; }
 .image-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
@@ -247,6 +250,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:pl
 .image-tile[draggable="true"] { cursor: grab; }
 .image-tile.is-dragging { opacity: .55; transform: scale(.98); }
 .image-tile img { width: 100%; aspect-ratio: 1.4; object-fit: cover; background: #071522; }
+.deployment-badge { position: absolute; top: 10px; right: 10px; z-index: 2; display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 5px 10px; border: 1px solid rgba(255,255,255,.48); border-radius: 999px; color: #fff; background: rgba(10,78,120,.9); box-shadow: 0 8px 22px rgba(7,21,34,.2); backdrop-filter: blur(8px); font-size: 11px; font-weight: 850; animation: deploymentPulse 1.8s ease-in-out infinite; }
 .image-tile .tile-actions { display: flex; gap: 6px; margin-top: auto; padding: 8px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
 .image-tile button { flex: 1 1 70px; min-height: 44px; padding: 8px 9px; border-radius: 14px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-size: 11px; font-weight: 800; line-height: 1.2; white-space: normal; transition: transform 180ms var(--ease), background 180ms var(--ease), color 180ms var(--ease), border-color 180ms var(--ease), box-shadow 180ms var(--ease), opacity 180ms var(--ease); }
 .raw-textarea { min-height: 560px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; line-height: 1.5; }
@@ -256,6 +260,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:pl
 .hero-preview h3 { margin: 0; font-size: clamp(26px, 5vw, 34px); line-height: 1.1; letter-spacing: -.06em; }
 .toast { position: fixed; right: 24px; bottom: 24px; z-index: 100; max-width: calc(100% - 48px); background: #071522; color: #fff; border-radius: 18px; padding: 13px 18px; box-shadow: var(--shadow); font-weight: 850; line-height: 1.35; overflow-wrap: anywhere; animation: toastIn 260ms var(--ease) both; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes deploymentPulse { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }
 
 @media (hover: hover) and (pointer: fine) {
   .top-actions a:hover,
