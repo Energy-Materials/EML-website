@@ -45,9 +45,8 @@ window.EML_DATA = {
     {
       "body": "Award and conference news can be managed from the admin page.",
       "date": "2025.12.06",
-      "image": "assets/uploads/2026-08-28/image-c9GwSw6WMcKDZInNhJljhiq-.webp",
+      "image": "assets/gallery-placeholder-1.svg",
       "images": [
-        "assets/uploads/2026-08-28/image-c9GwSw6WMcKDZInNhJljhiq-.webp",
         "assets/gallery-placeholder-1.svg",
         "assets/gallery-placeholder-2.svg",
         "assets/gallery-placeholder-3.svg"
@@ -158,7 +157,7 @@ window.EML_DATA = {
     "ctaSecondaryRoute": "contact",
     "eyebrow": "Kongju National University",
     "intro": "Welcome to Energy Materials Laboratory (EML) at Kongju National University. Our research group explores new electrode materials and electrochemical interfaces to overcome the energy limitations of today's batteries and to provide solutions with improved efficiency and stability.",
-    "subtitleKr": "공주대학교 에너지 재료 연구실",
+    "subtitleKr": "공주대학교 에너지 재료 연구실입니다",
     "tagline": "Energy · Materials · Innovation",
     "titleLines": [
       "Energy Materials",
