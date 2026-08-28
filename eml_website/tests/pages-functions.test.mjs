@@ -22,7 +22,7 @@ const env = {
   GITHUB_REPO: 'EML-website',
   GITHUB_BRANCH: 'develop',
   GITHUB_CONTENT_PATH: 'eml_website/data/site-data.json',
-  PUBLIC_ORIGIN: 'https://energy-materials-lab.pages.dev',
+  PUBLIC_ORIGIN: 'https://eml-website.em1939653.workers.dev',
 };
 const shas = {
   head: 'a'.repeat(40),
@@ -138,12 +138,12 @@ assert.equal(authorization.searchParams.get('code_challenge_method'), 'S256');
 const autoOriginEnv = { ...env };
 delete autoOriginEnv.PUBLIC_ORIGIN;
 const autoOriginLogin = await login({
-  request: new Request('https://knu-energy-materials.pages.dev/api/auth/login'),
+  request: new Request('https://preview-eml.workers.dev/api/auth/login'),
   env: autoOriginEnv,
 });
 assert.equal(
   new URL(autoOriginLogin.headers.get('Location')).searchParams.get('redirect_uri'),
-  'https://knu-energy-materials.pages.dev/api/auth/callback',
+  'https://preview-eml.workers.dev/api/auth/callback',
 );
 const oauthCookieHeader = loginResponse.headers.getSetCookie().find((value) => value.startsWith(`${sessionModule.OAUTH_COOKIE}=`));
 assert.ok(oauthCookieHeader?.includes('HttpOnly'));
@@ -357,4 +357,4 @@ const logoutResponse = await logout({
 assert.equal(logoutResponse.status, 200);
 assert.ok(logoutResponse.headers.getSetCookie().some((value) => value.startsWith(`${sessionModule.SESSION_COOKIE}=`) && value.includes('Max-Age=0')));
 
-console.log('Pages Functions security and Git publishing mocks passed.');
+console.log('Worker API security and Git publishing mocks passed.');

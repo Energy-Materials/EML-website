@@ -1,4 +1,4 @@
-name: Validate EML website for Cloudflare Pages
+name: Validate EML website for Cloudflare Workers
 
 on:
   push:
@@ -44,13 +44,14 @@ jobs:
       - name: Validate local admin server contract
         run: npm run admin -- --check
 
-      - name: Validate Pages Functions syntax
+      - name: Validate Worker and API module syntax
         shell: bash
         run: |
+          node --check worker.js
           find functions -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Test Pages Functions security and Git publishing contract
-        run: node tests/pages-functions.test.mjs
+      - name: Test Worker routing, security, and Git publishing contracts
+        run: npm test
 
       - name: Build deterministic Cloudflare output
         run: npm run build
@@ -63,12 +64,13 @@ jobs:
           test -f dist/local-content-store.js
           test -f dist/data/site-data.js
           test -f dist/_headers
-          test -f dist/_routes.json
           grep -F "img-src 'self' data: blob:" dist/_headers
           grep -F "X-Robots-Tag: noindex, nofollow, noarchive" dist/_headers
-          grep -F '"include": ["/api/*"]' dist/_routes.json
           test ! -e dist/tools
           test ! -e dist/tests
           test ! -e dist/functions
           test ! -e dist/supabase-config.js
           test ! -e dist/cloud-data.js
+
+      - name: Compile Worker and static-assets configuration
+        run: npx --yes wrangler@4.127.0 deploy --dry-run

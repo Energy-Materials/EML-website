@@ -1068,7 +1068,7 @@
         showLogin();
         return;
       }
-      showAuthError(`${error.message} 로컬 관리 서버 또는 Cloudflare Functions 설정을 확인하세요.`);
+      showAuthError(`${error.message} 로컬 관리 서버 또는 Cloudflare Worker API 설정을 확인하세요.`);
     }
   }
 
