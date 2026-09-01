@@ -388,7 +388,69 @@
     `;
   }
 
+  function publicationYear(value) {
+    const normalized = (typeof value === 'string' || typeof value === 'number')
+      ? String(value).trim()
+      : '';
+    return normalized || 'Unspecified';
+  }
+
+  function comparePublicationYears(a, b) {
+    const aIsYear = /^\d{4}$/.test(a);
+    const bIsYear = /^\d{4}$/.test(b);
+    if (aIsYear && bIsYear) return Number(b) - Number(a);
+    if (aIsYear) return -1;
+    if (bIsYear) return 1;
+    return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
+  }
+
+  function publicationYearGroups(list) {
+    const groups = new Map();
+    (Array.isArray(list) ? list : []).forEach((item) => {
+      const year = publicationYear(item?.year);
+      if (!groups.has(year)) groups.set(year, []);
+      groups.get(year).push(item);
+    });
+    return Array.from(groups, ([year, items]) => ({ year, items }))
+      .sort((a, b) => comparePublicationYears(a.year, b.year));
+  }
+
+  function publicationYears(list) {
+    return publicationYearGroups(list).map((group) => group.year);
+  }
+
+  function filterPublicationItems(list, selectedYear = 'all', query = '') {
+    const term = String(query || '').trim().toLocaleLowerCase();
+    return (Array.isArray(list) ? list : []).filter((item) => {
+      if (selectedYear !== 'all' && publicationYear(item?.year) !== selectedYear) return false;
+      if (!term) return true;
+      return String(JSON.stringify(item) || '').toLocaleLowerCase().includes(term);
+    });
+  }
+
+  function renderPublicationYearFilters(list, selectedYear = 'all') {
+    const years = publicationYears(list);
+    const activeYear = selectedYear === 'all' || years.includes(selectedYear) ? selectedYear : 'all';
+    return ['all', ...years].map((year) => {
+      const active = year === activeYear;
+      const label = year === 'all' ? 'All' : year;
+      return `<button class="publication-year-filter${active ? ' is-active' : ''}" type="button" data-publication-year="${escapeAttr(year)}" aria-pressed="${active}">${escapeHTML(label)}</button>`;
+    }).join('');
+  }
+
+  function publicationYearHeadingId(type, year, index) {
+    const slug = String(year).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'unspecified';
+    return `${type}-year-${slug}-${index}`;
+  }
+
+  function patentDisplayNumber(patent, allPatents) {
+    const source = Array.isArray(allPatents) ? allPatents : [];
+    const originalIndex = source.indexOf(patent);
+    return originalIndex >= 0 ? source.length - originalIndex : '';
+  }
+
   function renderPublications() {
+    const papers = data.publications || [];
     return `
       ${renderSubHero('Publications', 'Journal articles and patents are organized for easy update from admin data.', 'publications')}
       <div class="sub-tabs" role="tablist" aria-label="Publication tabs">
@@ -397,10 +459,17 @@
       </div>
       <section class="section compact">
         <div class="container" id="publications-tabpanel" role="tabpanel" aria-labelledby="publications-tab-papers" data-publication-panel>
-          <div class="publication-controls reveal">
-            <input class="search-input" type="search" aria-label="Search publications" placeholder="Search title, author, journal..." data-publication-search />
+          <div class="publication-filter-block reveal">
+            <p class="publication-filter-label">Filter by year</p>
+            <div class="publication-year-filters" role="group" aria-label="Filter Papers by year" data-publication-year-filters>
+              ${renderPublicationYearFilters(papers)}
+            </div>
           </div>
-          <div data-publication-body aria-live="polite">${renderPaperList(data.publications || [])}</div>
+          <div class="publication-controls reveal">
+            <input class="search-input" type="search" aria-label="Search Papers" placeholder="Search title, author, journal..." autocomplete="off" data-publication-search />
+          </div>
+          <p class="publication-result-summary" aria-live="polite" aria-atomic="true" data-publication-summary>${papers.length} papers · All years</p>
+          <div data-publication-body>${renderPaperList(papers)}</div>
         </div>
       </section>
     `;
@@ -408,41 +477,65 @@
 
   function renderPaperList(list) {
     if (!list.length) return '<div class="empty-state" role="status"><strong>표시할 논문이 없습니다.</strong><p>검색어를 바꾸거나 관리자에서 논문을 추가해 주세요.</p></div>';
-    return `<div class="publication-stack">
-      ${list.map((pub) => {
-        const externalLink = renderPublicationExternalLink(pub, '논문');
-        return `
-        <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
-          <div class="year-badge"><small>#${escapeHTML(pub.number ?? '')}</small>${escapeHTML(pub.year)}</div>
-          <div class="publication-card-content">
-            <h3>${escapeHTML(pub.title)}</h3>
-            <p>${escapeHTML(pub.authors)}</p>
-            <p><strong>${escapeHTML(pub.journal)}</strong></p>
-            ${pub.note ? `<span class="note">${escapeHTML(pub.note)}</span>` : ''}
+    return `<div class="publication-year-sections">
+      ${publicationYearGroups(list).map((group, groupIndex) => {
+        const headingId = publicationYearHeadingId('papers', group.year, groupIndex);
+        return `<section class="publication-year-section" aria-labelledby="${escapeAttr(headingId)}">
+          <div class="publication-year-heading">
+            <h2 id="${escapeAttr(headingId)}">${escapeHTML(group.year)}</h2>
+            <span>${group.items.length} ${group.items.length === 1 ? 'paper' : 'papers'}</span>
           </div>
-          ${externalLink}
-        </article>
-      `;
+          <div class="publication-stack">
+            ${group.items.map((pub) => {
+              const externalLink = renderPublicationExternalLink(pub, '논문');
+              return `
+              <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
+                <div class="year-badge"><small>#${escapeHTML(pub.number ?? '')}</small>${escapeHTML(publicationYear(pub.year))}</div>
+                <div class="publication-card-content">
+                  <h3>${escapeHTML(pub.title)}</h3>
+                  <p>${escapeHTML(pub.authors)}</p>
+                  <p><strong>${escapeHTML(pub.journal)}</strong></p>
+                  ${pub.note ? `<span class="note">${escapeHTML(pub.note)}</span>` : ''}
+                </div>
+                ${externalLink}
+              </article>
+            `;
+            }).join('')}
+          </div>
+        </section>`;
       }).join('')}
     </div>`;
   }
 
-  function renderPatentList() {
-    if (!(data.patents || []).length) return '<div class="empty-state" role="status"><strong>표시할 특허가 없습니다.</strong><p>관리자에서 특허를 추가하면 이곳에 표시됩니다.</p></div>';
-    return `<div class="publication-stack">
-      ${(data.patents || []).map((patent, index) => {
-        const externalLink = renderPublicationExternalLink(patent, '특허');
-        return `
-        <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
-          <div class="year-badge"><small>#${(data.patents || []).length - index}</small>${escapeHTML(patent.year || '')}</div>
-          <div class="publication-card-content">
-            <h3>${escapeHTML(patent.title)}</h3>
-            <p>${escapeHTML(patent.inventors)}</p>
-            <p><strong>${escapeHTML(patent.number)}</strong></p>
+  function renderPatentList(list = data.patents || []) {
+    if (!list.length) return '<div class="empty-state" role="status"><strong>표시할 특허가 없습니다.</strong><p>검색어를 바꾸거나 관리자에서 특허를 추가해 주세요.</p></div>';
+    const allPatents = data.patents || [];
+    return `<div class="publication-year-sections">
+      ${publicationYearGroups(list).map((group, groupIndex) => {
+        const headingId = publicationYearHeadingId('patents', group.year, groupIndex);
+        return `<section class="publication-year-section" aria-labelledby="${escapeAttr(headingId)}">
+          <div class="publication-year-heading">
+            <h2 id="${escapeAttr(headingId)}">${escapeHTML(group.year)}</h2>
+            <span>${group.items.length} ${group.items.length === 1 ? 'patent' : 'patents'}</span>
           </div>
-          ${externalLink}
-        </article>
-      `;
+          <div class="publication-stack">
+            ${group.items.map((patent) => {
+              const displayNumber = patentDisplayNumber(patent, allPatents);
+              const externalLink = renderPublicationExternalLink(patent, '특허');
+              return `
+              <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
+                <div class="year-badge"><small>${displayNumber ? `#${displayNumber}` : ''}</small>${escapeHTML(publicationYear(patent.year))}</div>
+                <div class="publication-card-content">
+                  <h3>${escapeHTML(patent.title)}</h3>
+                  <p>${escapeHTML(patent.inventors)}</p>
+                  <p><strong>${escapeHTML(patent.number)}</strong></p>
+                </div>
+                ${externalLink}
+              </article>
+            `;
+            }).join('')}
+          </div>
+        </section>`;
       }).join('')}
     </div>`;
   }
@@ -562,26 +655,63 @@
     if (route === 'publications') {
       const body = app.querySelector('[data-publication-body]');
       const panel = app.querySelector('[data-publication-panel]');
-      const controls = app.querySelector('.publication-controls');
+      const yearFilters = app.querySelector('[data-publication-year-filters]');
+      const summary = app.querySelector('[data-publication-summary]');
       let active = 'papers';
       const search = app.querySelector('[data-publication-search]');
-      function updateList() {
-        const term = (search.value || '').toLowerCase();
-        if (active === 'patents') {
-          body.innerHTML = renderPatentList();
-        } else {
-          const filtered = (data.publications || []).filter((pub) => JSON.stringify(pub).toLowerCase().includes(term));
-          body.innerHTML = renderPaperList(filtered);
-        }
-        initReveal();
+      const state = {
+        papers: { year: 'all', query: '' },
+        patents: { year: 'all', query: '' },
+      };
+      function activeItems() {
+        return active === 'patents' ? (data.patents || []) : (data.publications || []);
       }
-      search.addEventListener('input', updateList);
+      function updateYearButtons() {
+        const items = activeItems();
+        const years = publicationYears(items);
+        if (state[active].year !== 'all' && !years.includes(state[active].year)) state[active].year = 'all';
+        yearFilters.innerHTML = renderPublicationYearFilters(items, state[active].year);
+        yearFilters.setAttribute('aria-label', `Filter ${active === 'papers' ? 'Papers' : 'Patents'} by year`);
+        yearFilters.querySelectorAll('[data-publication-year]').forEach((button) => {
+          button.addEventListener('click', () => {
+            state[active].year = button.dataset.publicationYear;
+            yearFilters.querySelectorAll('[data-publication-year]').forEach((item) => {
+              const selected = item === button;
+              item.classList.toggle('is-active', selected);
+              item.setAttribute('aria-pressed', String(selected));
+            });
+            updateList();
+          });
+        });
+      }
+      function updateList() {
+        const filtered = filterPublicationItems(activeItems(), state[active].year, state[active].query);
+        body.innerHTML = active === 'patents' ? renderPatentList(filtered) : renderPaperList(filtered);
+        const label = active === 'papers'
+          ? (filtered.length === 1 ? 'paper' : 'papers')
+          : (filtered.length === 1 ? 'patent' : 'patents');
+        summary.textContent = `${filtered.length} ${label} · ${state[active].year === 'all' ? 'All years' : state[active].year}`;
+        body.querySelectorAll('.reveal').forEach((item) => item.classList.add('in'));
+      }
+      function updateControls() {
+        search.value = state[active].query;
+        search.setAttribute('aria-label', `Search ${active === 'papers' ? 'Papers' : 'Patents'}`);
+        search.placeholder = active === 'papers'
+          ? 'Search title, author, journal...'
+          : 'Search title, inventor, patent number...';
+        updateYearButtons();
+        updateList();
+      }
+      search.addEventListener('input', () => {
+        state[active].query = search.value;
+        updateList();
+      });
       bindTabList(app.querySelector('[role="tablist"]'), (tab) => {
         active = tab.dataset.pubTab;
         panel.setAttribute('aria-labelledby', tab.id);
-        controls.hidden = active !== 'papers';
-        updateList();
+        updateControls();
       });
+      updateYearButtons();
     }
 
     app.querySelectorAll('[data-gallery-index]').forEach((button) => {

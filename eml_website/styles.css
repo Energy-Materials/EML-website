@@ -346,8 +346,22 @@ select:focus-visible,
 .alumni-card h3 { margin: 8px 0 8px; font-size: 22px; letter-spacing: -.04em; }
 .alumni-card p { color: var(--muted); margin: 0; font-size: 14px; }
 
-.publication-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+.publication-filter-block { min-width: 0; margin-bottom: 18px; }
+.publication-filter-label { margin: 0 0 10px; color: #526579; font-size: 12px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.publication-year-filters { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; max-width: 100%; padding: 3px; }
+.publication-year-filters::-webkit-scrollbar { height: 4px; }
+.publication-year-filters::-webkit-scrollbar-track { background: transparent; }
+.publication-year-filters::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(82, 101, 121, .32); }
+.publication-year-filter { flex: 0 0 auto; min-width: 58px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #526579; font-size: 13px; font-weight: 850; line-height: 1; white-space: nowrap; box-shadow: 0 7px 18px rgba(10, 54, 86, .07); touch-action: manipulation; transition: color var(--fast), background var(--fast), border-color var(--fast), box-shadow var(--fast), transform var(--fast); }
+.publication-year-filter[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; box-shadow: 0 10px 24px rgba(7, 21, 34, .18); }
+.publication-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
 .search-input { width: min(420px, 100%); border: 1px solid var(--line); background: #fff; border-radius: 999px; min-height: 52px; padding: 0 22px; box-shadow: var(--shadow-soft); color: var(--ink); outline: none; }
+.publication-result-summary { margin: 0 0 28px; color: #627486; font-size: 13px; font-weight: 760; }
+.publication-year-sections { display: grid; gap: clamp(46px, 6vw, 68px); min-width: 0; }
+.publication-year-section { min-width: 0; }
+.publication-year-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; min-width: 0; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid rgba(8, 24, 38, .14); }
+.publication-year-heading h2 { margin: 0; color: var(--ink); font-size: clamp(30px, 3.4vw, 42px); line-height: 1; letter-spacing: -.055em; }
+.publication-year-heading span { flex: 0 0 auto; color: #627486; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
 .publication-stack { display: grid; gap: 16px; }
 .publication-card { position: relative; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 22px; min-width: 0; padding: 24px; border-radius: var(--radius-md); background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow-soft); transition: transform var(--normal), box-shadow var(--normal), border-color var(--normal); }
 .publication-card-content { min-width: 0; }
@@ -441,6 +455,7 @@ select:focus-visible,
   .pub-item:not(:disabled):hover,
   .news-item:not(:disabled):hover { transform: translateY(-2px); background: rgba(255,255,255,.15); border-color: rgba(120,183,232,.45); box-shadow: 0 14px 32px rgba(0,0,0,.12); }
   .sub-tab:not(:disabled):hover { background: var(--ink); color: #fff; transform: translateY(-1px); }
+  .publication-year-filter:not([aria-pressed="true"]):hover { border-color: rgba(49, 127, 196, .34); background: #eef6fc; color: #245b85; transform: translateY(-1px); box-shadow: 0 10px 24px rgba(24, 83, 128, .12); }
   .topic-row:hover .topic-image img { transform: scale(1.035); }
   .member-card:hover { translate: 0 -6px; box-shadow: var(--shadow); border-color: rgba(95,145,191,.32); }
   .alumni-card:hover { translate: 0 -4px; box-shadow: var(--shadow); }
@@ -467,6 +482,7 @@ select:focus-visible,
 .pub-item:not(:disabled):active,
 .news-item:not(:disabled):active { transform: scale(.99); transition-duration: 80ms; }
 .publication-external-link:active { transform: translateY(0) scale(.95); transition-duration: 80ms; }
+.publication-year-filter:active { transform: translateY(0) scale(.96); transition-duration: 80ms; }
 .gallery-card:not(:disabled):active { translate: none; scale: .99; transition-duration: 80ms; }
 .lightbox-nav:not(:disabled):active { transform: translateY(-50%) scale(.94); transition-duration: 80ms; }
 .info-pill:active { transform: scale(.98); transition-duration: 80ms; }
@@ -556,6 +572,8 @@ select:focus-visible,
   .info-pill { border-radius: 14px; }
   .research-card-grid { width: min(100%, 420px); grid-template-columns: 1fr; }
   .gallery-grid, .alumni-grid { grid-template-columns: 1fr; }
+  .publication-year-filters { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-inline: contain; padding: 4px 3px 10px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+  .publication-year-heading { gap: 12px; margin-bottom: 15px; }
   .publication-card { grid-template-columns: 1fr; gap: 16px; }
   .publication-card.has-external-link .publication-card-content { padding-right: 48px; }
   .year-badge { width: 72px; min-height: 56px; flex-direction: row; gap: 4px; }
@@ -606,6 +624,7 @@ select:focus-visible,
   .pub-item,
   .news-item,
   .sub-tab,
+  .publication-year-filter,
   .topic-image img,
   .member-card,
   .alumni-card,
