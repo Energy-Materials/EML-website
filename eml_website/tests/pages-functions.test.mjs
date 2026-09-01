@@ -199,6 +199,10 @@ const csrfResponse = await contentRoute({
 assert.equal(csrfResponse.status, 403);
 
 createdBlobs = [];
+const linkedContent = structuredClone(canonicalContent);
+linkedContent.publications[0].link_url = 'https://doi.org/10.1000/eml-paper';
+linkedContent.patents[0].link_url = 'https://patents.google.com/patent/KR102040236B1/en';
+linkedContent.patents[1].link_url = null;
 const putResponse = await contentRoute({
   request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
     method: 'PUT',
@@ -209,7 +213,7 @@ const putResponse = await contentRoute({
       'X-EML-Admin-Request': '1',
       'Sec-Fetch-Site': 'same-origin',
     },
-    body: JSON.stringify({ content: canonicalContent, expectedRevision: shas.file, message: 'content: mock publish' }),
+    body: JSON.stringify({ content: linkedContent, expectedRevision: shas.file, message: 'content: mock publish' }),
   }),
   env,
 });
@@ -220,6 +224,13 @@ assert.equal(published.revision, shas.json);
 assert.equal(createdBlobs.length, 2);
 assert.equal(createdBlobs[0].encoding, 'utf-8');
 assert.equal(createdBlobs[1].content, `window.EML_DATA = ${createdBlobs[0].content.trimEnd()};\n`);
+assert.equal(published.content.publications[0].link_url, linkedContent.publications[0].link_url);
+assert.equal(published.content.patents[0].link_url, linkedContent.patents[0].link_url);
+assert.equal(published.content.patents[1].link_url, null);
+const committedLinkedContent = JSON.parse(createdBlobs[0].content);
+assert.equal(committedLinkedContent.publications[0].link_url, linkedContent.publications[0].link_url);
+assert.equal(committedLinkedContent.patents[0].link_url, linkedContent.patents[0].link_url);
+assert.equal(committedLinkedContent.patents[1].link_url, null);
 assert.equal(createdTree.base_tree, shas.tree);
 assert.deepEqual(updatedRef, { sha: shas.commit, force: false });
 
@@ -380,6 +391,45 @@ const duplicatePublicationResponse = await contentRoute({
 });
 assert.equal(duplicatePublicationResponse.status, 422);
 assert.equal((await duplicatePublicationResponse.json()).code, 'invalid_content');
+
+const unsafePublicationLink = structuredClone(canonicalContent);
+unsafePublicationLink.publications[0].link_url = 'javascript:alert(1)';
+const unsafePublicationLinkResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: { Cookie: sessionCookie, Origin: env.PUBLIC_ORIGIN, 'Content-Type': 'application/json', 'X-EML-Admin-Request': '1' },
+    body: JSON.stringify({ content: unsafePublicationLink, expectedRevision: shas.file }),
+  }),
+  env,
+});
+assert.equal(unsafePublicationLinkResponse.status, 422);
+assert.equal((await unsafePublicationLinkResponse.json()).code, 'invalid_content');
+
+const unsafePatentLink = structuredClone(canonicalContent);
+unsafePatentLink.patents[0].link_url = 'ftp://example.com/patent';
+const unsafePatentLinkResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: { Cookie: sessionCookie, Origin: env.PUBLIC_ORIGIN, 'Content-Type': 'application/json', 'X-EML-Admin-Request': '1' },
+    body: JSON.stringify({ content: unsafePatentLink, expectedRevision: shas.file }),
+  }),
+  env,
+});
+assert.equal(unsafePatentLinkResponse.status, 422);
+assert.equal((await unsafePatentLinkResponse.json()).code, 'invalid_content');
+
+const controlCharacterLink = structuredClone(canonicalContent);
+controlCharacterLink.publications[0].link_url = 'https://exa\nmple.com/paper';
+const controlCharacterLinkResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: { Cookie: sessionCookie, Origin: env.PUBLIC_ORIGIN, 'Content-Type': 'application/json', 'X-EML-Admin-Request': '1' },
+    body: JSON.stringify({ content: controlCharacterLink, expectedRevision: shas.file }),
+  }),
+  env,
+});
+assert.equal(controlCharacterLinkResponse.status, 422);
+assert.equal((await controlCharacterLinkResponse.json()).code, 'invalid_content');
 
 const malformedArrays = structuredClone(canonicalContent);
 malformedArrays.gallery = { not: 'an array' };

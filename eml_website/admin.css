@@ -201,7 +201,7 @@ textarea { min-height: 116px; padding: 14px 15px; resize: vertical; }
 input:focus, textarea:focus, select:focus { border-color: rgba(95,145,191,.62); box-shadow: 0 0 0 4px rgba(95,145,191,.12); }
 input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:placeholder-shown), textarea:invalid:not(:placeholder-shown) { border-color: rgba(167,43,43,.65); box-shadow: 0 0 0 4px rgba(167,43,43,.08); }
 .array-field textarea { min-height: 150px; }
-.help { margin: 8px 0 0; color: #7a8a98; font-size: 12px; }
+.help { margin: 8px 0 0; color: #627486; font-size: 12px; }
 
 .primary, .secondary, .danger, .ghost-btn {
   border: 0;

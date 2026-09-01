@@ -53,6 +53,36 @@
     }
   }
 
+  function externalLinkUrl(value) {
+    if (typeof value !== 'string' || !value || value !== value.trim() || value.length > 2048) return '';
+    const raw = value;
+    if (/[\u0000-\u001f\u007f]/.test(raw)) return '';
+    try {
+      const resolved = new URL(raw);
+      const isSafe = ['http:', 'https:'].includes(resolved.protocol)
+        && Boolean(resolved.hostname)
+        && !resolved.username
+        && !resolved.password;
+      return isSafe ? resolved.href : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function renderPublicationExternalLink(item, typeLabel) {
+    const href = externalLinkUrl(item?.link_url);
+    if (!href) return '';
+    const title = String(item?.title || '').trim();
+    const label = `${typeLabel} 외부 링크${title ? `: ${title}` : ''} (새 탭에서 열림)`;
+    return `
+      <a class="publication-external-link" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(label)}" title="외부 링크를 새 탭에서 열기">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M14 5h5v5M19 5l-8 8M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+        </svg>
+      </a>
+    `;
+  }
+
   function routeFromHash() {
     const route = (location.hash || '#home').replace('#', '').split('/')[0];
     return routes.includes(route) ? route : 'home';
@@ -379,33 +409,41 @@
   function renderPaperList(list) {
     if (!list.length) return '<div class="empty-state" role="status"><strong>표시할 논문이 없습니다.</strong><p>검색어를 바꾸거나 관리자에서 논문을 추가해 주세요.</p></div>';
     return `<div class="publication-stack">
-      ${list.map((pub) => `
-        <article class="publication-card reveal">
+      ${list.map((pub) => {
+        const externalLink = renderPublicationExternalLink(pub, '논문');
+        return `
+        <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
           <div class="year-badge"><small>#${escapeHTML(pub.number ?? '')}</small>${escapeHTML(pub.year)}</div>
-          <div>
+          <div class="publication-card-content">
             <h3>${escapeHTML(pub.title)}</h3>
             <p>${escapeHTML(pub.authors)}</p>
             <p><strong>${escapeHTML(pub.journal)}</strong></p>
             ${pub.note ? `<span class="note">${escapeHTML(pub.note)}</span>` : ''}
           </div>
+          ${externalLink}
         </article>
-      `).join('')}
+      `;
+      }).join('')}
     </div>`;
   }
 
   function renderPatentList() {
     if (!(data.patents || []).length) return '<div class="empty-state" role="status"><strong>표시할 특허가 없습니다.</strong><p>관리자에서 특허를 추가하면 이곳에 표시됩니다.</p></div>';
     return `<div class="publication-stack">
-      ${(data.patents || []).map((patent, index) => `
-        <article class="publication-card reveal">
+      ${(data.patents || []).map((patent, index) => {
+        const externalLink = renderPublicationExternalLink(patent, '특허');
+        return `
+        <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
           <div class="year-badge"><small>#${(data.patents || []).length - index}</small>${escapeHTML(patent.year || '')}</div>
-          <div>
+          <div class="publication-card-content">
             <h3>${escapeHTML(patent.title)}</h3>
             <p>${escapeHTML(patent.inventors)}</p>
             <p><strong>${escapeHTML(patent.number)}</strong></p>
           </div>
+          ${externalLink}
         </article>
-      `).join('')}
+      `;
+      }).join('')}
     </div>`;
   }
 

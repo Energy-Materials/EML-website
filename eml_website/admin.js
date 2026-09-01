@@ -288,7 +288,7 @@
       invalidField.reportValidity();
       invalidField.focus({ preventScroll: true });
       invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      toast('필수 항목과 숫자 형식을 확인하세요.');
+      toast('필수 항목, 숫자와 URL 형식을 확인하세요.');
       return false;
     }
     if (!isDirty && hasPublishedContent) {
@@ -388,9 +388,14 @@
 
   function inputField(path, label, value = '', type = 'text', options = {}) {
     const numberAttributes = type === 'number' ? ' min="1" step="1" inputmode="numeric"' : '';
+    const urlAttributes = type === 'url' ? ' inputmode="url" autocomplete="url" spellcheck="false" maxlength="2048"' : '';
     const requiredAttributes = options.required ? ' required aria-required="true"' : '';
+    const placeholderAttributes = options.placeholder ? ` placeholder="${escapeAttr(options.placeholder)}"` : '';
+    const helpId = options.help ? `help-${String(path).replace(/[^a-z0-9_-]/gi, '-')}` : '';
+    const describedByAttributes = helpId ? ` aria-describedby="${escapeAttr(helpId)}"` : '';
     const marker = options.required ? '<em class="required-mark">필수</em>' : '';
-    return `<label class="field"><span>${escapeHTML(label)}${marker}</span><input type="${escapeAttr(type)}" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}"${numberAttributes}${requiredAttributes} /></label>`;
+    const help = options.help ? `<p class="help" id="${escapeAttr(helpId)}">${escapeHTML(options.help)}</p>` : '';
+    return `<label class="field"><span>${escapeHTML(label)}${marker}</span><input type="${escapeAttr(type)}" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}"${numberAttributes}${urlAttributes}${requiredAttributes}${placeholderAttributes}${describedByAttributes} />${help}</label>`;
   }
 
   function textareaField(path, label, value = '', options = {}) {
@@ -727,6 +732,10 @@
             ${textareaField(`publications.${i}.title`, 'Title', p.title, { required: true })}
             ${textareaField(`publications.${i}.authors`, 'Authors', p.authors, { required: true })}
             ${inputField(`publications.${i}.note`, 'Note', p.note || '')}
+            ${inputField(`publications.${i}.link_url`, '외부 링크 URL (선택)', p.link_url || '', 'url', {
+              placeholder: 'https://example.com/paper',
+              help: 'http:// 또는 https://로 시작하는 논문 외부 페이지 주소를 입력하세요. 비워두거나 기존 주소를 지우면 홈페이지에 링크 아이콘이 표시되지 않습니다.',
+            })}
             <div class="inline-actions">
               <button class="ghost-btn" type="button" data-move="publication" data-index="${i}" data-dir="-1">↑ Move up</button>
               <button class="ghost-btn" type="button" data-move="publication" data-index="${i}" data-dir="1">↓ Move down</button>
@@ -746,6 +755,10 @@
             </div>
             ${textareaField(`patents.${i}.title`, 'Title', p.title)}
             ${textareaField(`patents.${i}.inventors`, 'Inventors', p.inventors)}
+            ${inputField(`patents.${i}.link_url`, '외부 링크 URL (선택)', p.link_url || '', 'url', {
+              placeholder: 'https://example.com/patent',
+              help: 'http:// 또는 https://로 시작하는 특허 외부 페이지 주소를 입력하세요. 비워두거나 기존 주소를 지우면 홈페이지에 링크 아이콘이 표시되지 않습니다.',
+            })}
             <div class="inline-actions">
               <button class="ghost-btn" type="button" data-move="patent" data-index="${i}" data-dir="-1">↑ Move up</button>
               <button class="ghost-btn" type="button" data-move="patent" data-index="${i}" data-dir="1">↓ Move down</button>
@@ -1119,9 +1132,9 @@
     if (type === 'alumni') data.alumni.push({ date: '2026.02', name: 'Name', next: '-' });
     if (type === 'publication') {
       const nextNumber = Math.max(0, ...data.publications.map((publication) => Number.isInteger(publication.number) ? publication.number : 0)) + 1;
-      data.publications.unshift({ number: nextNumber, year: String(new Date().getFullYear()), title: '', authors: '', journal: '', note: '' });
+      data.publications.unshift({ number: nextNumber, year: String(new Date().getFullYear()), title: '', authors: '', journal: '', note: '', link_url: '' });
     }
-    if (type === 'patent') data.patents.unshift({ year: String(new Date().getFullYear()), title: 'New patent title', inventors: 'Inventors', number: 'Patent number' });
+    if (type === 'patent') data.patents.unshift({ year: String(new Date().getFullYear()), title: 'New patent title', inventors: 'Inventors', number: 'Patent number', link_url: '' });
     if (type === 'gallery') data.gallery.unshift({ date: now, title: '', summary: '', image: '', images: [], body: '' });
     markDirty();
     render();
