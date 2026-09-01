@@ -186,7 +186,6 @@
                 <div class="research-card-body">
                   <h3>${escapeHTML(topic.title)}</h3>
                   <p>${escapeHTML(topic.short)}</p>
-                  <button class="link-more" type="button" data-go="research" aria-label="View more about ${escapeAttr(topic.title || 'this research topic')}">View More <span class="button-icon" aria-hidden="true">→</span></button>
                 </div>
               </article>
             `).join('')}
