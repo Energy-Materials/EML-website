@@ -11,6 +11,6 @@
     "admin": "node tools/admin-server.mjs",
     "build": "node tools/build.mjs",
     "check": "node tools/check-content.mjs",
-    "test": "node tests/pages-functions.test.mjs && node tests/worker-entry.test.mjs && node tests/admin-image-deployment.test.mjs && node tests/home-research-layout.test.mjs"
+    "test": "node tests/pages-functions.test.mjs && node tests/worker-entry.test.mjs && node tests/admin-image-deployment.test.mjs && node tests/home-research-layout.test.mjs && node tests/footer-alignment.test.mjs"
   }
 }

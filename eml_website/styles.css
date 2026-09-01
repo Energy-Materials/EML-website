@@ -381,7 +381,7 @@ select:focus-visible,
 .map-fallback p { margin: 10px 0 0; color: rgba(234,246,255,.74); }
 
 .site-footer { background: #06111e; color: #d7e7f2; padding: 52px 22px 34px; }
-.footer-inner { width: min(1060px, 100%); margin: 0 auto; }
+.footer-inner { width: min(var(--max), 100%); margin: 0 auto; }
 .footer-grid { display: grid; grid-template-columns: 1.2fr 1.5fr .8fr; gap: 46px; align-items: start; padding-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,.10); }
 .footer-logo { width: 168px; height: auto; object-fit: contain; margin-bottom: 16px; }
 .footer-grid h3 { margin: 0 0 10px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #fff; }
