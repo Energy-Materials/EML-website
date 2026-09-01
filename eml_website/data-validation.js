@@ -7,6 +7,37 @@
     return Boolean(value && typeof value === 'object' && !Array.isArray(value));
   }
 
+  function isSafeExternalUrl(value) {
+    if (value === '') return true;
+    if (
+      typeof value !== 'string'
+      || value !== value.trim()
+      || value.length > 2048
+      || /[\u0000-\u001f\u007f]/.test(value)
+    ) return false;
+    try {
+      const parsed = new URL(value);
+      return ['http:', 'https:'].includes(parsed.protocol)
+        && Boolean(parsed.hostname)
+        && !parsed.username
+        && !parsed.password;
+    } catch {
+      return false;
+    }
+  }
+
+  function validateOptionalExternalUrl(item, label, errors) {
+    if (!Object.prototype.hasOwnProperty.call(item, 'link_url')) return;
+    if (item.link_url === null) return;
+    if (typeof item.link_url !== 'string') {
+      errors.push(`${label}.link_url은 문자열 또는 null이어야 합니다.`);
+      return;
+    }
+    if (!isSafeExternalUrl(item.link_url)) {
+      errors.push(`${label}.link_url은 비워두거나 올바른 http(s) 외부 URL을 입력해야 합니다.`);
+    }
+  }
+
   function validate(value) {
     const errors = [];
     if (!isRecord(value)) return { valid: false, errors: ['최상위 데이터는 객체여야 합니다.'] };
@@ -98,6 +129,14 @@
             errors.push(`publications.${index}.${field}는 필수 항목입니다.`);
           }
         });
+        validateOptionalExternalUrl(item, `publications.${index}`, errors);
+      });
+    }
+
+    if (Array.isArray(value.patents)) {
+      value.patents.forEach((item, index) => {
+        if (!isRecord(item)) return;
+        validateOptionalExternalUrl(item, `patents.${index}`, errors);
       });
     }
 

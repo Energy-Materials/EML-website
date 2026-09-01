@@ -130,6 +130,37 @@ function validateAssetPath(value, label, errors) {
   if (!isSafeAssetPath(value)) errors.push(`${label} must be a safe project path below assets/.`);
 }
 
+function isSafeExternalUrl(value) {
+  if (value === '') return true;
+  if (
+    typeof value !== 'string'
+    || value !== value.trim()
+    || value.length > 2048
+    || /[\u0000-\u001f\u007f]/.test(value)
+  ) return false;
+  try {
+    const parsed = new URL(value);
+    return ['http:', 'https:'].includes(parsed.protocol)
+      && Boolean(parsed.hostname)
+      && !parsed.username
+      && !parsed.password;
+  } catch {
+    return false;
+  }
+}
+
+function validateOptionalExternalUrl(entry, field, label, errors) {
+  if (!Object.prototype.hasOwnProperty.call(entry, field)) return;
+  if (entry[field] === null) return;
+  if (typeof entry[field] !== 'string') {
+    errors.push(`${label}.${field} must be a string or null.`);
+    return;
+  }
+  if (!isSafeExternalUrl(entry[field])) {
+    errors.push(`${label}.${field} must be null, empty, or an absolute http(s) URL without credentials.`);
+  }
+}
+
 function validateKnownShape(content, errors) {
   REQUIRED_RECORDS.forEach((key) => requireRecord(content, key, errors));
   REQUIRED_RECORD_ARRAYS.forEach((key) => requireRecordArray(content, key, errors));
@@ -216,11 +247,14 @@ function validateKnownShape(content, errors) {
     }
     ['year', 'title', 'authors', 'journal'].forEach((field) => requireString(entry, field, label, errors, { allowEmpty: false }));
     requireString(entry, 'note', label, errors);
+    validateOptionalExternalUrl(entry, 'link_url', label, errors);
   });
 
   (Array.isArray(content.patents) ? content.patents : []).forEach((entry, index) => {
     if (!isPlainRecord(entry)) return;
-    ['year', 'title', 'inventors', 'number'].forEach((field) => requireString(entry, field, `patents.${index}`, errors));
+    const label = `patents.${index}`;
+    ['year', 'title', 'inventors', 'number'].forEach((field) => requireString(entry, field, label, errors));
+    validateOptionalExternalUrl(entry, 'link_url', label, errors);
   });
 
   (Array.isArray(content.gallery) ? content.gallery : []).forEach((entry, index) => {
