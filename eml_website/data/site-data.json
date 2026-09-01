@@ -578,6 +578,13 @@
     "mapImage": "",
     "phone": "",
     "shortName": "EML",
+    "subHeroImages": {
+      "contact": "",
+      "gallery": "",
+      "members": "",
+      "publications": "",
+      "research": ""
+    },
     "university": "Kongju National University",
     "universityKr": "국립공주대학교 화학공학부"
   }

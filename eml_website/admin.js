@@ -1,5 +1,13 @@
 (function () {
   const storageKey = 'emlDataV2';
+  const defaultSubHeroImage = 'assets/hero-concept-from-pdf.png';
+  const subHeroPages = Object.freeze([
+    { key: 'research', title: 'Research', description: '연구 분야와 Research Topic 상단 배너' },
+    { key: 'members', title: 'Members', description: 'Professor, Members, Alumni 상단 배너' },
+    { key: 'publications', title: 'Publications', description: '논문과 특허 목록 상단 배너' },
+    { key: 'gallery', title: 'Gallery', description: '연구실 사진과 소식 목록 상단 배너' },
+    { key: 'contact', title: 'Contact', description: '연락처와 찾아오는 길 상단 배너' },
+  ]);
   const sidebar = document.querySelector('[data-sidebar]');
   const content = document.querySelector('[data-admin-content]');
   const authShell = document.querySelector('[data-auth-shell]');
@@ -396,10 +404,23 @@
   }
 
   function uploadField(path, label, value = '', options = {}) {
-    const publishedPath = String(value || '');
+    const storedPath = String(value || '');
+    const publishedPath = String(options.publishedPreviewPath ?? storedPath);
     const preview = imagePreviewSource(publishedPath) || options.placeholder || 'assets/gallery-placeholder-1.svg';
     const deploying = imageIsDeploying(publishedPath);
     const wide = options.wide ? ' preview-wide' : '';
+    const canReset = Object.prototype.hasOwnProperty.call(options, 'resetValue');
+    const resetValue = String(options.resetValue ?? '');
+    const resetLabel = options.resetLabel || '기본 이미지로 복구';
+    const pathPlaceholder = options.pathPlaceholder || 'assets/example.png 형식의 저장소 경로';
+    const uploadLabel = options.uploadLabel || 'Choose Image';
+    const uploadAriaLabel = options.uploadAriaLabel || uploadLabel;
+    const resetAriaLabel = options.resetAriaLabel || resetLabel;
+    const resetDisabled = options.resetDisabled ? ' disabled' : '';
+    const pathInput = `<input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" placeholder="${escapeAttr(pathPlaceholder)}" aria-label="${escapeAttr(label)} 저장소 경로" />`;
+    const pathControl = options.advancedPath
+      ? `<details class="advanced-path"><summary>고급: 저장소 경로 직접 입력</summary><label><span>저장소 이미지 경로</span>${pathInput}</label></details>`
+      : pathInput;
     return `<div class="upload-field" data-upload-field data-upload-path="${escapeAttr(path)}">
       <span class="upload-label">${escapeHTML(label)}</span>
       <div class="dropzone${wide}${deploying ? ' is-deploying' : ''}" data-dropzone>
@@ -409,9 +430,12 @@
           <strong>이미지를 드래그하거나 파일을 선택하세요.</strong>
           <p>JPG·PNG·WebP는 최대 2560px, 보통 약 700KB(최대 2MB)로 자동 최적화합니다. 움직이는 GIF는 2MB 이하만 원본 그대로 사용합니다.</p>
           ${deploying ? '<p class="deployment-note" data-deployment-note>GitHub 저장 완료 · Cloudflare 반영을 기다리는 중입니다.</p>' : ''}
-          <button class="secondary" type="button" data-upload-button>Choose Image</button>
+          <div class="upload-actions">
+            <button class="secondary" type="button" data-upload-button aria-label="${escapeAttr(uploadAriaLabel)}">${escapeHTML(uploadLabel)}</button>
+            ${canReset ? `<button class="ghost-btn" type="button" data-upload-reset data-reset-value="${escapeAttr(resetValue)}" aria-label="${escapeAttr(resetAriaLabel)}"${resetDisabled}>${escapeHTML(resetLabel)}</button>` : ''}
+          </div>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload-input hidden />
-          <input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" placeholder="assets/example.png 형식의 저장소 경로" />
+          ${pathControl}
         </div>
       </div>
     </div>`;
@@ -426,6 +450,7 @@
     const renderMap = {
       dashboard: renderDashboard,
       brand: renderBrand,
+      banners: renderBanners,
       site: renderSite,
       home: renderHome,
       research: renderResearch,
@@ -466,7 +491,7 @@
       ${header('Quick Checklist', 'PPT 수정 요청이 반영된 주요 기능입니다.')}
       <div class="item-list">
         ${[
-          '로고, 공주대학교 로고, 메인 배경 이미지 교체 가능',
+          '로고, 공주대학교 로고, 메인 및 서브페이지별 배너 이미지 교체 가능',
           'Research의 Facility & Equipment와 More View 버튼 제거',
           'Publications 전체 36편 표시 및 관리자 수정 지원',
           'Gallery 게시글별 다중 이미지, 미리보기, 순서 변경, 캐러셀 지원',
@@ -481,14 +506,62 @@
   function renderBrand() {
     const s = data.site || {};
     return `<section class="editor-card">
-      ${header('Brand & Assets', '홈페이지 전반에서 사용하는 로고, 배너, 지도 이미지를 관리합니다.')}
+      ${header('Brand & Assets', '홈페이지 전반에서 사용하는 로고와 공통 기본 배너 이미지를 관리합니다.')}
       <div class="grid-2">
         ${uploadField('site.logoWhite', 'Header / Footer White Logo', s.logoWhite, { placeholder: 'assets/eml-logo-white.svg' })}
         ${uploadField('site.logoDark', 'Dark Logo', s.logoDark, { placeholder: 'assets/eml-logo-dark.svg' })}
         ${uploadField('site.knuLogo', 'Kongju National University Logo', s.knuLogo, { placeholder: 'assets/knu-logo.png' })}
-        ${uploadField('site.heroImage', 'Main Hero / Sub Banner Image', s.heroImage, { wide: true, placeholder: 'assets/hero-concept-from-pdf.png' })}
+        ${uploadField('site.heroImage', 'Main Home Hero / Default Subpage Banner', s.heroImage, { wide: true, placeholder: defaultSubHeroImage })}
       </div>
       <div class="hero-preview" data-published-background="${escapeAttr(s.heroImage || '')}" style="background-image: linear-gradient(90deg, rgba(5,16,28,.82), rgba(5,16,28,.26)), url('${escapeAttr(imagePreviewSource(s.heroImage) || 'assets/hero-concept-from-pdf.png')}')"><div><p class="help" style="color:rgba(255,255,255,.76);margin:0 0 6px">Preview</p><h3>Energy Materials Laboratory</h3></div></div>
+      ${saveBar()}
+    </section>`;
+  }
+
+  function renderBanners() {
+    const s = data.site || {};
+    const subHeroImages = s.subHeroImages || {};
+    const defaultPreview = imagePreviewSource(s.heroImage) || defaultSubHeroImage;
+    return `<section class="editor-card">
+      ${header('Subpage Banners', 'Research, Members, Publications, Gallery, Contact의 상단 배너를 페이지별로 관리합니다.')}
+      <div class="banner-guide" role="note">
+        <strong>권장 이미지: 가로형 16:9 이상</strong>
+        <p>중요한 피사체는 중앙에 배치하세요. 화면 크기에 따라 가장자리는 자연스럽게 잘리고 그라데이션으로 이어집니다. 개별 이미지가 없으면 Brand & Assets의 공통 기본 배너를 사용합니다.</p>
+      </div>
+      <div class="banner-sticky-save" role="group" aria-label="서브페이지 배너 저장">
+        <span><strong>배너 변경사항 저장</strong><small>현재 초안의 모든 배너 변경을 함께 게시합니다.</small></span>
+        <button class="primary" type="button" data-save>배너 변경 저장</button>
+      </div>
+      <div class="banner-manager-grid">
+        ${subHeroPages.map((page) => {
+          const value = typeof subHeroImages[page.key] === 'string' ? subHeroImages[page.key] : '';
+          const custom = Boolean(value.trim());
+          return `<article class="banner-manager-card">
+            <div class="banner-card-heading">
+              <div>
+                <span>PAGE BANNER</span>
+                <h2>${escapeHTML(page.title)}</h2>
+                <p>${escapeHTML(page.description)}</p>
+              </div>
+              <a class="secondary" href="index.html#${escapeAttr(page.key)}" target="_blank" rel="noreferrer" aria-label="게시된 ${escapeAttr(page.title)} 페이지 보기">게시된 페이지 보기</a>
+            </div>
+            <p class="banner-source${custom ? ' is-custom' : ''}">${custom ? '페이지별 이미지 사용 중' : '공통 기본 이미지 사용 중'}</p>
+            ${uploadField(`site.subHeroImages.${page.key}`, `${page.title} 현재 배너 이미지`, value, {
+              wide: true,
+              placeholder: defaultPreview,
+              publishedPreviewPath: custom ? value : (s.heroImage || defaultSubHeroImage),
+              resetValue: '',
+              resetLabel: '공통 기본 배너로 복구',
+              resetDisabled: !custom,
+              resetAriaLabel: `${page.title} 배너를 공통 기본 이미지로 복구`,
+              uploadLabel: '이미지 선택 / 교체',
+              uploadAriaLabel: `${page.title} 배너 이미지 선택 또는 교체`,
+              pathPlaceholder: '비워두면 공통 기본 배너를 사용합니다.',
+              advancedPath: true,
+            })}
+          </article>`;
+        }).join('')}
+      </div>
       ${saveBar()}
     </section>`;
   }
@@ -802,6 +875,7 @@
           field.setAttribute('aria-invalid', String(!valid));
         }
         setPath(field.dataset.path, value);
+        syncBannerUploadState(field, value);
         markDirty();
       });
     });
@@ -863,6 +937,7 @@
       const path = field.dataset.uploadPath;
       const input = field.querySelector('[data-upload-input]');
       const button = field.querySelector('[data-upload-button]');
+      const resetButton = field.querySelector('[data-upload-reset]');
       const dropzone = field.querySelector('[data-dropzone]');
       const preview = field.querySelector('[data-upload-preview]');
       button.addEventListener('click', () => input.click());
@@ -878,7 +953,31 @@
         dropzone.classList.remove('is-dragover');
         readSingleFile(event.dataTransfer.files[0], path, preview);
       });
+      resetButton?.addEventListener('click', () => {
+        const resetValue = resetButton.dataset.resetValue || '';
+        if (String(getPath(path) || '') === resetValue) {
+          toast('이미 공통 기본 배너를 사용하고 있습니다.');
+          return;
+        }
+        setPath(path, resetValue);
+        markDirty();
+        renderPreservingPosition();
+        toast('공통 기본 배너로 복구했습니다. Save Changes를 눌러 게시하세요.');
+      });
     });
+  }
+
+  function syncBannerUploadState(field, value) {
+    const card = field?.closest('.banner-manager-card');
+    if (!card) return;
+    const custom = Boolean(String(value || '').trim());
+    const source = card.querySelector('.banner-source');
+    const resetButton = card.querySelector('[data-upload-reset]');
+    if (source) {
+      source.classList.toggle('is-custom', custom);
+      source.textContent = custom ? '페이지별 이미지 사용 중' : '공통 기본 이미지 사용 중';
+    }
+    if (resetButton) resetButton.disabled = !custom;
   }
 
   async function readSingleFile(file, path, preview) {
@@ -900,7 +999,10 @@
       markDirty();
       if (preview) preview.src = imageUrl;
       const pathInput = Array.from(content.querySelectorAll('[data-path]')).find((el) => el.dataset.path === path);
-      if (pathInput) pathInput.value = imageUrl;
+      if (pathInput) {
+        pathInput.value = imageUrl;
+        syncBannerUploadState(pathInput, imageUrl);
+      }
       toast('이미지가 초안에 추가되었습니다. Save Changes를 눌러 게시하세요.');
     } catch (error) {
       console.error(error);
@@ -1291,6 +1393,18 @@
       else el.removeAttribute('aria-current');
     });
     render();
+    if (window.matchMedia('(max-width: 1180px)').matches) {
+      window.requestAnimationFrame(() => {
+        const heading = content.querySelector('h1');
+        if (!heading) return;
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+        heading.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      });
+    }
   });
   document.querySelector('[data-export]').addEventListener('click', exportData);
   topSave.addEventListener('click', async () => saveData(true));

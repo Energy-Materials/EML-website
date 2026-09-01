@@ -19,8 +19,8 @@ assert.match(
 );
 assert.match(
   stylesSource,
-  /\.sub-hero::before\s*\{[^}]*background:\s*var\(--hero-image\)\s+center\s*\/\s*101%\s+101%\s+no-repeat[^}]*-webkit-mask-image:\s*linear-gradient\([^}]*mask-image:\s*linear-gradient\(/,
-  'The subpage banner image must crop its source border and fade both edges without repetition.',
+  /\.sub-hero::before\s*\{[^}]*background:\s*var\(--hero-image\)\s+center\s*\/\s*cover\s+no-repeat[^}]*-webkit-mask-image:\s*linear-gradient\([^}]*mask-image:\s*linear-gradient\(/,
+  'The subpage banner image must preserve arbitrary image proportions and fade both edges without repetition.',
 );
 assert.match(
   stylesSource,

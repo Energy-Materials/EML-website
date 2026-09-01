@@ -20,6 +20,7 @@ const REQUIRED_RECORD_ARRAYS = [
   'patents',
   'gallery'
 ];
+const SUB_HERO_PAGE_KEYS = ['research', 'members', 'publications', 'gallery', 'contact'];
 const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 const MAX_DEPTH = 24;
 const MAX_NODES = 100_000;
@@ -141,6 +142,22 @@ function validateKnownShape(content, errors) {
     ['logoWhite', 'logoDark', 'knuLogo', 'heroImage', 'mapImage'].forEach((field) => {
       if (typeof content.site[field] === 'string') validateAssetPath(content.site[field], `site.${field}`, errors);
     });
+    if (Object.prototype.hasOwnProperty.call(content.site, 'subHeroImages')) {
+      if (!isPlainRecord(content.site.subHeroImages)) {
+        errors.push('site.subHeroImages must be an object.');
+      } else {
+        Object.keys(content.site.subHeroImages).forEach((key) => {
+          if (!SUB_HERO_PAGE_KEYS.includes(key)) errors.push(`site.subHeroImages contains unsupported page key "${key}".`);
+        });
+        SUB_HERO_PAGE_KEYS.forEach((key) => {
+          if (!Object.prototype.hasOwnProperty.call(content.site.subHeroImages, key)) return;
+          requireString(content.site.subHeroImages, key, 'site.subHeroImages', errors);
+          if (typeof content.site.subHeroImages[key] === 'string') {
+            validateAssetPath(content.site.subHeroImages[key], `site.subHeroImages.${key}`, errors);
+          }
+        });
+      }
+    }
     validateEmail(content.site.email, 'site.email', errors);
     if (typeof content.site.mapEmbed === 'string' && content.site.mapEmbed && !/^https:\/\//i.test(content.site.mapEmbed)) {
       errors.push('site.mapEmbed must use an https:// URL.');
@@ -375,6 +392,7 @@ export function collectAssetPaths(content) {
     if (typeof value === 'string' && value) values.add(value);
   };
   ['logoWhite', 'logoDark', 'knuLogo', 'heroImage', 'mapImage'].forEach((key) => add(content.site?.[key]));
+  SUB_HERO_PAGE_KEYS.forEach((key) => add(content.site?.subHeroImages?.[key]));
   add(content.professor?.photo);
   content.researchTopics?.forEach((entry) => add(entry.image));
   content.members?.forEach((entry) => add(entry.photo));

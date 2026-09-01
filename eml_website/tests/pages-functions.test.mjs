@@ -255,6 +255,52 @@ assert.equal(embeddedPublished.content.gallery[0].images[0], embeddedPublished.c
 assert.ok(createdTree.tree.some((entry) => entry.path.endsWith('.png')));
 assert.deepEqual(updatedRef, { sha: shas.commit, force: false });
 
+createdBlobs = [];
+createdTree = null;
+updatedRef = null;
+const embeddedBannerContent = structuredClone(canonicalContent);
+embeddedBannerContent.site.subHeroImages.research = onePixelPng;
+const embeddedBannerResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: {
+      Cookie: sessionCookie,
+      Origin: env.PUBLIC_ORIGIN,
+      'Content-Type': 'application/json',
+      'X-EML-Admin-Request': '1',
+      'Sec-Fetch-Site': 'same-origin',
+    },
+    body: JSON.stringify({ content: embeddedBannerContent, expectedRevision: shas.file }),
+  }),
+  env,
+});
+const embeddedBannerText = await embeddedBannerResponse.text();
+assert.equal(embeddedBannerResponse.status, 200, embeddedBannerText);
+const embeddedBannerPublished = JSON.parse(embeddedBannerText);
+assert.equal(createdBlobs.length, 3);
+assert.equal(createdBlobs[2].encoding, 'base64');
+assert.match(embeddedBannerPublished.content.site.subHeroImages.research, /^assets\/uploads\/\d{4}-\d{2}-\d{2}\/image-[A-Za-z0-9_-]{24}\.png$/);
+assert.ok(createdTree.tree.some((entry) => entry.path.endsWith('.png')), 'The page banner image must be committed with the content files.');
+
+const missingBannerContent = structuredClone(canonicalContent);
+missingBannerContent.site.subHeroImages.research = 'assets/uploads/2026-09-01/missing-banner.webp';
+const missingBannerResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: {
+      Cookie: sessionCookie,
+      Origin: env.PUBLIC_ORIGIN,
+      'Content-Type': 'application/json',
+      'X-EML-Admin-Request': '1',
+      'Sec-Fetch-Site': 'same-origin',
+    },
+    body: JSON.stringify({ content: missingBannerContent, expectedRevision: shas.file }),
+  }),
+  env,
+});
+assert.equal(missingBannerResponse.status, 422);
+assert.equal((await missingBannerResponse.json()).code, 'missing_assets');
+
 refUpdateMode = 'reject';
 const protectedBranchResponse = await contentRoute({
   request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
