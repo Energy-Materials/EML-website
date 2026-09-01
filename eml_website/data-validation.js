@@ -1,6 +1,8 @@
 (function (global) {
   'use strict';
 
+  const subHeroPageKeys = ['research', 'members', 'publications', 'gallery', 'contact'];
+
   function isRecord(value) {
     return Boolean(value && typeof value === 'object' && !Array.isArray(value));
   }
@@ -12,6 +14,22 @@
     ['site', 'home', 'professor'].forEach((key) => {
       if (!isRecord(value[key])) errors.push(`${key}는 객체여야 합니다.`);
     });
+
+    if (isRecord(value.site) && Object.prototype.hasOwnProperty.call(value.site, 'subHeroImages')) {
+      const subHeroImages = value.site.subHeroImages;
+      if (!isRecord(subHeroImages)) {
+        errors.push('site.subHeroImages는 객체여야 합니다.');
+      } else {
+        Object.keys(subHeroImages).forEach((key) => {
+          if (!subHeroPageKeys.includes(key)) errors.push(`site.subHeroImages.${key}는 지원하지 않는 페이지입니다.`);
+        });
+        subHeroPageKeys.forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(subHeroImages, key) && typeof subHeroImages[key] !== 'string') {
+            errors.push(`site.subHeroImages.${key}는 문자열이어야 합니다.`);
+          }
+        });
+      }
+    }
 
     const recordArrays = ['researchTopics', 'members', 'alumni', 'publications', 'patents', 'gallery'];
     recordArrays.forEach((key) => {

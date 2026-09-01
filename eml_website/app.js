@@ -229,11 +229,12 @@
     `;
   }
 
-  function renderSubHero(title, desc) {
+  function renderSubHero(title, desc, pageKey) {
     const s = data.site || {};
-    const heroImage = asset(s.heroImage, 'assets/hero-concept-from-pdf.png');
+    const defaultHeroImage = asset(s.heroImage, 'assets/hero-concept-from-pdf.png');
+    const heroImage = asset(s.subHeroImages?.[pageKey], defaultHeroImage);
     return `
-      <section class="sub-hero" style="--hero-image: url('${escapeAttr(heroImage)}')">
+      <section class="sub-hero" data-sub-hero="${escapeAttr(pageKey)}" style="--hero-image: url('${escapeAttr(heroImage)}')">
         <div class="container">
           <p class="section-kicker">${escapeHTML(s.shortName || 'EML')}</p>
           <h1>${escapeHTML(title)}</h1>
@@ -245,7 +246,7 @@
 
   function renderResearch() {
     return `
-      ${renderSubHero('Research', 'Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.')}
+      ${renderSubHero('Research', 'Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.', 'research')}
       <div class="single-tab-label"><span>Research Topic</span></div>
       <section class="section compact">
         <div class="container">${renderResearchTopics()}</div>
@@ -283,7 +284,7 @@
 
   function renderMembers() {
     return `
-      ${renderSubHero('Members', 'Professor, current members, and alumni in one consistent card system.')}
+      ${renderSubHero('Members', 'Professor, current members, and alumni in one consistent card system.', 'members')}
       <div class="sub-tabs" role="tablist" aria-label="Members tabs">
         <button class="sub-tab is-active" id="members-tab-professor" type="button" role="tab" aria-selected="true" aria-controls="members-tabpanel" tabindex="0" data-member-tab="professor">Professor</button>
         <button class="sub-tab" id="members-tab-members" type="button" role="tab" aria-selected="false" aria-controls="members-tabpanel" tabindex="-1" data-member-tab="members">Members</button>
@@ -359,7 +360,7 @@
 
   function renderPublications() {
     return `
-      ${renderSubHero('Publications', 'Journal articles and patents are organized for easy update from admin data.')}
+      ${renderSubHero('Publications', 'Journal articles and patents are organized for easy update from admin data.', 'publications')}
       <div class="sub-tabs" role="tablist" aria-label="Publication tabs">
         <button class="sub-tab is-active" id="publications-tab-papers" type="button" role="tab" aria-selected="true" aria-controls="publications-tabpanel" tabindex="0" data-pub-tab="papers">Papers</button>
         <button class="sub-tab" id="publications-tab-patents" type="button" role="tab" aria-selected="false" aria-controls="publications-tabpanel" tabindex="-1" data-pub-tab="patents">Patents</button>
@@ -410,7 +411,7 @@
 
   function renderGallery() {
     return `
-      ${renderSubHero('Gallery', 'Lab seminars, conferences, awards, and group events in clickable card format.')}
+      ${renderSubHero('Gallery', 'Lab seminars, conferences, awards, and group events in clickable card format.', 'gallery')}
       <section class="section compact">
         <div class="container">
           <div class="section-head reveal">
@@ -450,7 +451,7 @@
         ? `<iframe src="${escapeAttr(mapEmbed)}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Kongju National University map"></iframe>`
         : `<div class="map-fallback"><div><h3>Kongju National University</h3><p>Replace this panel with Google Map embed or campus map image from admin.</p></div></div>`;
     return `
-      ${renderSubHero('Contact', 'Join us and contact the Energy Materials Laboratory.')}
+      ${renderSubHero('Contact', 'Join us and contact the Energy Materials Laboratory.', 'contact')}
       <section class="section compact">
         <div class="container contact-grid">
           <div class="contact-card reveal">

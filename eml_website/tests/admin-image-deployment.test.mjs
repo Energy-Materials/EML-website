@@ -58,6 +58,13 @@ const previews = browser.EMLLocalContent.collectPendingImagePreviews(
 );
 assert.deepEqual(JSON.parse(JSON.stringify(previews)), [{ path: publishedPath, preview: inlineImage }]);
 
+const bannerPublishedPath = 'assets/uploads/2026-08-28/image-banner.webp';
+const bannerPreviews = browser.EMLLocalContent.collectPendingImagePreviews(
+  { site: { subHeroImages: { research: inlineImage } } },
+  { site: { subHeroImages: { research: bannerPublishedPath } } },
+);
+assert.deepEqual(JSON.parse(JSON.stringify(bannerPreviews)), [{ path: bannerPublishedPath, preview: inlineImage }]);
+
 const ready = await browser.EMLLocalContent.waitForUploadedImages([publishedPath], {
   timeoutMs: 1000,
   intervalMs: 0,
@@ -77,10 +84,10 @@ fetchCount = 0;
 readyAfter = 1;
 contentFetchCount = 0;
 contentReadyAfter = 3;
-expectedPublishedContent = { title: 'New deployment', gallery: [{ images: [publishedPath] }] };
+expectedPublishedContent = { title: 'New deployment', gallery: [{ images: [publishedPath] }], site: { subHeroImages: { research: bannerPublishedPath } } };
 const deployment = await browser.EMLLocalContent.waitForPublishedDeployment(
   expectedPublishedContent,
-  [publishedPath],
+  [publishedPath, bannerPublishedPath],
   { timeoutMs: 1000, intervalMs: 0 },
 );
 assert.equal(deployment.ready, true);
