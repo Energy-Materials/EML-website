@@ -615,7 +615,7 @@ window.EML_DATA = {
     "joinMessage": "Motivated graduate and undergraduate students interested in energy materials and electrochemical systems are welcome to contact us.",
     "knuLogo": "assets/uploads/2026-09-02/image-bCqjZ5iPXFCrYA7H_7_7CI_g.webp",
     "labName": "Energy Materials Laboratory",
-    "labNameKr": "공주대학교 에너지재료연구실",
+    "labNameKr": "국립공주대학교 에너지재료연구실",
     "logoDark": "assets/uploads/2026-09-02/image-hxcUtZMaUNkPPvFdDTJylKFO.png",
     "logoWhite": "assets/uploads/2026-09-02/image-Ry2xmTLenBzyNIP0LVDH-wRc.png",
     "mapEmbed": "https://www.google.com/maps?q=Kongju%20National%20University%20Cheonan%20Campus&output=embed",
