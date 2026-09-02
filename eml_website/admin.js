@@ -44,7 +44,48 @@
   let deploymentWatchSettled = true;
   let pendingPublishedContent = null;
 
+  const defaultImageDisplay = Object.freeze({ positionX: 50, positionY: 50, zoom: 1 });
+
   function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+  function freshImageDisplay() { return { ...defaultImageDisplay }; }
+
+  function clampImageDisplayNumber(value, fallback, min, max) {
+    return typeof value === 'number' && Number.isFinite(value)
+      ? Math.min(max, Math.max(min, value))
+      : fallback;
+  }
+
+  function normalizeImageDisplay(value) {
+    const display = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    return {
+      positionX: clampImageDisplayNumber(display.positionX, defaultImageDisplay.positionX, 0, 100),
+      positionY: clampImageDisplayNumber(display.positionY, defaultImageDisplay.positionY, 0, 100),
+      zoom: clampImageDisplayNumber(display.zoom, defaultImageDisplay.zoom, 1, 4),
+    };
+  }
+
+  function alignedImageDisplays(images, displays) {
+    return (images || []).map((_, index) => normalizeImageDisplay(Array.isArray(displays) ? displays[index] : null));
+  }
+
+  function imageDisplaysPath(imagesPath) {
+    return String(imagesPath).replace(/\.images$/, '.imageDisplays');
+  }
+
+  function imageDisplayTransform(value) {
+    const display = normalizeImageDisplay(value);
+    return {
+      ...display,
+      translateX: Number(((display.positionX - 50) * (display.zoom - 1)).toFixed(2)),
+      translateY: Number(((display.positionY - 50) * (display.zoom - 1)).toFixed(2)),
+    };
+  }
+
+  function imageDisplayStyle(value) {
+    const display = imageDisplayTransform(value);
+    return `--image-translate-x:${display.translateX}%;--image-translate-y:${display.translateY}%;--image-zoom:${Number(display.zoom.toFixed(3))}`;
+  }
 
   function isValidSiteData(value) {
     return Boolean(window.EMLDataSchema && window.EMLDataSchema.validate(value).valid);
@@ -163,7 +204,7 @@
       const path = image.dataset.publishedSrc;
       if (!published.has(path)) return;
       image.src = imagePreviewSource(path);
-      const container = image.closest('.image-tile, .dropzone');
+      const container = image.closest('.image-tile') || image.closest('.dropzone') || image.closest('.image-display-editor');
       container?.classList.remove('is-deploying');
       container?.querySelectorAll('[data-deployment-badge]').forEach((badge) => badge.remove());
       container?.querySelectorAll('[data-deployment-note]').forEach((note) => note.remove());
@@ -246,6 +287,16 @@
       obj = obj[key];
     }
     obj[parts[parts.length - 1]] = value;
+  }
+
+  function deletePath(path) {
+    const parts = String(path).split('.');
+    let obj = data;
+    for (let index = 0; index < parts.length - 1; index += 1) {
+      obj = obj?.[parts[index]];
+      if (obj == null) return;
+    }
+    if (obj != null) delete obj[parts[parts.length - 1]];
   }
 
   async function migrateEmbeddedImages(value, path = 'legacy') {
@@ -422,11 +473,14 @@
     const uploadAriaLabel = options.uploadAriaLabel || uploadLabel;
     const resetAriaLabel = options.resetAriaLabel || resetLabel;
     const resetDisabled = options.resetDisabled ? ' disabled' : '';
-    const pathInput = `<input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}" placeholder="${escapeAttr(pathPlaceholder)}" aria-label="${escapeAttr(label)} 저장소 경로" />`;
+    const displayPath = String(options.displayPath || '');
+    const displayPathAttribute = displayPath ? ` data-image-display-path="${escapeAttr(displayPath)}"` : '';
+    const resetDisplayAttribute = displayPath ? ` data-reset-image-display-path="${escapeAttr(displayPath)}"` : '';
+    const pathInput = `<input class="path-input" type="text" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}"${resetDisplayAttribute} placeholder="${escapeAttr(pathPlaceholder)}" aria-label="${escapeAttr(label)} 저장소 경로" />`;
     const pathControl = options.advancedPath
       ? `<details class="advanced-path"><summary>고급: 저장소 경로 직접 입력</summary><label><span>저장소 이미지 경로</span>${pathInput}</label></details>`
       : pathInput;
-    return `<div class="upload-field" data-upload-field data-upload-path="${escapeAttr(path)}">
+    return `<div class="upload-field" data-upload-field data-upload-path="${escapeAttr(path)}"${displayPathAttribute}>
       <span class="upload-label">${escapeHTML(label)}</span>
       <div class="dropzone${wide}${deploying ? ' is-deploying' : ''}" data-dropzone>
         <img src="${escapeAttr(preview)}" alt="${escapeAttr(label)} preview" data-upload-preview data-published-src="${escapeAttr(publishedPath)}" />
@@ -442,6 +496,38 @@
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload-input hidden />
           ${pathControl}
         </div>
+      </div>
+    </div>`;
+  }
+
+  function imageDisplayEditor(path, source, value, label, options = {}) {
+    const storedSource = String(source || '');
+    const preview = imagePreviewSource(storedSource) || options.placeholder || 'assets/person-placeholder.svg';
+    const display = normalizeImageDisplay(value);
+    const idBase = `image-display-${String(path).replace(/[^a-z0-9_-]+/gi, '-')}`;
+    const profileClass = options.profile ? ' is-profile' : '';
+    return `<div class="image-display-editor${profileClass}" data-image-display-editor data-display-path="${escapeAttr(path)}">
+      <div class="image-display-preview" data-image-display-preview role="img" aria-label="${escapeAttr(label)} 3:4 미리보기" style="${escapeAttr(imageDisplayStyle(display))}">
+        <img src="${escapeAttr(preview)}" alt="" draggable="false" data-published-src="${escapeAttr(storedSource)}" />
+        <span class="image-display-hint">확대한 뒤 사진을 드래그해 위치를 맞추세요.</span>
+      </div>
+      <div class="image-display-controls" role="group" aria-label="${escapeAttr(label)} 표시 영역 조절">
+        <label class="image-display-control" for="${escapeAttr(idBase)}-zoom">
+          <span>확대</span>
+          <input id="${escapeAttr(idBase)}-zoom" type="range" min="1" max="4" step="0.05" value="${escapeAttr(display.zoom)}" aria-valuetext="${Math.round(display.zoom * 100)}%" data-image-display-control="zoom" />
+          <output data-image-display-output="zoom">${Math.round(display.zoom * 100)}%</output>
+        </label>
+        <label class="image-display-control" for="${escapeAttr(idBase)}-x">
+          <span>가로 위치</span>
+          <input id="${escapeAttr(idBase)}-x" type="range" min="0" max="100" step="1" value="${escapeAttr(display.positionX)}" data-image-display-control="positionX"${display.zoom <= 1.001 ? ' disabled' : ''} />
+          <output data-image-display-output="positionX">${Math.round(display.positionX)}%</output>
+        </label>
+        <label class="image-display-control" for="${escapeAttr(idBase)}-y">
+          <span>세로 위치</span>
+          <input id="${escapeAttr(idBase)}-y" type="range" min="0" max="100" step="1" value="${escapeAttr(display.positionY)}" data-image-display-control="positionY"${display.zoom <= 1.001 ? ' disabled' : ''} />
+          <output data-image-display-output="positionY">${Math.round(display.positionY)}%</output>
+        </label>
+        <button class="ghost-btn image-display-reset" type="button" data-image-display-reset>표시 영역 초기화</button>
       </div>
     </div>`;
   }
@@ -645,7 +731,10 @@
     return `<section class="editor-card">
       ${header('Professor', '교수님 프로필, 학력, 경력을 관리합니다.')}
       <div class="grid-2">
-        ${uploadField('professor.photo', 'Profile Photo', p.photo, { placeholder: 'assets/person-placeholder.svg' })}
+        <div class="profile-image-fields">
+          ${uploadField('professor.photo', 'Profile Photo', p.photo, { placeholder: 'assets/person-placeholder.svg', displayPath: 'professor.photoDisplay' })}
+          ${imageDisplayEditor('professor.photoDisplay', p.photo, p.photoDisplay, `${p.name || 'Professor'} 프로필 사진`, { profile: true, placeholder: 'assets/person-placeholder.svg' })}
+        </div>
         <div class="grid-2">
           ${inputField('professor.name', 'Name', p.name)}
           ${inputField('professor.role', 'Role', p.role)}
@@ -671,7 +760,10 @@
           <summary>${escapeHTML(m.name || `Member ${i + 1}`)}</summary>
           <div class="item-fields">
             <div class="grid-2">
-              ${uploadField(`members.${i}.photo`, 'Photo', m.photo, { placeholder: 'assets/person-placeholder.svg' })}
+              <div class="profile-image-fields">
+                ${uploadField(`members.${i}.photo`, 'Photo', m.photo, { placeholder: 'assets/person-placeholder.svg', displayPath: `members.${i}.photoDisplay` })}
+                ${imageDisplayEditor(`members.${i}.photoDisplay`, m.photo, m.photoDisplay, `${m.name || `Member ${i + 1}`} 프로필 사진`, { profile: true, placeholder: 'assets/person-placeholder.svg' })}
+              </div>
               <div class="grid-2">
                 ${inputField(`members.${i}.name`, 'Name', m.name)}
                 ${inputField(`members.${i}.role`, 'Role', m.role)}
@@ -771,16 +863,22 @@
     </section>`;
   }
 
-  function imageList(path, images = []) {
+  function imageList(path, images = [], displays = []) {
+    const displaysPath = imageDisplaysPath(path);
     return `<div class="image-list" data-image-list="${escapeAttr(path)}">
       ${(images || []).map((src, index) => {
         const deploying = imageIsDeploying(src);
-        return `<div class="image-tile${deploying ? ' is-deploying' : ''}" draggable="true" data-image-path="${escapeAttr(path)}" data-image-index="${index}">
-        <img src="${escapeAttr(imagePreviewSource(src))}" alt="Gallery image ${index + 1}" data-published-src="${escapeAttr(src)}" />
+        const displayPath = `${displaysPath}.${index}`;
+        return `<div class="image-tile${deploying ? ' is-deploying' : ''}" data-image-path="${escapeAttr(path)}" data-image-index="${index}">
+        <div class="image-tile-order">
+          <span>Photo ${index + 1}${index === 0 ? ' · 대표 이미지' : ''}</span>
+          <button class="image-drag-handle" type="button" draggable="true" data-image-drag-handle aria-label="Photo ${index + 1} 순서 드래그" title="드래그하여 순서 변경">↕ 순서</button>
+        </div>
+        ${imageDisplayEditor(displayPath, src, displays[index], `Gallery Photo ${index + 1}`, { placeholder: 'assets/gallery-placeholder-1.svg' })}
         ${deploying ? '<span class="deployment-badge" data-deployment-badge>배포 중</span>' : ''}
         <div class="tile-actions">
-          <button type="button" data-image-action="up" data-image-path="${escapeAttr(path)}" data-index="${index}">↑</button>
-          <button type="button" data-image-action="down" data-image-path="${escapeAttr(path)}" data-index="${index}">↓</button>
+          <button type="button" data-image-action="up" data-image-path="${escapeAttr(path)}" data-index="${index}"${index === 0 ? ' disabled' : ''}>↑ 위로</button>
+          <button type="button" data-image-action="down" data-image-path="${escapeAttr(path)}" data-index="${index}"${index === images.length - 1 ? ' disabled' : ''}>↓ 아래로</button>
           <button type="button" data-image-action="delete" data-image-path="${escapeAttr(path)}" data-index="${index}">Delete</button>
         </div>
       </div>`;
@@ -806,10 +904,11 @@
   function renderGallery() {
     data.gallery = data.gallery || [];
     return `<section class="editor-card">
-      ${header('Gallery', '게시글별 다중 이미지, 미리보기, 드래그 앤 드롭, 순서 변경을 지원합니다.', '<button class="primary" type="button" data-add="gallery">+ Add Gallery Post</button>')}
+      ${header('Gallery', '게시글별 다중 이미지와 3:4 표시 영역을 미리 보며 조절할 수 있습니다.', '<button class="primary" type="button" data-add="gallery">+ Add Gallery Post</button>')}
       <div class="item-list">
         ${data.gallery.map((g, i) => {
           const images = Array.isArray(g.images) ? g.images : (g.image ? [g.image] : []);
+          const displays = alignedImageDisplays(images, g.imageDisplays);
           return `<details class="item-card" ${i < 2 ? 'open' : ''}>
             <summary>${escapeHTML(g.date || '')} · ${escapeHTML(g.title || 'Gallery Post')} · ${images.length} photos</summary>
             <div class="item-fields">
@@ -820,7 +919,7 @@
               </div>
               ${textareaField(`gallery.${i}.body`, 'Detail Body', g.body)}
               ${multiUploadField(`gallery.${i}.images`, 'Gallery Images')}
-              ${imageList(`gallery.${i}.images`, images)}
+              ${imageList(`gallery.${i}.images`, images, displays)}
               <div class="inline-actions">
                 <button class="ghost-btn" type="button" data-move="gallery" data-index="${i}" data-dir="-1">↑ Move post up</button>
                 <button class="ghost-btn" type="button" data-move="gallery" data-index="${i}" data-dir="1">↓ Move post down</button>
@@ -888,6 +987,12 @@
           field.setAttribute('aria-invalid', String(!valid));
         }
         setPath(field.dataset.path, value);
+        if (field.dataset.resetImageDisplayPath) {
+          setPath(field.dataset.resetImageDisplayPath, freshImageDisplay());
+          const matchingEditor = Array.from(content.querySelectorAll('[data-image-display-editor]'))
+            .find((editor) => editor.dataset.displayPath === field.dataset.resetImageDisplayPath);
+          if (matchingEditor) applyImageDisplayEditor(matchingEditor, freshImageDisplay());
+        }
         syncBannerUploadState(field, value);
         markDirty();
       });
@@ -912,6 +1017,7 @@
     content.querySelectorAll('[data-move]').forEach((button) => button.addEventListener('click', () => moveItem(button.dataset.move, Number(button.dataset.index), Number(button.dataset.dir))));
     bindUploads();
     bindMultiUploads();
+    bindImageDisplayEditors();
     bindImageActions();
     bindPublishedImageFallbacks();
     const rawApply = content.querySelector('[data-apply-raw]');
@@ -927,7 +1033,7 @@
         image.dataset.deploymentFallback = 'true';
         pendingImagePreviews.set(path, 'assets/gallery-placeholder-2.svg');
         image.src = 'assets/gallery-placeholder-2.svg';
-        const container = image.closest('.image-tile, .dropzone');
+        const container = image.closest('.image-tile') || image.closest('.dropzone') || image.closest('.image-display-editor');
         container?.classList.add('is-deploying');
         if (container && !container.querySelector('[data-deployment-badge]')) {
           const badge = document.createElement('span');
@@ -948,24 +1054,27 @@
   function bindUploads() {
     content.querySelectorAll('[data-upload-field]').forEach((field) => {
       const path = field.dataset.uploadPath;
+      const displayPath = field.dataset.imageDisplayPath || '';
       const input = field.querySelector('[data-upload-input]');
       const button = field.querySelector('[data-upload-button]');
       const resetButton = field.querySelector('[data-upload-reset]');
+      const pathInput = field.querySelector('[data-path]');
       const dropzone = field.querySelector('[data-dropzone]');
       const preview = field.querySelector('[data-upload-preview]');
       button.addEventListener('click', () => input.click());
       input.addEventListener('change', () => {
         const file = input.files[0];
         input.value = '';
-        readSingleFile(file, path, preview);
+        readSingleFile(file, path, preview, displayPath);
       });
       dropzone.addEventListener('dragover', (event) => { event.preventDefault(); dropzone.classList.add('is-dragover'); });
       dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
       dropzone.addEventListener('drop', (event) => {
         event.preventDefault();
         dropzone.classList.remove('is-dragover');
-        readSingleFile(event.dataTransfer.files[0], path, preview);
+        readSingleFile(event.dataTransfer.files[0], path, preview, displayPath);
       });
+      if (displayPath) pathInput?.addEventListener('change', () => renderPreservingPosition());
       resetButton?.addEventListener('click', () => {
         const resetValue = resetButton.dataset.resetValue || '';
         if (String(getPath(path) || '') === resetValue) {
@@ -993,7 +1102,121 @@
     if (resetButton) resetButton.disabled = !custom;
   }
 
-  async function readSingleFile(file, path, preview) {
+  function materializeImageDisplaysForPath(displayPath) {
+    const match = String(displayPath).match(/^(gallery\.\d+)\.imageDisplays\.\d+$/);
+    if (!match) return;
+    const images = getPath(`${match[1]}.images`) || [];
+    const displaysPath = `${match[1]}.imageDisplays`;
+    setPath(displaysPath, alignedImageDisplays(images, getPath(displaysPath)));
+  }
+
+  function applyImageDisplayEditor(editor, value) {
+    const display = imageDisplayTransform(value);
+    const preview = editor.querySelector('[data-image-display-preview]');
+    if (preview) {
+      preview.style.setProperty('--image-translate-x', `${display.translateX}%`);
+      preview.style.setProperty('--image-translate-y', `${display.translateY}%`);
+      preview.style.setProperty('--image-zoom', String(Number(display.zoom.toFixed(3))));
+      preview.classList.toggle('is-adjustable', display.zoom > 1.001);
+    }
+    editor.querySelectorAll('[data-image-display-control]').forEach((control) => {
+      const key = control.dataset.imageDisplayControl;
+      control.value = String(display[key]);
+      control.disabled = key !== 'zoom' && display.zoom <= 1.001;
+      control.setAttribute('aria-valuetext', key === 'zoom' ? `${Math.round(display.zoom * 100)}%` : `${Math.round(display[key])}%`);
+    });
+    editor.querySelectorAll('[data-image-display-output]').forEach((output) => {
+      const key = output.dataset.imageDisplayOutput;
+      output.value = key === 'zoom' ? `${Math.round(display.zoom * 100)}%` : `${Math.round(display[key])}%`;
+      output.textContent = output.value;
+    });
+  }
+
+  function writeImageDisplay(editor, updates) {
+    const path = editor.dataset.displayPath;
+    materializeImageDisplaysForPath(path);
+    const current = normalizeImageDisplay(getPath(path));
+    const next = normalizeImageDisplay({ ...current, ...updates });
+    next.positionX = Math.round(next.positionX * 10) / 10;
+    next.positionY = Math.round(next.positionY * 10) / 10;
+    next.zoom = Math.round(next.zoom * 100) / 100;
+    if (current.positionX === next.positionX && current.positionY === next.positionY && current.zoom === next.zoom) return;
+    setPath(path, next);
+    applyImageDisplayEditor(editor, next);
+    markDirty();
+  }
+
+  function bindImageDisplayEditors() {
+    content.querySelectorAll('[data-image-display-editor]').forEach((editor) => {
+      const preview = editor.querySelector('[data-image-display-preview]');
+      let pointerState = null;
+
+      editor.querySelectorAll('[data-image-display-control]').forEach((control) => {
+        control.addEventListener('input', () => {
+          writeImageDisplay(editor, { [control.dataset.imageDisplayControl]: Number(control.value) });
+        });
+      });
+
+      editor.querySelector('[data-image-display-reset]')?.addEventListener('click', () => {
+        materializeImageDisplaysForPath(editor.dataset.displayPath);
+        setPath(editor.dataset.displayPath, freshImageDisplay());
+        applyImageDisplayEditor(editor, freshImageDisplay());
+        markDirty();
+        toast('이미지 표시 영역을 전체 보기로 초기화했습니다.');
+      });
+
+      if (!preview) return;
+      preview.addEventListener('dragstart', (event) => event.preventDefault());
+      preview.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        const display = normalizeImageDisplay(getPath(editor.dataset.displayPath));
+        if (display.zoom <= 1.001) {
+          if (event.pointerType === 'mouse') toast('사진을 이동하려면 확대 값을 100%보다 높여주세요.');
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        const bounds = preview.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return;
+        pointerState = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          positionX: display.positionX,
+          positionY: display.positionY,
+          zoom: display.zoom,
+          width: bounds.width,
+          height: bounds.height,
+        };
+        preview.setPointerCapture(event.pointerId);
+        preview.classList.add('is-dragging');
+      });
+      preview.addEventListener('pointermove', (event) => {
+        if (!pointerState || event.pointerId !== pointerState.pointerId) return;
+        event.preventDefault();
+        const zoomRange = pointerState.zoom - 1;
+        writeImageDisplay(editor, {
+          positionX: pointerState.positionX + (((event.clientX - pointerState.startX) / pointerState.width) * 100) / zoomRange,
+          positionY: pointerState.positionY + (((event.clientY - pointerState.startY) / pointerState.height) * 100) / zoomRange,
+        });
+      });
+      const endPointer = (event) => {
+        if (!pointerState || event.pointerId !== pointerState.pointerId) return;
+        if (preview.hasPointerCapture(event.pointerId)) preview.releasePointerCapture(event.pointerId);
+        pointerState = null;
+        preview.classList.remove('is-dragging');
+      };
+      preview.addEventListener('pointerup', endPointer);
+      preview.addEventListener('pointercancel', endPointer);
+      preview.addEventListener('lostpointercapture', () => {
+        pointerState = null;
+        preview.classList.remove('is-dragging');
+      });
+      applyImageDisplayEditor(editor, getPath(editor.dataset.displayPath));
+    });
+  }
+
+  async function readSingleFile(file, path, preview, displayPath = '') {
     if (!file) return;
     const uploadEpoch = editorEpoch;
     const uploadUserId = activeUserId;
@@ -1002,15 +1225,22 @@
       const imageUrl = await window.EMLLocalContent.uploadImage(file);
       if (editorEpoch !== uploadEpoch || activeUserId !== uploadUserId || !editorReady) return;
       const previousValue = getPath(path);
+      const previousDisplay = displayPath && getPath(displayPath) !== undefined ? clone(getPath(displayPath)) : undefined;
       setPath(path, imageUrl);
+      if (displayPath) setPath(displayPath, freshImageDisplay());
       try {
         window.EMLLocalContent.validatePendingImages(data);
       } catch (error) {
         setPath(path, previousValue);
+        if (displayPath) {
+          if (previousDisplay === undefined) deletePath(displayPath);
+          else setPath(displayPath, previousDisplay);
+        }
         throw error;
       }
       markDirty();
-      if (preview) preview.src = imageUrl;
+      if (displayPath) renderPreservingPosition();
+      else if (preview) preview.src = imageUrl;
       const pathInput = Array.from(content.querySelectorAll('[data-path]')).find((el) => el.dataset.path === path);
       if (pathInput) {
         pathInput.value = imageUrl;
@@ -1050,7 +1280,10 @@
   }
 
   async function addFilesToImages(path, files) {
-    const images = getPath(path) || [];
+    const images = [...(getPath(path) || [])];
+    const displaysPath = imageDisplaysPath(path);
+    const storedDisplays = getPath(displaysPath);
+    const previousDisplays = Array.isArray(storedDisplays) ? clone(storedDisplays) : undefined;
     const uploadEpoch = editorEpoch;
     const uploadUserId = activeUserId;
     let imageFiles;
@@ -1065,11 +1298,18 @@
       const imageUrls = await window.EMLLocalContent.uploadImages(imageFiles);
       if (editorEpoch !== uploadEpoch || activeUserId !== uploadUserId || !editorReady) return;
       const nextImages = [...images, ...imageUrls];
+      const nextDisplays = [
+        ...alignedImageDisplays(images, storedDisplays),
+        ...imageUrls.map(() => freshImageDisplay()),
+      ];
       setPath(path, nextImages);
+      setPath(displaysPath, nextDisplays);
       try {
         window.EMLLocalContent.validatePendingImages(data);
       } catch (error) {
         setPath(path, images);
+        if (previousDisplays === undefined) deletePath(displaysPath);
+        else setPath(displaysPath, previousDisplays);
         throw error;
       }
       markDirty();
@@ -1090,33 +1330,58 @@
       button.addEventListener('click', () => {
         const path = button.dataset.imagePath;
         const index = Number(button.dataset.index);
-        const images = getPath(path) || [];
+        const images = [...(getPath(path) || [])];
+        const displaysPath = imageDisplaysPath(path);
+        const displays = alignedImageDisplays(images, getPath(displaysPath));
         const deleted = button.dataset.imageAction === 'delete';
-        if (deleted) images.splice(index, 1);
-        if (button.dataset.imageAction === 'up' && index > 0) [images[index - 1], images[index]] = [images[index], images[index - 1]];
-        if (button.dataset.imageAction === 'down' && index < images.length - 1) [images[index + 1], images[index]] = [images[index], images[index + 1]];
+        if (deleted) {
+          images.splice(index, 1);
+          displays.splice(index, 1);
+        }
+        if (button.dataset.imageAction === 'up' && index > 0) {
+          [images[index - 1], images[index]] = [images[index], images[index - 1]];
+          [displays[index - 1], displays[index]] = [displays[index], displays[index - 1]];
+        }
+        if (button.dataset.imageAction === 'down' && index < images.length - 1) {
+          [images[index + 1], images[index]] = [images[index], images[index + 1]];
+          [displays[index + 1], displays[index]] = [displays[index], displays[index + 1]];
+        }
         setPath(path, images);
+        setPath(displaysPath, displays);
         markDirty();
         renderPreservingPosition();
         toast(deleted ? '이미지 삭제가 초안에 반영되었습니다.' : '이미지 순서 변경이 초안에 반영되었습니다.');
       });
     });
-    content.querySelectorAll('.image-tile[draggable="true"]').forEach((tile) => {
-      tile.addEventListener('dragstart', (event) => {
+    content.querySelectorAll('[data-image-drag-handle]').forEach((handle) => {
+      const tile = handle.closest('.image-tile');
+      handle.addEventListener('dragstart', (event) => {
         dragImage = { path: tile.dataset.imagePath, index: Number(tile.dataset.imageIndex) };
         tile.classList.add('is-dragging');
         event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', `${dragImage.path}:${dragImage.index}`);
       });
-      tile.addEventListener('dragend', () => tile.classList.remove('is-dragging'));
+      handle.addEventListener('dragend', () => {
+        tile.classList.remove('is-dragging');
+        dragImage = null;
+      });
+    });
+    content.querySelectorAll('.image-tile[data-image-path]').forEach((tile) => {
       tile.addEventListener('dragover', (event) => event.preventDefault());
       tile.addEventListener('drop', (event) => {
         event.preventDefault();
         if (!dragImage || dragImage.path !== tile.dataset.imagePath) return;
         const targetIndex = Number(tile.dataset.imageIndex);
-        const images = getPath(dragImage.path) || [];
+        if (targetIndex === dragImage.index) return;
+        const images = [...(getPath(dragImage.path) || [])];
+        const displaysPath = imageDisplaysPath(dragImage.path);
+        const displays = alignedImageDisplays(images, getPath(displaysPath));
         const [moved] = images.splice(dragImage.index, 1);
+        const [movedDisplay] = displays.splice(dragImage.index, 1);
         images.splice(targetIndex, 0, moved);
+        displays.splice(targetIndex, 0, movedDisplay);
         setPath(dragImage.path, images);
+        setPath(displaysPath, displays);
         dragImage = null;
         markDirty();
         renderPreservingPosition();
@@ -1128,14 +1393,14 @@
   function addItem(type) {
     const now = new Date().toISOString().slice(0, 10).replaceAll('-', '.');
     if (type === 'research') data.researchTopics.push({ id: `topic-${Date.now()}`, title: 'New Research Topic', short: 'Short description', image: 'assets/research-electrode-interface.svg', description: 'Detailed description.' });
-    if (type === 'member') data.members.push({ name: 'New Member', role: 'Graduate Student', period: '2026.03. - present', email: '', research: 'Research interest', photo: 'assets/person-placeholder.svg' });
+    if (type === 'member') data.members.push({ name: 'New Member', role: 'Graduate Student', period: '2026.03. - present', email: '', research: 'Research interest', photo: 'assets/person-placeholder.svg', photoDisplay: freshImageDisplay() });
     if (type === 'alumni') data.alumni.push({ date: '2026.02', name: 'Name', next: '-' });
     if (type === 'publication') {
       const nextNumber = Math.max(0, ...data.publications.map((publication) => Number.isInteger(publication.number) ? publication.number : 0)) + 1;
       data.publications.unshift({ number: nextNumber, year: String(new Date().getFullYear()), title: '', authors: '', journal: '', note: '', link_url: '' });
     }
     if (type === 'patent') data.patents.unshift({ year: String(new Date().getFullYear()), title: 'New patent title', inventors: 'Inventors', number: 'Patent number', link_url: '' });
-    if (type === 'gallery') data.gallery.unshift({ date: now, title: '', summary: '', image: '', images: [], body: '' });
+    if (type === 'gallery') data.gallery.unshift({ date: now, title: '', summary: '', image: '', images: [], imageDisplays: [], body: '' });
     markDirty();
     render();
     toast('새 항목이 초안에 추가되었습니다. 내용을 작성한 뒤 Save Changes를 눌러 게시하세요.');

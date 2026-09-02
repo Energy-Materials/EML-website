@@ -53,6 +53,35 @@
     }
   }
 
+  const defaultImageDisplay = Object.freeze({ positionX: 50, positionY: 50, zoom: 1 });
+
+  function clampImageDisplayNumber(value, fallback, min, max) {
+    return typeof value === 'number' && Number.isFinite(value)
+      ? Math.min(max, Math.max(min, value))
+      : fallback;
+  }
+
+  function normalizeImageDisplay(value) {
+    const display = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    return {
+      positionX: clampImageDisplayNumber(display.positionX, defaultImageDisplay.positionX, 0, 100),
+      positionY: clampImageDisplayNumber(display.positionY, defaultImageDisplay.positionY, 0, 100),
+      zoom: clampImageDisplayNumber(display.zoom, defaultImageDisplay.zoom, 1, 4),
+    };
+  }
+
+  function imageDisplayStyle(value) {
+    const display = normalizeImageDisplay(value);
+    const translateX = Number(((display.positionX - 50) * (display.zoom - 1)).toFixed(2));
+    const translateY = Number(((display.positionY - 50) * (display.zoom - 1)).toFixed(2));
+    const zoom = Number(display.zoom.toFixed(3));
+    return `--image-translate-x:${translateX}%;--image-translate-y:${translateY}%;--image-zoom:${zoom}`;
+  }
+
+  function galleryImageDisplay(item, index) {
+    return Array.isArray(item?.imageDisplays) ? item.imageDisplays[index] : defaultImageDisplay;
+  }
+
   function externalLinkUrl(value) {
     if (typeof value !== 'string' || !value || value !== value.trim() || value.length > 2048) return '';
     const raw = value;
@@ -330,7 +359,9 @@
     const p = data.professor || {};
     return `
       <article class="prof-card reveal">
-        <img class="prof-photo" src="${escapeAttr(asset(p.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(p.name || 'Professor')}" />
+        <div class="prof-photo image-display-frame" style="${escapeAttr(imageDisplayStyle(p.photoDisplay))}">
+          <img src="${escapeAttr(asset(p.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(p.name || 'Professor')}" />
+        </div>
         <div class="prof-info">
           <h2>${escapeHTML(p.name || '')}</h2>
           <p class="role">${escapeHTML(p.role || '')}</p>
@@ -360,7 +391,9 @@
       <div class="member-grid">
         ${members.map((m) => `
           <article class="member-card reveal">
-            <img src="${escapeAttr(asset(m.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(m.name)}" />
+            <div class="member-photo image-display-frame" style="${escapeAttr(imageDisplayStyle(m.photoDisplay))}">
+              <img src="${escapeAttr(asset(m.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(m.name)}" />
+            </div>
             <div>
               <h3>${escapeHTML(m.name)}</h3>
               <p class="role">${escapeHTML(m.role)}</p>
@@ -557,7 +590,9 @@
               const imgs = imagesForGallery(item);
               return `
                 <button class="gallery-card reveal" type="button" data-gallery-index="${index}">
-                  <img src="${escapeAttr(asset(imgs[0], 'assets/gallery-placeholder-1.svg'))}" alt="" />
+                  <div class="gallery-card-media image-display-frame" style="${escapeAttr(imageDisplayStyle(galleryImageDisplay(item, 0)))}">
+                    <img src="${escapeAttr(asset(imgs[0], 'assets/gallery-placeholder-1.svg'))}" alt="" />
+                  </div>
                   <div class="gallery-card-body">
                     <div class="gallery-date">${escapeHTML(item.date)} · ${imgs.length} photos</div>
                     <h3>${escapeHTML(item.title)}</h3>

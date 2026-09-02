@@ -173,6 +173,37 @@ function validateOptionalExternalUrl(entry, field, label, errors) {
   }
 }
 
+const IMAGE_DISPLAY_KEYS = ['positionX', 'positionY', 'zoom'];
+
+function validateImageDisplay(display, label, errors) {
+  if (!isPlainRecord(display)) {
+    errors.push(`${label} must be an object.`);
+    return;
+  }
+  Object.keys(display).forEach((key) => {
+    if (!IMAGE_DISPLAY_KEYS.includes(key)) errors.push(`${label}.${key} is not supported.`);
+  });
+  IMAGE_DISPLAY_KEYS.forEach((key) => {
+    if (!Object.prototype.hasOwnProperty.call(display, key) || typeof display[key] !== 'number' || !Number.isFinite(display[key])) {
+      errors.push(`${label}.${key} must be a finite number.`);
+    }
+  });
+  if (Number.isFinite(display.positionX) && (display.positionX < 0 || display.positionX > 100)) {
+    errors.push(`${label}.positionX must be between 0 and 100.`);
+  }
+  if (Number.isFinite(display.positionY) && (display.positionY < 0 || display.positionY > 100)) {
+    errors.push(`${label}.positionY must be between 0 and 100.`);
+  }
+  if (Number.isFinite(display.zoom) && (display.zoom < 1 || display.zoom > 4)) {
+    errors.push(`${label}.zoom must be between 1 and 4.`);
+  }
+}
+
+function validateOptionalImageDisplay(entry, field, label, errors) {
+  if (!Object.prototype.hasOwnProperty.call(entry, field)) return;
+  validateImageDisplay(entry[field], `${label}.${field}`, errors);
+}
+
 function validateKnownShape(content, errors) {
   REQUIRED_RECORDS.forEach((key) => requireRecord(content, key, errors));
   REQUIRED_RECORD_ARRAYS.forEach((key) => requireRecordArray(content, key, errors));
@@ -218,6 +249,7 @@ function validateKnownShape(content, errors) {
     ['education', 'experience', 'interest'].forEach((field) => requireStringArray(content.professor, field, 'professor', errors));
     if (typeof content.professor.photo === 'string') validateAssetPath(content.professor.photo, 'professor.photo', errors);
     validateEmail(content.professor.email, 'professor.email', errors);
+    validateOptionalImageDisplay(content.professor, 'photoDisplay', 'professor', errors);
   }
 
   const seenResearchIds = new Set();
@@ -239,6 +271,7 @@ function validateKnownShape(content, errors) {
     ['name', 'role', 'period', 'email', 'research', 'photo'].forEach((field) => requireString(entry, field, label, errors));
     if (typeof entry.photo === 'string') validateAssetPath(entry.photo, `${label}.photo`, errors);
     validateEmail(entry.email, `${label}.email`, errors);
+    validateOptionalImageDisplay(entry, 'photoDisplay', label, errors);
   });
 
   (Array.isArray(content.alumni) ? content.alumni : []).forEach((entry, index) => {
@@ -286,6 +319,18 @@ function validateKnownShape(content, errors) {
     if (typeof entry.image === 'string' && Array.isArray(entry.images) && typeof entry.images[0] === 'string'
       && entry.image !== entry.images[0]) {
       errors.push(`${label}.image must match the first item in ${label}.images.`);
+    }
+    if (Object.prototype.hasOwnProperty.call(entry, 'imageDisplays')) {
+      if (!Array.isArray(entry.imageDisplays)) {
+        errors.push(`${label}.imageDisplays must be an array.`);
+      } else {
+        if (Array.isArray(entry.images) && entry.imageDisplays.length !== entry.images.length) {
+          errors.push(`${label}.imageDisplays must have the same length as ${label}.images.`);
+        }
+        entry.imageDisplays.forEach((display, displayIndex) => {
+          validateImageDisplay(display, `${label}.imageDisplays.${displayIndex}`, errors);
+        });
+      }
     }
   });
 }

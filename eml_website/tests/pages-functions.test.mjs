@@ -203,6 +203,13 @@ const linkedContent = structuredClone(canonicalContent);
 linkedContent.publications[0].link_url = 'https://doi.org/10.1000/eml-paper';
 linkedContent.patents[0].link_url = 'https://patents.google.com/patent/KR102040236B1/en';
 linkedContent.patents[1].link_url = null;
+linkedContent.professor.photoDisplay = { positionX: 48, positionY: 35, zoom: 1.4 };
+linkedContent.members[0].photoDisplay = { positionX: 62, positionY: 44, zoom: 1.75 };
+linkedContent.gallery[0].imageDisplays = linkedContent.gallery[0].images.map((_, index) => (
+  index === 0
+    ? { positionX: 70, positionY: 30, zoom: 2 }
+    : { positionX: 50, positionY: 50, zoom: 1 }
+));
 const putResponse = await contentRoute({
   request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
     method: 'PUT',
@@ -227,6 +234,9 @@ assert.equal(createdBlobs[1].content, `window.EML_DATA = ${createdBlobs[0].conte
 assert.equal(published.content.publications[0].link_url, linkedContent.publications[0].link_url);
 assert.equal(published.content.patents[0].link_url, linkedContent.patents[0].link_url);
 assert.equal(published.content.patents[1].link_url, null);
+assert.deepEqual(published.content.professor.photoDisplay, linkedContent.professor.photoDisplay);
+assert.deepEqual(published.content.members[0].photoDisplay, linkedContent.members[0].photoDisplay);
+assert.deepEqual(published.content.gallery[0].imageDisplays, linkedContent.gallery[0].imageDisplays);
 const committedLinkedContent = JSON.parse(createdBlobs[0].content);
 assert.equal(committedLinkedContent.publications[0].link_url, linkedContent.publications[0].link_url);
 assert.equal(committedLinkedContent.patents[0].link_url, linkedContent.patents[0].link_url);
@@ -337,6 +347,32 @@ const invalidResponse = await contentRoute({
 });
 assert.equal(invalidResponse.status, 422);
 assert.equal((await invalidResponse.json()).code, 'invalid_content');
+
+const mismatchedImageDisplays = structuredClone(canonicalContent);
+mismatchedImageDisplays.gallery[0].imageDisplays = [];
+const mismatchedImageDisplaysResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: { Cookie: sessionCookie, Origin: env.PUBLIC_ORIGIN, 'Content-Type': 'application/json', 'X-EML-Admin-Request': '1' },
+    body: JSON.stringify({ content: mismatchedImageDisplays, expectedRevision: shas.file }),
+  }),
+  env,
+});
+assert.equal(mismatchedImageDisplaysResponse.status, 422);
+assert.equal((await mismatchedImageDisplaysResponse.json()).code, 'invalid_content');
+
+const invalidPhotoDisplay = structuredClone(canonicalContent);
+invalidPhotoDisplay.members[0].photoDisplay = { positionX: 50, positionY: 50, zoom: 4.01 };
+const invalidPhotoDisplayResponse = await contentRoute({
+  request: new Request(`${env.PUBLIC_ORIGIN}/api/content`, {
+    method: 'PUT',
+    headers: { Cookie: sessionCookie, Origin: env.PUBLIC_ORIGIN, 'Content-Type': 'application/json', 'X-EML-Admin-Request': '1' },
+    body: JSON.stringify({ content: invalidPhotoDisplay, expectedRevision: shas.file }),
+  }),
+  env,
+});
+assert.equal(invalidPhotoDisplayResponse.status, 422);
+assert.equal((await invalidPhotoDisplayResponse.json()).code, 'invalid_content');
 
 const blankGalleryImage = structuredClone(canonicalContent);
 blankGalleryImage.gallery[0].images = [''];
