@@ -249,7 +249,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um,† Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho Yu",
       "journal": "Acc. Chem. Res. 2023, 56, 440",
-      "link_url": "",
+      "link_url": "https://www.naver.com/",
       "note": "†These authors are equally contributed. Supplementary Cover",
       "number": 36,
       "title": "Real-time visualizing nucleation and growth of electrodes for post-lithium-ion batteries",
