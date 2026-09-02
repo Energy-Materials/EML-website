@@ -252,7 +252,7 @@ window.EML_DATA = {
   },
   "publications": [
     {
-      "authors": "Ji Hyun Um,† Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho Yu",
+      "authors": "*Ji Hyun Um,†* Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho Yu",
       "journal": "Acc. Chem. Res. 2023, 56, 440",
       "link_url": "https://www.naver.com/",
       "note": "†These authors are equally contributed. Supplementary Cover",
