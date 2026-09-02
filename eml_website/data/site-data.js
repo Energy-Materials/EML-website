@@ -612,7 +612,7 @@ window.EML_DATA = {
     "labName": "Energy Materials Laboratory",
     "labNameKr": "공주대학교 에너지재료연구실",
     "logoDark": "assets/uploads/2026-09-02/image-hxcUtZMaUNkPPvFdDTJylKFO.png",
-    "logoWhite": "assets/uploads/2026-09-02/image-2RR9XF3OLOICI1Sft7LBsJMV.png",
+    "logoWhite": "assets/uploads/2026-09-02/image-N9YubUBaGgnTuGe6gOSX8BNv.webp",
     "mapEmbed": "https://www.google.com/maps?q=Kongju%20National%20University%20Cheonan%20Campus&output=embed",
     "mapImage": "",
     "phone": "",
