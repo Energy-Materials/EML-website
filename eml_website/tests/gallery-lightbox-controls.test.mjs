@@ -7,6 +7,19 @@ const appSource = await readFile(new URL('../app.js', import.meta.url), 'utf8');
 
 const mediaMarkup = htmlSource.match(/<div class="lightbox-media">([\s\S]*?)<\/div>/)?.[1] || '';
 assert.match(mediaMarkup, /<button class="lightbox-close"[^>]*data-lightbox-close[^>]*><\/button>/);
+assert.match(
+  mediaMarkup,
+  /<button class="lightbox-nav prev"[^>]*data-lightbox-prev[^>]*>[\s\S]*?<svg class="lightbox-nav-icon"[^>]*>[\s\S]*?<\/svg>\s*<\/button>/,
+  'The previous button must use one measurable, centered SVG icon.',
+);
+assert.match(
+  mediaMarkup,
+  /<button class="lightbox-nav next"[^>]*data-lightbox-next[^>]*>[\s\S]*?<svg class="lightbox-nav-icon"[^>]*>[\s\S]*?<\/svg>\s*<\/button>/,
+  'The next button must use one measurable, centered SVG icon.',
+);
+assert.doesNotMatch(mediaMarkup, /[‹›]/, 'Legacy text glyphs must not create an extra grid row.');
+assert.match(mediaMarkup, /<path d="M6\.5 1\.5 1\.5 6l5 4\.5" \/>/, 'The previous glyph must be symmetric around x=4 and y=6.');
+assert.match(mediaMarkup, /<path d="M1\.5 1\.5 6\.5 6l-5 4\.5" \/>/, 'The next glyph must be symmetric around x=4 and y=6.');
 assert.ok(
   mediaMarkup.indexOf('lightbox-close') < mediaMarkup.indexOf('data-lightbox-image'),
   'The close control must remain the first control inside the visible media panel.',
@@ -42,16 +55,10 @@ assert.match(
 );
 assert.match(
   stylesSource,
-  /\.lightbox-nav::before\s*\{[^}]*width:\s*9px[^}]*height:\s*9px[^}]*border-top:\s*1\.5px[^}]*border-right:\s*1\.5px/s,
-  'The arrow glyph must stay visually secondary and thin.',
+  /\.lightbox-nav-icon\s*\{[^}]*width:\s*8px[^}]*height:\s*12px[^}]*display:\s*block[^}]*fill:\s*none[^}]*stroke:\s*currentColor[^}]*stroke-width:\s*1\.5/s,
+  'The centered SVG arrow must stay visually secondary and thin.',
 );
-assert.match(stylesSource, /\.lightbox-nav\.prev::before\s*\{\s*transform:\s*rotate\(-135deg\);\s*\}/);
-assert.match(stylesSource, /\.lightbox-nav\.next::before\s*\{\s*transform:\s*rotate\(45deg\);\s*\}/);
-assert.doesNotMatch(
-  stylesSource,
-  /\.lightbox-nav\.(?:prev|next)::before\s*\{[^}]*translate/,
-  'Neither arrow glyph may carry an optical Y offset.',
-);
+assert.doesNotMatch(stylesSource, /\.lightbox-nav::before\s*\{/);
 assert.match(
   stylesSource,
   /@media \(max-width:\s*620px\)[\s\S]*?\.lightbox-close\s*\{[^}]*width:\s*32px[^}]*height:\s*32px[^}]*\}[\s\S]*?\.lightbox-nav\s*\{[^}]*width:\s*36px[^}]*height:\s*36px/s,

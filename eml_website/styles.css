@@ -426,9 +426,7 @@ select:focus-visible,
 .lightbox-close::before { transform: translate(-50%, -50%) rotate(45deg); }
 .lightbox-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .lightbox-nav { position: absolute; inset-block: 0; z-index: 6; width: 36px; height: 36px; margin-block: auto; display: grid; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; background: rgba(4,16,27,.34); color: rgba(255,255,255,.92); font-size: 0; line-height: 1; backdrop-filter: blur(7px); opacity: .82; transition: background var(--fast), transform var(--fast), opacity var(--fast), border-color var(--fast); }
-.lightbox-nav::before { content: ""; width: 9px; height: 9px; border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor; }
-.lightbox-nav.prev::before { transform: rotate(-135deg); }
-.lightbox-nav.next::before { transform: rotate(45deg); }
+.lightbox-nav-icon { width: 8px; height: 12px; display: block; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .lightbox-nav:disabled { transform: none !important; }
 .lightbox-nav.prev { left: 12px; }
 .lightbox-nav.next { right: 12px; }
