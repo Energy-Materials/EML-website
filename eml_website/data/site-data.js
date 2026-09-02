@@ -244,8 +244,8 @@ window.EML_DATA = {
     "name": "Ji Hyun Um | 엄지현",
     "photo": "assets/uploads/2026-08-28/image--7L7Tt5B8kA2O8ugkdq9sIZ8.png",
     "photoDisplay": {
-      "positionX": 52,
-      "positionY": 50,
+      "positionX": 58.8,
+      "positionY": 56.3,
       "zoom": 1.15
     },
     "role": "Associate Professor"
