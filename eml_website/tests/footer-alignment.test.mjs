@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const stylesSource = await readFile(new URL('../styles.css', import.meta.url), 'utf8');
+const indexSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 assert.match(
   stylesSource,
@@ -22,6 +23,16 @@ assert.match(
   stylesSource,
   /@media \(max-width:\s*620px\)\s*\{[\s\S]*?\.container\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*30px\),\s*var\(--max\)\)[\s\S]*?\.site-footer\s*\{[^}]*padding-inline:\s*15px/,
   'Primary content and footer must retain matching 15px mobile side gutters.',
+);
+assert.match(
+  indexSource,
+  /<div class="footer-email-block">[\s\S]*?<a[^>]*data-footer-email/,
+  'The footer email must have a dedicated alignment block.',
+);
+assert.match(
+  stylesSource,
+  /\.footer-email-block\s*\{[^}]*width:\s*100%[^}]*text-align:\s*right/,
+  'The footer email text must end at the shared right edge.',
 );
 
 console.log('Footer container alignment contract passed.');

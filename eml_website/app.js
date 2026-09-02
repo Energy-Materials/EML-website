@@ -207,7 +207,7 @@
       <section class="hero" aria-label="Main home banner" style="--hero-image: url('${escapeAttr(heroImage)}')">
         <canvas class="hero-particles" data-particles aria-hidden="true"></canvas>
         <div class="hero-content">
-          <p class="hero-label"><img src="${escapeAttr(asset(s.knuLogo, 'assets/knu-logo.png'))}" alt="Kongju National University logo" />${escapeHTML(h.eyebrow || s.university || '')}</p>
+          <p class="hero-label">${escapeHTML(h.eyebrow || s.university || '')}</p>
           <h1 class="hero-title">
             ${(h.titleLines || ['Energy Materials', 'Laboratory']).map((line) => `<span>${escapeHTML(line)}</span>`).join('')}
           </h1>
@@ -958,15 +958,29 @@
     const ctx = canvas.getContext('2d');
     const particles = [];
     const count = Math.min(88, Math.floor(window.innerWidth / 18));
+    let canvasWidth = 1;
+    let canvasHeight = 1;
+    let renderScaleX = 1;
+    let renderScaleY = 1;
     function resize() {
-      canvas.width = window.innerWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+      const bounds = canvas.getBoundingClientRect();
+      canvasWidth = Math.max(1, bounds.width);
+      canvasHeight = Math.max(1, bounds.height);
+      const pixelRatio = Math.min(2, Math.max(1, Number(window.devicePixelRatio) || 1));
+      const pixelWidth = Math.max(1, Math.round(canvasWidth * pixelRatio));
+      const pixelHeight = Math.max(1, Math.round(canvasHeight * pixelRatio));
+      if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+        canvas.width = pixelWidth;
+        canvas.height = pixelHeight;
+      }
+      renderScaleX = canvas.width / canvasWidth;
+      renderScaleY = canvas.height / canvasHeight;
+      ctx.setTransform(renderScaleX, 0, 0, renderScaleY, 0, 0);
     }
     particleResize = resize;
     function resetParticle(p) {
-      p.x = Math.random() * window.innerWidth * 0.78;
-      p.y = Math.random() * canvas.offsetHeight;
+      p.x = Math.random() * canvasWidth * 0.78;
+      p.y = Math.random() * canvasHeight;
       p.r = Math.random() * 2.4 + 0.7;
       p.vx = Math.random() * 0.58 + 0.22;
       p.vy = (Math.random() - 0.5) * 0.42;
@@ -979,13 +993,15 @@
       particles.push(p);
     }
     function draw() {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(renderScaleX, 0, 0, renderScaleY, 0, 0);
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
       particles.forEach((p, i) => {
         p.x += p.vx;
         p.y += Math.sin((Date.now() / 900) + i) * 0.16 + p.vy;
-        if (p.x > window.innerWidth || p.y < -20 || p.y > canvas.offsetHeight + 20) resetParticle(p);
+        if (p.x > canvasWidth || p.y < -20 || p.y > canvasHeight + 20) resetParticle(p);
         const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 8);
         gradient.addColorStop(0, `rgba(167, 219, 255, ${p.alpha})`);
         gradient.addColorStop(1, 'rgba(95, 145, 191, 0)');
@@ -998,12 +1014,14 @@
       particleFrame = requestAnimationFrame(draw);
     }
     window.addEventListener('resize', resize, { passive: true });
+    window.visualViewport?.addEventListener('resize', resize, { passive: true });
     draw();
   }
 
   function cancelParticles() {
     if (particleFrame) cancelAnimationFrame(particleFrame);
     if (particleResize) window.removeEventListener('resize', particleResize);
+    if (particleResize) window.visualViewport?.removeEventListener('resize', particleResize);
     particleFrame = null;
     particleCanvas = null;
     particleResize = null;
