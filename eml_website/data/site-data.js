@@ -608,7 +608,7 @@ window.EML_DATA = {
     "email": "jhum@kongju.ac.kr",
     "heroImage": "assets/hero-concept-from-pdf.png",
     "joinMessage": "Motivated graduate and undergraduate students interested in energy materials and electrochemical systems are welcome to contact us.",
-    "knuLogo": "assets/uploads/2026-09-02/image-RqYYnrue0CUwYgTewIgPA84l.png",
+    "knuLogo": "assets/uploads/2026-09-02/image-bCqjZ5iPXFCrYA7H_7_7CI_g.webp",
     "labName": "Energy Materials Laboratory",
     "labNameKr": "공주대학교 에너지재료연구실",
     "logoDark": "assets/uploads/2026-09-02/image-hxcUtZMaUNkPPvFdDTJylKFO.png",
