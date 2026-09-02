@@ -38,6 +38,37 @@
     }
   }
 
+  const imageDisplayKeys = ['positionX', 'positionY', 'zoom'];
+
+  function validateImageDisplay(display, label, errors) {
+    if (!isRecord(display)) {
+      errors.push(`${label}은 이미지 표시 설정 객체여야 합니다.`);
+      return;
+    }
+    Object.keys(display).forEach((key) => {
+      if (!imageDisplayKeys.includes(key)) errors.push(`${label}.${key}는 지원하지 않는 설정입니다.`);
+    });
+    imageDisplayKeys.forEach((key) => {
+      if (!Object.prototype.hasOwnProperty.call(display, key) || typeof display[key] !== 'number' || !Number.isFinite(display[key])) {
+        errors.push(`${label}.${key}는 유한한 숫자여야 합니다.`);
+      }
+    });
+    if (Number.isFinite(display.positionX) && (display.positionX < 0 || display.positionX > 100)) {
+      errors.push(`${label}.positionX는 0에서 100 사이여야 합니다.`);
+    }
+    if (Number.isFinite(display.positionY) && (display.positionY < 0 || display.positionY > 100)) {
+      errors.push(`${label}.positionY는 0에서 100 사이여야 합니다.`);
+    }
+    if (Number.isFinite(display.zoom) && (display.zoom < 1 || display.zoom > 4)) {
+      errors.push(`${label}.zoom은 1에서 4 사이여야 합니다.`);
+    }
+  }
+
+  function validateOptionalImageDisplay(item, field, label, errors) {
+    if (!Object.prototype.hasOwnProperty.call(item, field)) return;
+    validateImageDisplay(item[field], `${label}.${field}`, errors);
+  }
+
   function validate(value) {
     const errors = [];
     if (!isRecord(value)) return { valid: false, errors: ['최상위 데이터는 객체여야 합니다.'] };
@@ -89,6 +120,13 @@
           }
         }
       });
+      validateOptionalImageDisplay(value.professor, 'photoDisplay', 'professor', errors);
+    }
+
+    if (Array.isArray(value.members)) {
+      value.members.forEach((item, index) => {
+        if (isRecord(item)) validateOptionalImageDisplay(item, 'photoDisplay', `members.${index}`, errors);
+      });
     }
 
     if (Array.isArray(value.gallery)) {
@@ -103,6 +141,18 @@
           }
           if (Array.isArray(item.images) && item.images.length > 0 && item.image !== item.images[0]) {
             errors.push(`gallery.${index}.image는 첫 번째 갤러리 이미지와 같아야 합니다.`);
+          }
+          if (Object.prototype.hasOwnProperty.call(item, 'imageDisplays')) {
+            if (!Array.isArray(item.imageDisplays)) {
+              errors.push(`gallery.${index}.imageDisplays는 배열이어야 합니다.`);
+            } else {
+              if (Array.isArray(item.images) && item.imageDisplays.length !== item.images.length) {
+                errors.push(`gallery.${index}.imageDisplays는 images와 길이가 같아야 합니다.`);
+              }
+              item.imageDisplays.forEach((display, displayIndex) => {
+                validateImageDisplay(display, `gallery.${index}.imageDisplays.${displayIndex}`, errors);
+              });
+            }
           }
           ['date', 'title'].forEach((field) => {
             if (typeof item[field] !== 'string' || item[field].trim() === '') {
