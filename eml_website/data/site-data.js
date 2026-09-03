@@ -46,6 +46,23 @@ window.EML_DATA = {
       "body": "ㅇㄴ마ㅓ이ㅏㅁㄴㅇ리ㅏㄴ음치ㅏㅡ문웇파ㅣㅁㄴ웊;ㅣㅏㅁ운\n\nㄴㄹ아ㅣㅓㅁ니ㅏ리ㅏㅁㄴ으리ㅏㅡㅁㄴ이ㅏ릐ㅏㄴㅁ을\nㄴ이ㅏㄻ낭리ㅏㅁㄴㅇ\nㅇ니ㅏ러미ㅏㄴㅇ러ㅣㅏㅁ능피ㅏ믄이파ㅡㅁ니ㅏㅇ\n\nㅁㅇ니라미낭릐ㅏㅁㄴ으리ㅏㅡㅁㄴ이ㅏ르\nㅇㅁ나ㅡ리ㅏ믄ㅇ리ㅏㅡㅁ\nㅣㅁ아ㅡ리ㅏㅁㄴ으리ㅏ믄이라믄\n\nㅁㅇ니ㅏ르미ㅏㄴ으리ㅏㅁ능리ㅏ",
       "date": "2025.12.06",
       "image": "assets/uploads/2026-08-28/image-eWKy1jdKB_WHIbyNn-dFX4n_.png",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
         "assets/uploads/2026-08-28/image-eWKy1jdKB_WHIbyNn-dFX4n_.png",
         "assets/uploads/2026-08-28/image-Z-VYmWX-1GhmbDzYOGiKrYp9.webp",
@@ -263,7 +280,7 @@ window.EML_DATA = {
     {
       "authors": "Jae-Hwan Hyun, Min-Jeong Yi, Hyejin Jung, Si-Hwan Lee, Ji Hyun Um, Seung-Ho Yu",
       "journal": "Energy Storage Mater. 2023, 54, 146",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.ensm.2022.10.028",
       "note": "",
       "number": 35,
       "title": "Electrochemical behavior and morphological evolution of Li metal anode under high cycling capacity",
@@ -272,7 +289,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um,† Aihua Jin,† Xin Huang, Jeesoo Seok, Seong Soo Park, Janghyuk Moon, Mihyun Kim, So Hee Kim, Hyun Sik Kim, Sung-Pyo Cho, Héctor D. Abruña, Seung-Ho Yu",
       "journal": "Energy Environ. Sci. 2022, 15, 1493",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/d1ee03619j",
       "note": "†These authors are equally contributed. Inside Front Cover",
       "number": 34,
       "title": "Competitive nucleation and growth behavior in Li-Se batteries",
@@ -281,7 +298,7 @@ window.EML_DATA = {
     {
       "authors": "Juhyung Choi, Aihua Jin, Hyun Dong Jung, Dongjin Ko, Ji Hyun Um, Yoon Jeong Choi, So Hee Kim, Seoin Back, Seung-Ho Yu, Yuanzhe Piao",
       "journal": "Energy Storage Mater. 2022, 48, 325",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.ensm.2022.03.041",
       "note": "",
       "number": 33,
       "title": "Nitrogen and sulfur co-doped graphene nanoribbons with well-ordered stepped edges for high-performance potassium-ion battery anodes",
@@ -290,7 +307,7 @@ window.EML_DATA = {
     {
       "authors": "Yunseo Jeoun, Min-Seob Kim, Si-Hwan Lee, Ji Hyun Um, Yung-Eun Sung, Seung-Ho Yu",
       "journal": "J. Chem. Eng. 2022, 450, 138209",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.cej.2022.138209",
       "note": "",
       "number": 32,
       "title": "Lean-electrolyte lithium-sulfur batteries: recent advances in the design of cell components",
@@ -299,7 +316,7 @@ window.EML_DATA = {
     {
       "authors": "Jeesoo Seok, Jae-Hwan Hyun, Aihua Jin, Ji Hyun Um, Héctor D. Abruña, Seung-Ho Yu",
       "journal": "ACS Appl. Mater. Interfaces 2022, 14, 10438",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1021/acsami.1c24673",
       "note": "",
       "number": 31,
       "title": "Visualization of sodium metal anode via operando X-ray and optical microscopy: controlling the morphological evolution of sodium metal plating",
@@ -308,7 +325,7 @@ window.EML_DATA = {
     {
       "authors": "Aihua Jin, Sue In Chae, Jae-Hyuk Park, Shin-Yeong Kim, Sanghwa Lee, Hogeun Chang, Jeong Hyun Kim, Ji Hyun Um, Seung-Ho Yu, Taeghwan Hyeon, Yung-Eun Sung",
       "journal": "J. Alloys Compd. 2021, 892, 162057",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.jallcom.2021.162057",
       "note": "",
       "number": 30,
       "title": "SnSe nanocrystals decorated on carbon nanotubes for high-performance lithium-ion battery anodes",
@@ -317,7 +334,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um, Seung-Ho Yu",
       "journal": "Adv. Energy Mater. 2021, 11, 2003004",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1002/aenm.202003004",
       "note": "Front Cover",
       "number": 29,
       "title": "Unraveling the mechanisms of lithium metal plating/stripping via in-situ/operando analytical techniques",
@@ -326,7 +343,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um,† Kookhan Kim,† Jungjin Park,† Yung-Eun Sung, Seung-Ho Yu",
       "journal": "J. Mater. Chem. A 2020, 8, 13874",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/d0ta03774e",
       "note": "†These authors are equally contributed.",
       "number": 28,
       "title": "Revisiting the strategies for stabilizing lithium metal anodes",
@@ -335,7 +352,7 @@ window.EML_DATA = {
     {
       "authors": "Aihua Jin, Narae Kang, Ji Hyun Um, In-Hwan Ko, Min-Seob Kim, Kookhan Kim, So Hee Kim, Seung-Ho Yu, Yung-Eun Sung",
       "journal": "Chem. Commun. 2020, 56, 8095",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/d0cc02871a",
       "note": "",
       "number": 27,
       "title": "Sn(salen)-derived SnS nanoparticles embedded in N-doped carbon for high performance lithium-ion battery anodes",
@@ -344,7 +361,7 @@ window.EML_DATA = {
     {
       "authors": "Hyunwoo Kim, Woosung Choi, Jaesang Yoon, Ji Hyun Um, Wontae Lee, Jaeyoung Kim, Jordi Cabana, Won-Sub Yoon",
       "journal": "Chem. Rev. 2020, 120, 6934",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1021/acs.chemrev.9b00618",
       "note": "",
       "number": 26,
       "title": "Exploring anomalous charge storage in anode materials for next-generation Li rechargeable batteries",
@@ -353,7 +370,7 @@ window.EML_DATA = {
     {
       "authors": "Hyunchul Kim, Hyunwoo Kim, Shoaib Muhammad, Ji Hyun Um, Md Selim Arif Sher Shah, Pil J. Yoo, Won-Sub Yoon",
       "journal": "J. Power Sources 2020, 446, 227321",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.jpowsour.2019.227321",
       "note": "",
       "number": 25,
       "title": "Catalytic effect of reduced graphene oxide on facilitating reversible conversion reaction in SnO 2 for next-generation Li rechargeable batteries",
@@ -362,7 +379,7 @@ window.EML_DATA = {
     {
       "authors": "Yunok Kim,† Ji Hyun Um,† Hyunjoon Lee, Woosung Choi, Woon Ih Choi, Hyo Sug Lee, Ok-Hee Kim, Ji Man Kim, Yong-Hun Cho, Won-Sub Yoon",
       "journal": "Small 2020, 16, 1905868",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1002/smll.201905868",
       "note": "†These authors are equally contributed.",
       "number": 24,
       "title": "Additional lithium storage on dynamic electrode surface by charge redistribution in inactive Ru metal",
@@ -371,7 +388,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um, Hyunwoo Kim, Yong-Hun Cho, Won-Sub Yoon",
       "journal": "J. Electrochem. Sci. Technol. 2020, 11, 92",
-      "link_url": "",
+      "link_url": "https://doi.org/10.33961/jecst.2019.00493",
       "note": "",
       "number": 23,
       "title": "SnO 2-coated 3D etched Cu foam for lithium-ion battery anode",
@@ -380,7 +397,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um,† Kowsalya Palanisamy,† Mihee Jeong,† Hyunchul Kim, Won-Sub Yoon",
       "journal": "ACS Nano 2019, 13, 5674",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1021/acsnano.9b00964",
       "note": "†These authors are equally contributed.",
       "number": 22,
       "title": "Phase dynamics on conversion-reaction-based tin-doped ferrite anode for next-generation lithium batteries",
@@ -389,7 +406,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um,† Joohyun Lim,† Katharina Hengge, Christina Scheu, Won-Sub Yoon, Jin-Kyu Lee, Yung-Eun Sung",
       "journal": "Compos. B Eng. 2019, 166, 613",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.compositesb.2019.02.063",
       "note": "†These authors are equally contributed.",
       "number": 21,
       "title": "Pore-interconnected hollow (Sn,Ti)O 2 solid-solution nanoparticles for lithium-ion battery anode materials",
@@ -398,7 +415,7 @@ window.EML_DATA = {
     {
       "authors": "Hyunchul Kim, Dong-Seok Yang, Ji Hyun Um, Mahalingam Balasubramanian, Jaeseung Yoo, Hyunwoo Kim, Su Bin Park, Ji Man Kim, Won-Sub Yoon",
       "journal": "J. Power Sources 2019, 413, 241",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.jpowsour.2018.12.035",
       "note": "",
       "number": 20,
       "title": "Comparative study of bulk and nano-structured mesoporous SnO 2 electrodes on the electrochemical performances for next generation Li rechargeable batteries",
@@ -407,7 +424,7 @@ window.EML_DATA = {
     {
       "authors": "Gigap Han, Ji Hyun Um, Hyeji Park, Kicheol Hong, Won-Sub Yoon, Heeman Choe",
       "journal": "Scr. Mater. 2019, 163, 9",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.scriptamat.2018.12.030",
       "note": "",
       "number": 19,
       "title": "Hierarchically structured nanoporous copper for use as lithium-ion battery anode",
@@ -416,7 +433,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um, Chi-Yeong Ahn, Jinsoo Kim, Mihee Jeong, Yung-Eun Sung, Yong-Hun Cho, Seung-Soo Kim, Won-Sub Yoon",
       "journal": "RSC Adv. 2018, 8, 32231",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/c8ra06958a",
       "note": "",
       "number": 18,
       "title": "From grass to battery anode: agricultural biomass hemp-derived carbon for lithium storage",
@@ -425,7 +442,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um,† Yunok Kim,† Chi-Yeong Ahn, Jinsoo Kim, Yung-Eun Sung, Yong-Hun Cho, Seung-Soo Kim, Won-Sub Yoon",
       "journal": "J. Electrochem. Sci. Technol. 2018, 9, 163",
-      "link_url": "",
+      "link_url": "https://doi.org/10.5229/JECST.2018.9.3.163",
       "note": "†These authors are equally contributed.",
       "number": 17,
       "title": "Biomass waste, coffee grounds-derived carbon for lithium storage",
@@ -434,7 +451,7 @@ window.EML_DATA = {
     {
       "authors": "Yunok Kim, Dae Sik Kim, Ji Hyun Um, Jaesang Yoon, Ji Man Kim, Hansu Kim, Won-Sub Yoon",
       "journal": "ACS Appl. Mater. Interfaces 2018, 10, 29992",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1021/acsami.8b09939",
       "note": "",
       "number": 16,
       "title": "Revisiting solid electrolyte interphase on the carbonaceous electrodes using soft X-ray absorption spectroscopy",
@@ -443,7 +460,7 @@ window.EML_DATA = {
     {
       "authors": "Rajendra C. Pawar,† Ji Hyun Um,† Suhee Kang, Won-Sub Yoon, Heeman Choe, Caroline S. Leea",
       "journal": "Electrochim. Acta 2017, 245, 643",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.electacta.2017.05.070",
       "note": "†These authors are equally contributed.",
       "number": 15,
       "title": "Solvent-polarity-induced hematite (α-Fe 2 O 3) nanostructures for lithium-ion battery and photoelectrochemical applications",
@@ -452,7 +469,7 @@ window.EML_DATA = {
     {
       "authors": "Hyelim Choi, Hyeji Park, Ji Hyun Um, Won-Sub Yoon, Heeman Choe",
       "journal": "Appl. Surf. Sci. 2017, 411, 363",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.apsusc.2017.03.122",
       "note": "",
       "number": 14,
       "title": "Processing and characterization of titanium dioxide grown on titanium foam for potential use as Li-ion electrode",
@@ -461,7 +478,7 @@ window.EML_DATA = {
     {
       "authors": "Hyeji Park, Hyelim Choi, Kyungju Nam, Sukyung Lee, Ji Hyun Um, Kyungbae Kim, Jae-Hun Kim, Won-Sub Yoon, Heeman Choe",
       "journal": "J. Electron. Mater. 2017, 46, 3789",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1007/s11664-017-5289-z#preview",
       "note": "",
       "number": 13,
       "title": "Anode design based on microscale porous scaffolds for advanced lithium ion batteries",
@@ -470,7 +487,7 @@ window.EML_DATA = {
     {
       "authors": "Hyeji Park, Ji Hyun Um, Hyelim Choi, Won-Sub Yoon, Yung-Eun Sung, Heeman Choe",
       "journal": "Appl. Surf. Sci. 2017, 399, 132",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.apsusc.2016.12.043",
       "note": "",
       "number": 12,
       "title": "Hierarchical micro-lamella-structured 3D porous copper current collector coated with tin for advanced lithium-ion batteries",
@@ -479,7 +496,7 @@ window.EML_DATA = {
     {
       "authors": "Kowsalya Palanisamy,† Ji Hyun Um,† Mihee Jeong, Won-Sub Yoon",
       "journal": "Sci. Rep. 2016, 6, 31275",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1038/srep31275",
       "note": "†These authors are equally contributed.",
       "number": 11,
       "title": "Porous V 2 O 5/RGO/CNT hierarchical architecture as a cathode material: emphasis on the contribution of surface lithium storage",
@@ -488,7 +505,7 @@ window.EML_DATA = {
     {
       "authors": "Joohyun Lim,† Ji Hyun Um,† Kyung Jae Lee, Seung-Ho Yu, Young-Jae Kim, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Nanoscale 2016, 8, 5688",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/c6nr00104a",
       "note": "†These authors are equally contributed.",
       "number": 10,
       "title": "Simple size control of TiO 2 nanoparticles and their electrochemical performance: emphasizing the contribution of the surface area to lithium storage at high-rates",
@@ -497,7 +514,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um, MyounggeunChoi, Hyeji Park, Yong-Hun Cho, David C. Dunand, Heeman Choe, Yung-Eun Sung",
       "journal": "Sci. Rep. 2016, 6, 18626",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1038/srep18626",
       "note": "",
       "number": 9,
       "title": "3D macroporous electrode and high-performance in lithium-ion batteries using SnO 2 coated on Cu foam",
@@ -506,7 +523,7 @@ window.EML_DATA = {
     {
       "authors": "Jaesang Yoon, Donghwi Kim, Ji Hyun Um, Mihee Jeong, Woong Oh, Won-Sub Yoon",
       "journal": "J. Alloys Compd. 2016, 686, 593",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1149/MA2016-02/3/431",
       "note": "",
       "number": 8,
       "title": "Effect of local structural changes on rate capability of LiNi 0.5 Mn 1.5 O 4-δ cathode material for lithium ion batteries",
@@ -515,7 +532,7 @@ window.EML_DATA = {
     {
       "authors": "Joohyun Lim,† Ji Hyun Um,† Jihoon Ahn, Seung-Ho Yu, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Chem. Eur. J. 2015, 21, 7954",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1002/chem.201406667",
       "note": "†These authors are equally contributed.",
       "number": 7,
       "title": "Soft template strategy to synthesize iron oxide–titania yolk–shell nanoparticles as high-performance anode materials for lithium-ion battery applications",
@@ -524,7 +541,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um, Seung-Ho Yu, Yong-Hun Cho, Yung-Eun Sung",
       "journal": "New J. Chem. 2015, 39, 2541",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/c4nj01958j",
       "note": "",
       "number": 6,
       "title": "SnO 2 nanotube arrays embedded in a carbon layer for high-performance lithium-ion battery applications",
@@ -533,7 +550,7 @@ window.EML_DATA = {
     {
       "authors": "Joohyun Lim,† Ji Hyun Um,† Yun Ji Park, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Bull. Korean Chem. Soc. 2015, 36, 1258",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1002/bkcs.10208",
       "note": "†These authors are equally contributed.",
       "number": 5,
       "title": "Simple size control of spherical titania nanoparticles with KCl",
@@ -542,7 +559,7 @@ window.EML_DATA = {
     {
       "authors": "Ji Hyun Um, Hyeji Park, Yong-Hun Cho, Matthew P. B. Glazer, David C. Dunand, Heeman Choe, Yung-Eun Sung",
       "journal": "RSC Adv. 2014, 4, 58059",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1039/c4ra12297f",
       "note": "",
       "number": 4,
       "title": "3D interconnected SnO 2-coated Cu foam as a high-performance anode for lithium-ion battery applications",
@@ -551,7 +568,7 @@ window.EML_DATA = {
     {
       "authors": "Sun Ha Park, Yong-Hun Cho, Myounggeun Choi, Hyelim Choi, Jin Soo Kang, Ji Hyun Um, Jung-Woo Choi, Heeman Choe, Yung-Eun Sung",
       "journal": "Surf. Coat. Technol. 2014, 259, 560",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.surfcoat.2014.10.030",
       "note": "",
       "number": 3,
       "title": "Nickel-nitride-coated nickel foam as a counter electrode for dye-sensitized solar cells",
@@ -560,7 +577,7 @@ window.EML_DATA = {
     {
       "authors": "Hyungyung Jo, Yong-Hun Cho, Myounggeun Choi, Jinhan Cho, Ji Hyun Um, Yung-Eun Sung, Heeman Choe",
       "journal": "Mater. Chem. Phys. 2014, 145, 6",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.matchemphys.2014.02.009",
       "note": "",
       "number": 2,
       "title": "Novel method of powder-based processing of copper nanofoams for their potential use in energy applications",
@@ -569,7 +586,7 @@ window.EML_DATA = {
     {
       "authors": "Yun Tae Kim, Ji Hyun Um, Sung Ho Kim, Tae-Hoon Lim, Ho-In Lee",
       "journal": "Appl. Catal. A Gen. 2010, 384, 10",
-      "link_url": "",
+      "link_url": "https://doi.org/10.1016/j.apcata.2010.05.054",
       "note": "",
       "number": 1,
       "title": "Effect of promoter on Ni/MgO catalyst in C 8 H 18 autothermal reforming in solid oxide fuel cell system",
