@@ -250,6 +250,53 @@
           "positionX": 50,
           "positionY": 50,
           "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-hd4I6Q7peoXs9wKT3YRt5aVw.webp"
+      ],
+      "summary": "Lab event",
+      "title": "스승의 날"
+    },
+    {
+      "body": "Add photos and a short description through admin data.",
+      "date": "2024.10.25",
+      "image": "assets/uploads/2026-09-04/image-r4Y_ZLTzrNAyQbl5_ux5QMrq.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
         },
         {
           "positionX": 50,
@@ -268,22 +315,16 @@
         }
       ],
       "images": [
-        "assets/uploads/2026-09-04/image-hd4I6Q7peoXs9wKT3YRt5aVw.webp",
-        "assets/gallery-placeholder-3.svg",
-        "assets/gallery-placeholder-1.svg",
-        "assets/gallery-placeholder-2.svg"
-      ],
-      "summary": "Lab event",
-      "title": "스승의 날"
-    },
-    {
-      "body": "Add photos and a short description through admin data.",
-      "date": "2024.10.25",
-      "image": "assets/gallery-placeholder-1.svg",
-      "images": [
-        "assets/gallery-placeholder-1.svg",
-        "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg"
+        "assets/uploads/2026-09-04/image-r4Y_ZLTzrNAyQbl5_ux5QMrq.webp",
+        "assets/uploads/2026-09-04/image-2r4IAa-4bdanUyg3l85OKIDb.webp",
+        "assets/uploads/2026-09-04/image-svs_Xldk_GndKmx2ZVG5Runy.webp",
+        "assets/uploads/2026-09-04/image-jzGHLxt07_v-mMPCm9M6UDzb.webp",
+        "assets/uploads/2026-09-04/image-j_5BfLCLqysLj4mw90rwsJYF.webp",
+        "assets/uploads/2026-09-04/image-6SKzwQ_RNVxKtfPLu9hD3CdO.webp",
+        "assets/uploads/2026-09-04/image-uTo4_MQ8uBHtLlUuJiP9V1xK.webp",
+        "assets/uploads/2026-09-04/image-LYcm0323WMfis7yxGGsBuxAY.webp",
+        "assets/uploads/2026-09-04/image-Vw5tfqPH2bGAcNin4HiKskAL.webp",
+        "assets/uploads/2026-09-04/image-7OEek8UcQq22cVB21-ds4_Cx.webp"
       ],
       "summary": "Graduation evaluation",
       "title": "EML 1기 졸업생 졸업심사"
