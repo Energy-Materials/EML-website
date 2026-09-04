@@ -44,246 +44,6 @@
   "gallery": [
     {
       "body": "",
-      "date": "2023.08.08",
-      "image": "assets/uploads/2026-09-04/image-HLmsGwEjoeiNGivEPf-GB94S.webp",
-      "imageDisplays": [
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        }
-      ],
-      "images": [
-        "assets/uploads/2026-09-04/image-HLmsGwEjoeiNGivEPf-GB94S.webp",
-        "assets/uploads/2026-09-04/image-0wCj9h0aY5qEanPWOe2_KuqA.webp",
-        "assets/uploads/2026-09-04/image-HuAGD558dDWANLBPPAgPl3p3.webp",
-        "assets/uploads/2026-09-04/image-Pkmu7sua_-oeLPvN8Daar5q9.webp"
-      ],
-      "summary": "Lab Day Out",
-      "title": "실험실 나들이"
-    },
-    {
-      "body": "",
-      "date": "2023.08.19-20",
-      "image": "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
-      "imageDisplays": [
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        }
-      ],
-      "images": [
-        "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
-        "assets/uploads/2026-09-04/image-MBDTHRBcnfa4OKYxN5vOIgu5.webp",
-        "assets/uploads/2026-09-04/image-BXzyR8RTTTab67e8jCiR28ch.webp",
-        "assets/uploads/2026-09-04/image-IUmVWgg56i61DscPH0KNDOCN.webp",
-        "assets/uploads/2026-09-04/image-DbhjIBQlUk73Ou7KzNWvTu52.webp",
-        "assets/uploads/2026-09-04/image-O2cjx-3Z9V9PmXRhcEhvvB9b.webp",
-        "assets/uploads/2026-09-04/image-K9BV4vBQy39RCeX-cMVEhlK2.webp",
-        "assets/uploads/2026-09-04/image-Oht_ceXLfA1MeqMg2i-WlFlp.webp",
-        "assets/uploads/2026-09-04/image-foi53Gr5XIbJjRGGEaf-Ca4Q.webp"
-      ],
-      "summary": "EML Lab MT",
-      "title": "EML MT"
-    },
-    {
-      "body": "",
-      "date": "2023.09.21",
-      "image": "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
-      "imageDisplays": [
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        }
-      ],
-      "images": [
-        "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
-        "assets/uploads/2026-09-04/image-23jsmb2chCmQkZ2AFVsGUt1R.webp"
-      ],
-      "summary": "2023 KSCT Fall Conference · Outstanding Poster Presentation Award",
-      "title": "2023 추계 한국청정기술학회  우수 포스터 발표상 수상"
-    },
-    {
-      "body": "",
-      "date": "2024.04.25",
-      "image": "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
-      "imageDisplays": [
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        }
-      ],
-      "images": [
-        "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
-        "assets/uploads/2026-09-04/image-5VZ4N4nk2GohnGYwRszVrZn1.webp",
-        "assets/uploads/2026-09-04/image-hJ6bKm2FYvFfPyghJDN-VdSH.webp",
-        "assets/uploads/2026-09-04/image-7eC9lVO_M2VdmxyK5ZLS1zeF.webp",
-        "assets/uploads/2026-09-04/image-G02UxMDF_Uq4AQLdBfSVNe3E.webp",
-        "assets/uploads/2026-09-04/image-E7yti-6F12stw1jwDzC6LQie.webp",
-        "assets/uploads/2026-09-04/image-qYE4yaHNeviqI9vEgo1WqWka.webp"
-      ],
-      "summary": "2024 KIChE Spring Conference",
-      "title": "2024 춘계 한국화학공학회"
-    },
-    {
-      "body": "",
-      "date": "2024.03.28",
-      "image": "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp",
-      "imageDisplays": [
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        }
-      ],
-      "images": [
-        "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp",
-        "assets/uploads/2026-09-04/image-Zl1nFungmNrilujdSkrW7rbN.webp",
-        "assets/uploads/2026-09-04/image-9FAxoXCU-FS9Ot9jQXTdnxnh.webp"
-      ],
-      "summary": "2024 KSCT Spring Conference",
-      "title": "2024 춘계 한국청정기술학회"
-    },
-    {
-      "body": "",
-      "date": "2024.09.27",
-      "image": "assets/uploads/2026-09-04/image-Aj6TxcGV6X1_cfkyUdF5TTT8.webp",
-      "imageDisplays": [
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        },
-        {
-          "positionX": 50,
-          "positionY": 50,
-          "zoom": 1
-        }
-      ],
-      "images": [
-        "assets/uploads/2026-09-04/image-Aj6TxcGV6X1_cfkyUdF5TTT8.webp",
-        "assets/uploads/2026-09-04/image-Nx3hZxObekOUmN1Szcvr7AE2.webp",
-        "assets/uploads/2026-09-04/image-YL-LayE9ZAQ47mScs36vWZDd.webp",
-        "assets/uploads/2026-09-04/image-amjpC_bJuXw8fo5NeU0Sv1IH.webp"
-      ],
-      "summary": "Lab Lunch Gathering & Social Activity",
-      "title": "실험실 점심 회식 "
-    },
-    {
-      "body": "",
       "date": "2025.12.06",
       "image": "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
       "imageDisplays": [
@@ -611,6 +371,123 @@
     },
     {
       "body": "",
+      "date": "2024.09.27",
+      "image": "assets/uploads/2026-09-04/image-Aj6TxcGV6X1_cfkyUdF5TTT8.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-Aj6TxcGV6X1_cfkyUdF5TTT8.webp",
+        "assets/uploads/2026-09-04/image-Nx3hZxObekOUmN1Szcvr7AE2.webp",
+        "assets/uploads/2026-09-04/image-YL-LayE9ZAQ47mScs36vWZDd.webp",
+        "assets/uploads/2026-09-04/image-amjpC_bJuXw8fo5NeU0Sv1IH.webp"
+      ],
+      "summary": "Lab Lunch Gathering & Social Activity",
+      "title": "실험실 점심 회식 "
+    },
+    {
+      "body": "",
+      "date": "2024.04.25",
+      "image": "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
+        "assets/uploads/2026-09-04/image-5VZ4N4nk2GohnGYwRszVrZn1.webp",
+        "assets/uploads/2026-09-04/image-hJ6bKm2FYvFfPyghJDN-VdSH.webp",
+        "assets/uploads/2026-09-04/image-7eC9lVO_M2VdmxyK5ZLS1zeF.webp",
+        "assets/uploads/2026-09-04/image-G02UxMDF_Uq4AQLdBfSVNe3E.webp",
+        "assets/uploads/2026-09-04/image-E7yti-6F12stw1jwDzC6LQie.webp",
+        "assets/uploads/2026-09-04/image-qYE4yaHNeviqI9vEgo1WqWka.webp"
+      ],
+      "summary": "2024 KIChE Spring Conference",
+      "title": "2024 춘계 한국화학공학회"
+    },
+    {
+      "body": "",
+      "date": "2024.03.28",
+      "image": "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp",
+        "assets/uploads/2026-09-04/image-Zl1nFungmNrilujdSkrW7rbN.webp",
+        "assets/uploads/2026-09-04/image-9FAxoXCU-FS9Ot9jQXTdnxnh.webp"
+      ],
+      "summary": "2024 KSCT Spring Conference",
+      "title": "2024 춘계 한국청정기술학회"
+    },
+    {
+      "body": "",
       "date": "2024.03.13",
       "image": "assets/uploads/2026-09-04/image-hpYakcpqRRflcZ_kTZ6tAJ18.webp",
       "imageDisplays": [
@@ -637,6 +514,181 @@
       ],
       "summary": "Group photo",
       "title": "실험실 단체사진"
+    },
+    {
+      "body": "",
+      "date": "2023.09.21",
+      "image": "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
+        "assets/uploads/2026-09-04/image-23jsmb2chCmQkZ2AFVsGUt1R.webp"
+      ],
+      "summary": "2023 KSCT Fall Conference · Outstanding Poster Presentation Award",
+      "title": "2023 추계 한국청정기술학회  우수 포스터 발표상 수상"
+    },
+    {
+      "body": "",
+      "date": "2023.08.19-20",
+      "image": "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
+        "assets/uploads/2026-09-04/image-MBDTHRBcnfa4OKYxN5vOIgu5.webp",
+        "assets/uploads/2026-09-04/image-BXzyR8RTTTab67e8jCiR28ch.webp",
+        "assets/uploads/2026-09-04/image-IUmVWgg56i61DscPH0KNDOCN.webp",
+        "assets/uploads/2026-09-04/image-DbhjIBQlUk73Ou7KzNWvTu52.webp",
+        "assets/uploads/2026-09-04/image-O2cjx-3Z9V9PmXRhcEhvvB9b.webp",
+        "assets/uploads/2026-09-04/image-K9BV4vBQy39RCeX-cMVEhlK2.webp",
+        "assets/uploads/2026-09-04/image-Oht_ceXLfA1MeqMg2i-WlFlp.webp",
+        "assets/uploads/2026-09-04/image-foi53Gr5XIbJjRGGEaf-Ca4Q.webp"
+      ],
+      "summary": "EML Lab MT",
+      "title": "EML MT"
+    },
+    {
+      "body": "",
+      "date": "2023.08.08",
+      "image": "assets/uploads/2026-09-04/image-HLmsGwEjoeiNGivEPf-GB94S.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-HLmsGwEjoeiNGivEPf-GB94S.webp",
+        "assets/uploads/2026-09-04/image-0wCj9h0aY5qEanPWOe2_KuqA.webp",
+        "assets/uploads/2026-09-04/image-HuAGD558dDWANLBPPAgPl3p3.webp",
+        "assets/uploads/2026-09-04/image-Pkmu7sua_-oeLPvN8Daar5q9.webp"
+      ],
+      "summary": "Lab Day Out",
+      "title": "실험실 나들이"
+    },
+    {
+      "body": "",
+      "date": "2023.08.04",
+      "image": "assets/uploads/2026-09-04/image-OzZFGT78RIQ8k0DYaFWa_dHy.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-OzZFGT78RIQ8k0DYaFWa_dHy.webp",
+        "assets/uploads/2026-09-04/image-lwnGVh1pZNB-BcoyC6Cg-IjA.webp",
+        "assets/uploads/2026-09-04/image-wGUMoynhSaBr_KwtqTto-QA_.webp",
+        "assets/uploads/2026-09-04/image-hGRoZ9fa6VmYK8TEfPtjnljB.webp"
+      ],
+      "summary": "Lab Dinner Gathering",
+      "title": "단체 회식"
+    },
+    {
+      "body": "",
+      "date": "2023.05.18",
+      "image": "assets/uploads/2026-09-04/image-2_BAF7d4OC48l93sQX3KvmQH.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-2_BAF7d4OC48l93sQX3KvmQH.webp"
+      ],
+      "summary": "Lab event",
+      "title": "스승의 날"
     }
   ],
   "home": {
