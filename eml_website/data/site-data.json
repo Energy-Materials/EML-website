@@ -43,10 +43,25 @@
   ],
   "gallery": [
     {
-      "body": "ㅇㄴ마ㅓ이ㅏㅁㄴㅇ리ㅏㄴ음치ㅏㅡ문웇파ㅣㅁㄴ웊;ㅣㅏㅁ운\n\nㄴㄹ아ㅣㅓㅁ니ㅏ리ㅏㅁㄴ으리ㅏㅡㅁㄴ이ㅏ릐ㅏㄴㅁ을\nㄴ이ㅏㄻ낭리ㅏㅁㄴㅇ\nㅇ니ㅏ러미ㅏㄴㅇ러ㅣㅏㅁ능피ㅏ믄이파ㅡㅁ니ㅏㅇ\n\nㅁㅇ니라미낭릐ㅏㅁㄴ으리ㅏㅡㅁㄴ이ㅏ르\nㅇㅁ나ㅡ리ㅏ믄ㅇ리ㅏㅡㅁ\nㅣㅁ아ㅡ리ㅏㅁㄴ으리ㅏ믄이라믄\n\nㅁㅇ니ㅏ르미ㅏㄴ으리ㅏㅁ능리ㅏ",
+      "body": "",
       "date": "2025.12.06",
-      "image": "assets/uploads/2026-08-28/image-eWKy1jdKB_WHIbyNn-dFX4n_.png",
+      "image": "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
       "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
         {
           "positionX": 50,
           "positionY": 50,
@@ -64,9 +79,12 @@
         }
       ],
       "images": [
-        "assets/uploads/2026-08-28/image-eWKy1jdKB_WHIbyNn-dFX4n_.png",
-        "assets/uploads/2026-08-28/image-Z-VYmWX-1GhmbDzYOGiKrYp9.webp",
-        "assets/uploads/2026-08-28/image-6Fgg9K2jYyzY1-pSVg172pDb.png"
+        "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
+        "assets/uploads/2026-09-04/image-0YM91qrYl8yLDvMVlZ5Y91aD.webp",
+        "assets/uploads/2026-09-04/image-8qzSDKct_Le95Dp0x4D3Hxte.webp",
+        "assets/uploads/2026-09-04/image-OXh8CpaxN4f4F6ukPGXOhoxP.webp",
+        "assets/uploads/2026-09-04/image-Xph4htB7v28yHyph6tMAQrdM.webp",
+        "assets/uploads/2026-09-04/image-D0xTRFvmYqPPo3rL3oxmTSLy.webp"
       ],
       "summary": "Best Oral Presentation Award 수상",
       "title": "ISChE 2025"
@@ -122,8 +140,31 @@
     {
       "body": "Clicking a card opens the detailed post modal.",
       "date": "2025.05.15",
-      "image": "assets/gallery-placeholder-3.svg",
+      "image": "assets/uploads/2026-09-04/image-hd4I6Q7peoXs9wKT3YRt5aVw.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
+        "assets/uploads/2026-09-04/image-hd4I6Q7peoXs9wKT3YRt5aVw.webp",
         "assets/gallery-placeholder-3.svg",
         "assets/gallery-placeholder-1.svg",
         "assets/gallery-placeholder-2.svg"
