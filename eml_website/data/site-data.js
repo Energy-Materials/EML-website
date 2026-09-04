@@ -782,11 +782,11 @@ window.EML_DATA = {
       "email": "",
       "name": "Chan Hyuk Jeon | 전찬혁",
       "period": "2026.06. - present",
-      "photo": "assets/person-placeholder.svg",
+      "photo": "assets/uploads/2026-09-04/image-o4zdg0VHWHMnVfNnTrKyMGNP.webp",
       "photoDisplay": {
         "positionX": 50,
         "positionY": 50,
-        "zoom": 1
+        "zoom": 1.05
       },
       "research": "Research interest",
       "role": "Undergraduate Researcher"
