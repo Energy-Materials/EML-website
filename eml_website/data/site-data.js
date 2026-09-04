@@ -44,6 +44,29 @@ window.EML_DATA = {
   "gallery": [
     {
       "body": "",
+      "date": "2024.10.24",
+      "image": "assets/uploads/2026-09-04/image-G4udmFr7upwsYnE9OYQHxkC1.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-G4udmFr7upwsYnE9OYQHxkC1.webp",
+        "assets/uploads/2026-09-04/image-UVvF7WAM8VZcIYJCorSaIw7p.webp"
+      ],
+      "summary": "Collaborative Research & Capstone Competition Award",
+      "title": "EML & ADMAL 공동연구 캡스톤 경진대회 입상"
+    },
+    {
+      "body": "",
       "date": "2025.12.06",
       "image": "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
       "imageDisplays": [
