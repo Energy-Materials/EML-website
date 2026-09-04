@@ -162,11 +162,40 @@
     {
       "body": "Replace the placeholder with a lab photo.",
       "date": "2025.10.01",
-      "image": "assets/gallery-placeholder-1.svg",
+      "image": "assets/uploads/2026-09-04/image-zmOWNncjHwjlIxi-gkPpjstm.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
-        "assets/gallery-placeholder-1.svg",
-        "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg"
+        "assets/uploads/2026-09-04/image-zmOWNncjHwjlIxi-gkPpjstm.webp",
+        "assets/uploads/2026-09-04/image-hrkTJYyzfj89fugS30n_nfXl.webp",
+        "assets/uploads/2026-09-04/image-H27RHUXXvsgpv28PXqqNTlhx.webp",
+        "assets/uploads/2026-09-04/image-rHi9aPIokKCZ75A9BH3j08zz.webp",
+        "assets/uploads/2026-09-04/image-flu92P3Rw-ho0VWZzqtL8-E2.webp"
       ],
       "summary": "Capstone award",
       "title": "EML 캡스톤 경진대회 입상"
