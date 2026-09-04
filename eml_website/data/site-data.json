@@ -772,6 +772,19 @@
       },
       "research": "Research interest",
       "role": "Undergraduate Researcher"
+    },
+    {
+      "email": "",
+      "name": "Chan Hyuk Jeon | 전찬혁",
+      "period": "2026.06. - present",
+      "photo": "assets/person-placeholder.svg",
+      "photoDisplay": {
+        "positionX": 50,
+        "positionY": 50,
+        "zoom": 1
+      },
+      "research": "Research interest",
+      "role": "Undergraduate Researcher"
     }
   ],
   "patents": [
