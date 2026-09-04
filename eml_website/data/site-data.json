@@ -203,11 +203,40 @@
     {
       "body": "Use this format for conferences, seminars, awards, and lab events.",
       "date": "2025.09.25",
-      "image": "assets/gallery-placeholder-2.svg",
+      "image": "assets/uploads/2026-09-04/image-BroOvcqR8gaHGZPaPnr5shYl.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
-        "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg",
-        "assets/gallery-placeholder-1.svg"
+        "assets/uploads/2026-09-04/image-BroOvcqR8gaHGZPaPnr5shYl.webp",
+        "assets/uploads/2026-09-04/image-VA3EssyU9tu_MtML2cH64Tcr.webp",
+        "assets/uploads/2026-09-04/image-aVz-42XwLj846x9FTdCj_mNq.webp",
+        "assets/uploads/2026-09-04/image-WaObnO_qVE8i_ewghIuM_lPg.webp",
+        "assets/uploads/2026-09-04/image-lvE7ck3DQ0RQrjAIjwG9Y23V.webp"
       ],
       "summary": "Academic conference",
       "title": "2025 추계 한국청정기술학회"
