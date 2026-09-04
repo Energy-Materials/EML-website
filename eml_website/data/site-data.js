@@ -730,7 +730,12 @@ window.EML_DATA = {
       "email": "",
       "name": "Hyeon Seo Kim | 김현서",
       "period": "2024.12. - present",
-      "photo": "assets/person-placeholder.svg",
+      "photo": "assets/uploads/2026-09-04/image-JMeY83Op36sJvjxACkfcQyBr.webp",
+      "photoDisplay": {
+        "positionX": 50,
+        "positionY": 50,
+        "zoom": 1
+      },
       "research": "Electrochemical systems",
       "role": "Undergraduate Researcher"
     },
