@@ -44,6 +44,71 @@ window.EML_DATA = {
   "gallery": [
     {
       "body": "",
+      "date": "2023.08.19-20",
+      "image": "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
+        "assets/uploads/2026-09-04/image-MBDTHRBcnfa4OKYxN5vOIgu5.webp",
+        "assets/uploads/2026-09-04/image-BXzyR8RTTTab67e8jCiR28ch.webp",
+        "assets/uploads/2026-09-04/image-IUmVWgg56i61DscPH0KNDOCN.webp",
+        "assets/uploads/2026-09-04/image-DbhjIBQlUk73Ou7KzNWvTu52.webp",
+        "assets/uploads/2026-09-04/image-O2cjx-3Z9V9PmXRhcEhvvB9b.webp",
+        "assets/uploads/2026-09-04/image-K9BV4vBQy39RCeX-cMVEhlK2.webp",
+        "assets/uploads/2026-09-04/image-Oht_ceXLfA1MeqMg2i-WlFlp.webp",
+        "assets/uploads/2026-09-04/image-foi53Gr5XIbJjRGGEaf-Ca4Q.webp"
+      ],
+      "summary": "EML Lab MT",
+      "title": "EML MT"
+    },
+    {
+      "body": "",
       "date": "2023.09.21",
       "image": "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
       "imageDisplays": [
