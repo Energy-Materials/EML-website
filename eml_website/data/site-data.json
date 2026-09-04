@@ -44,6 +44,41 @@
   "gallery": [
     {
       "body": "",
+      "date": "2023.08.08",
+      "image": "assets/uploads/2026-09-04/image-HLmsGwEjoeiNGivEPf-GB94S.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-HLmsGwEjoeiNGivEPf-GB94S.webp",
+        "assets/uploads/2026-09-04/image-0wCj9h0aY5qEanPWOe2_KuqA.webp",
+        "assets/uploads/2026-09-04/image-HuAGD558dDWANLBPPAgPl3p3.webp",
+        "assets/uploads/2026-09-04/image-Pkmu7sua_-oeLPvN8Daar5q9.webp"
+      ],
+      "summary": "Lab Day Out",
+      "title": "실험실 나들이"
+    },
+    {
+      "body": "",
       "date": "2023.08.19-20",
       "image": "assets/uploads/2026-09-04/image-kwRqLyLD7I2JGT9VXVRnzy9A.webp",
       "imageDisplays": [
