@@ -133,11 +133,28 @@ window.EML_DATA = {
     {
       "body": "Detailed gallery post can be opened by clicking the card.",
       "date": "2025.10.31",
-      "image": "assets/gallery-placeholder-3.svg",
+      "image": "assets/uploads/2026-09-04/image-KYU82HSJcygPqD2CVF8Hnb4G.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
-        "assets/gallery-placeholder-3.svg",
-        "assets/gallery-placeholder-1.svg",
-        "assets/gallery-placeholder-2.svg"
+        "assets/uploads/2026-09-04/image-KYU82HSJcygPqD2CVF8Hnb4G.webp",
+        "assets/uploads/2026-09-04/image-jr2nab6t0WMuYnQ-xHJLQ0kr.webp",
+        "assets/uploads/2026-09-04/image-88ZAqkozP74skLsKbBZAqkeP.webp"
       ],
       "summary": "Graduation evaluation",
       "title": "EML 2기 졸업생 졸업심사"
