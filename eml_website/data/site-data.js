@@ -45,7 +45,7 @@ window.EML_DATA = {
     {
       "body": "",
       "date": "2025.12.06",
-      "image": "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
+      "image": "assets/uploads/2026-09-04/image-Xph4htB7v28yHyph6tMAQrdM.webp",
       "imageDisplays": [
         {
           "positionX": 50,
@@ -79,18 +79,18 @@ window.EML_DATA = {
         }
       ],
       "images": [
-        "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
+        "assets/uploads/2026-09-04/image-Xph4htB7v28yHyph6tMAQrdM.webp",
         "assets/uploads/2026-09-04/image-0YM91qrYl8yLDvMVlZ5Y91aD.webp",
         "assets/uploads/2026-09-04/image-8qzSDKct_Le95Dp0x4D3Hxte.webp",
         "assets/uploads/2026-09-04/image-OXh8CpaxN4f4F6ukPGXOhoxP.webp",
-        "assets/uploads/2026-09-04/image-Xph4htB7v28yHyph6tMAQrdM.webp",
+        "assets/uploads/2026-09-04/image--wXoHszA0eioil7thqg3udsA.webp",
         "assets/uploads/2026-09-04/image-D0xTRFvmYqPPo3rL3oxmTSLy.webp"
       ],
       "summary": "Best Oral Presentation Award 수상",
       "title": "ISChE 2025"
     },
     {
-      "body": "Add detailed description, participants, and photos here.",
+      "body": "",
       "date": "2025.12.02",
       "image": "assets/uploads/2026-09-04/image-x4BnOfZ37NMQgzMsg0ejj-5v.webp",
       "imageDisplays": [
@@ -131,7 +131,7 @@ window.EML_DATA = {
       "title": "Materials Research Society 2025"
     },
     {
-      "body": "Detailed gallery post can be opened by clicking the card.",
+      "body": "",
       "date": "2025.10.31",
       "image": "assets/uploads/2026-09-04/image-KYU82HSJcygPqD2CVF8Hnb4G.webp",
       "imageDisplays": [
@@ -160,7 +160,7 @@ window.EML_DATA = {
       "title": "EML 2기 졸업생 졸업심사"
     },
     {
-      "body": "Replace the placeholder with a lab photo.",
+      "body": "",
       "date": "2025.10.01",
       "image": "assets/uploads/2026-09-04/image-zmOWNncjHwjlIxi-gkPpjstm.webp",
       "imageDisplays": [
@@ -201,7 +201,7 @@ window.EML_DATA = {
       "title": "EML 캡스톤 경진대회 입상"
     },
     {
-      "body": "Use this format for conferences, seminars, awards, and lab events.",
+      "body": "",
       "date": "2025.09.25",
       "image": "assets/uploads/2026-09-04/image-BroOvcqR8gaHGZPaPnr5shYl.webp",
       "imageDisplays": [
@@ -259,7 +259,7 @@ window.EML_DATA = {
       "title": "스승의 날"
     },
     {
-      "body": "Add photos and a short description through admin data.",
+      "body": "",
       "date": "2024.10.25",
       "image": "assets/uploads/2026-09-04/image-r4Y_ZLTzrNAyQbl5_ux5QMrq.webp",
       "imageDisplays": [
@@ -353,7 +353,7 @@ window.EML_DATA = {
       "title": "EML & ADMAL 공동연구 캡스톤 경진대회 입상"
     },
     {
-      "body": "Gallery layout follows the PDF reference: cards with image, date, title, and detail view.",
+      "body": "",
       "date": "2024.10.17",
       "image": "assets/uploads/2026-09-04/image-0NDk-ZncIFvyignp9pIeLnet.webp",
       "imageDisplays": [
