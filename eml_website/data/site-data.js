@@ -92,11 +92,40 @@ window.EML_DATA = {
     {
       "body": "Add detailed description, participants, and photos here.",
       "date": "2025.12.02",
-      "image": "assets/gallery-placeholder-2.svg",
+      "image": "assets/uploads/2026-09-04/image-x4BnOfZ37NMQgzMsg0ejj-5v.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
-        "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg",
-        "assets/gallery-placeholder-1.svg"
+        "assets/uploads/2026-09-04/image-x4BnOfZ37NMQgzMsg0ejj-5v.webp",
+        "assets/uploads/2026-09-04/image-WQ28LNH19u_XQ30p89h57AaI.webp",
+        "assets/uploads/2026-09-04/image-sRtbeB4g9_nzVmtkTWcWZaVh.webp",
+        "assets/uploads/2026-09-04/image-fGHQUJJZuC7OY7uuatsgtJDZ.webp",
+        "assets/uploads/2026-09-04/image-y9bqSkzvbJ9qybclCw9h9Cu5.webp"
       ],
       "summary": "Conference activity",
       "title": "Materials Research Society 2025"
