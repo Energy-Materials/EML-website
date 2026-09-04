@@ -44,9 +44,53 @@ window.EML_DATA = {
   "gallery": [
     {
       "body": "",
-      "date": "2024.10.24",
-      "image": "assets/uploads/2026-09-04/image-G4udmFr7upwsYnE9OYQHxkC1.webp",
+      "date": "2024.04.25",
+      "image": "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
       "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp"
+      ],
+      "summary": "2024 KIChE Spring Conference",
+      "title": "2024 춘계 한국화학공학회"
+    },
+    {
+      "body": "",
+      "date": "2024.03.28",
+      "image": "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp"
+      ],
+      "summary": "2024 KSCT Spring Conference",
+      "title": "2024 춘계 한국청정기술학회"
+    },
+    {
+      "body": "",
+      "date": "2024.09.27",
+      "image": "assets/uploads/2026-09-04/image-Aj6TxcGV6X1_cfkyUdF5TTT8.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
         {
           "positionX": 50,
           "positionY": 50,
@@ -59,11 +103,13 @@ window.EML_DATA = {
         }
       ],
       "images": [
-        "assets/uploads/2026-09-04/image-G4udmFr7upwsYnE9OYQHxkC1.webp",
-        "assets/uploads/2026-09-04/image-UVvF7WAM8VZcIYJCorSaIw7p.webp"
+        "assets/uploads/2026-09-04/image-Aj6TxcGV6X1_cfkyUdF5TTT8.webp",
+        "assets/uploads/2026-09-04/image-Nx3hZxObekOUmN1Szcvr7AE2.webp",
+        "assets/uploads/2026-09-04/image-YL-LayE9ZAQ47mScs36vWZDd.webp",
+        "assets/uploads/2026-09-04/image-amjpC_bJuXw8fo5NeU0Sv1IH.webp"
       ],
-      "summary": "Collaborative Research & Capstone Competition Award",
-      "title": "EML & ADMAL 공동연구 캡스톤 경진대회 입상"
+      "summary": "Lab Lunch Gathering & Social Activity",
+      "title": "실험실 점심 회식 "
     },
     {
       "body": "",
@@ -351,6 +397,29 @@ window.EML_DATA = {
       ],
       "summary": "Graduation evaluation",
       "title": "EML 1기 졸업생 졸업심사"
+    },
+    {
+      "body": "",
+      "date": "2024.10.24",
+      "image": "assets/uploads/2026-09-04/image-G4udmFr7upwsYnE9OYQHxkC1.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-G4udmFr7upwsYnE9OYQHxkC1.webp",
+        "assets/uploads/2026-09-04/image-UVvF7WAM8VZcIYJCorSaIw7p.webp"
+      ],
+      "summary": "Collaborative Research & Capstone Competition Award",
+      "title": "EML & ADMAL 공동연구 캡스톤 경진대회 입상"
     },
     {
       "body": "Gallery layout follows the PDF reference: cards with image, date, title, and detail view.",
