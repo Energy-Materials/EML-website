@@ -44,6 +44,29 @@ window.EML_DATA = {
   "gallery": [
     {
       "body": "",
+      "date": "2023.09.21",
+      "image": "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-09-04/image-k3xJlepG4amg1l-5yYO-vpVa.webp",
+        "assets/uploads/2026-09-04/image-23jsmb2chCmQkZ2AFVsGUt1R.webp"
+      ],
+      "summary": "2023 KSCT Fall Conference · Outstanding Poster Presentation Award",
+      "title": "2023 추계 한국청정기술학회  우수 포스터 발표상 수상"
+    },
+    {
+      "body": "",
       "date": "2024.04.25",
       "image": "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
       "imageDisplays": [
@@ -104,10 +127,22 @@ window.EML_DATA = {
           "positionX": 50,
           "positionY": 50,
           "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
         }
       ],
       "images": [
-        "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp"
+        "assets/uploads/2026-09-04/image-N5vstVq04Ggdc2wile3BGkQ1.webp",
+        "assets/uploads/2026-09-04/image-Zl1nFungmNrilujdSkrW7rbN.webp",
+        "assets/uploads/2026-09-04/image-9FAxoXCU-FS9Ot9jQXTdnxnh.webp"
       ],
       "summary": "2024 KSCT Spring Conference",
       "title": "2024 춘계 한국청정기술학회"
@@ -475,13 +510,30 @@ window.EML_DATA = {
       "title": "2024 추계 한국화학공학회"
     },
     {
-      "body": "Replace this card with the official group photo.",
+      "body": "",
       "date": "2024.03.13",
-      "image": "assets/gallery-placeholder-3.svg",
+      "image": "assets/uploads/2026-09-04/image-hpYakcpqRRflcZ_kTZ6tAJ18.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
-        "assets/gallery-placeholder-3.svg",
-        "assets/gallery-placeholder-1.svg",
-        "assets/gallery-placeholder-2.svg"
+        "assets/uploads/2026-09-04/image-hpYakcpqRRflcZ_kTZ6tAJ18.webp",
+        "assets/uploads/2026-09-04/image-VoZnPOffqOzCRicU7sYgi_Jf.webp",
+        "assets/uploads/2026-09-04/image-np1llDOet_Jf5uPnHNGBVDeB.webp"
       ],
       "summary": "Group photo",
       "title": "실험실 단체사진"
