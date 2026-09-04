@@ -23,7 +23,7 @@ window.EML_DATA = {
     {
       "date": "2025.02",
       "name": "김태현",
-      "next": "-"
+      "next": "-서강대학교 박사 과정"
     },
     {
       "date": "2025.02",
@@ -706,14 +706,6 @@ window.EML_DATA = {
   },
   "members": [
     {
-      "email": "asw3249@naver.com",
-      "name": "Tae Hyun Lee | 이태현",
-      "period": "2024.01. - present",
-      "photo": "assets/person-placeholder.svg",
-      "research": "Electrode materials and energy storage systems",
-      "role": "Master Course"
-    },
-    {
       "email": "",
       "name": "Hui Seong Kim | 김희성",
       "period": "2024.03. - present",
@@ -736,6 +728,19 @@ window.EML_DATA = {
       "photo": "assets/person-placeholder.svg",
       "research": "Electrochemical systems",
       "role": "Undergraduate Researcher"
+    },
+    {
+      "email": "",
+      "name": "New Member",
+      "period": "2026.03. - present",
+      "photo": "assets/person-placeholder.svg",
+      "photoDisplay": {
+        "positionX": 50,
+        "positionY": 50,
+        "zoom": 1
+      },
+      "research": "Research interest",
+      "role": "Graduate Student"
     }
   ],
   "patents": [
