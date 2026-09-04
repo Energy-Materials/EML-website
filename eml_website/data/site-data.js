@@ -242,7 +242,7 @@ window.EML_DATA = {
       "title": "2025 추계 한국청정기술학회"
     },
     {
-      "body": "Clicking a card opens the detailed post modal.",
+      "body": "",
       "date": "2025.05.15",
       "image": "assets/uploads/2026-09-04/image-hd4I6Q7peoXs9wKT3YRt5aVw.webp",
       "imageDisplays": [
@@ -332,11 +332,16 @@ window.EML_DATA = {
     {
       "body": "Gallery layout follows the PDF reference: cards with image, date, title, and detail view.",
       "date": "2024.10.17",
-      "image": "assets/gallery-placeholder-2.svg",
+      "image": "assets/uploads/2026-09-04/image-0NDk-ZncIFvyignp9pIeLnet.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
       "images": [
-        "assets/gallery-placeholder-2.svg",
-        "assets/gallery-placeholder-3.svg",
-        "assets/gallery-placeholder-1.svg"
+        "assets/uploads/2026-09-04/image-0NDk-ZncIFvyignp9pIeLnet.webp"
       ],
       "summary": "Academic conference",
       "title": "2024 추계 한국화학공학회"
