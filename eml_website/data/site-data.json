@@ -51,10 +51,46 @@
           "positionX": 50,
           "positionY": 50,
           "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
         }
       ],
       "images": [
-        "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp"
+        "assets/uploads/2026-09-04/image-jXTV6T9-bqXwxMriDFR1vj07.webp",
+        "assets/uploads/2026-09-04/image-5VZ4N4nk2GohnGYwRszVrZn1.webp",
+        "assets/uploads/2026-09-04/image-hJ6bKm2FYvFfPyghJDN-VdSH.webp",
+        "assets/uploads/2026-09-04/image-7eC9lVO_M2VdmxyK5ZLS1zeF.webp",
+        "assets/uploads/2026-09-04/image-G02UxMDF_Uq4AQLdBfSVNe3E.webp",
+        "assets/uploads/2026-09-04/image-E7yti-6F12stw1jwDzC6LQie.webp",
+        "assets/uploads/2026-09-04/image-qYE4yaHNeviqI9vEgo1WqWka.webp"
       ],
       "summary": "2024 KIChE Spring Conference",
       "title": "2024 춘계 한국화학공학회"
