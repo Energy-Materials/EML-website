@@ -23,7 +23,7 @@ window.EML_DATA = {
     {
       "date": "2025.02",
       "name": "김태현",
-      "next": "-서강대학교 박사 과정"
+      "next": "서강대학교 박사 과정"
     },
     {
       "date": "2025.02",
@@ -731,8 +731,8 @@ window.EML_DATA = {
     },
     {
       "email": "",
-      "name": "New Member",
-      "period": "2026.03. - present",
+      "name": "Jong Nam Lee | 이종남",
+      "period": "2026.01. - present",
       "photo": "assets/person-placeholder.svg",
       "photoDisplay": {
         "positionX": 50,
@@ -740,7 +740,7 @@ window.EML_DATA = {
         "zoom": 1
       },
       "research": "Research interest",
-      "role": "Graduate Student"
+      "role": "Undergraduate Researcher"
     }
   ],
   "patents": [
