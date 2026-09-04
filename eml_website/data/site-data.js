@@ -759,6 +759,19 @@ window.EML_DATA = {
       },
       "research": "Research interest",
       "role": "Undergraduate Researcher"
+    },
+    {
+      "email": "",
+      "name": "Yoon Jae Kim | 김윤재",
+      "period": "2026.03. - present",
+      "photo": "assets/uploads/2026-09-04/image-OnSiPaYrOjwhlzhp_LBYuezt.webp",
+      "photoDisplay": {
+        "positionX": 42.6,
+        "positionY": 48.6,
+        "zoom": 1.15
+      },
+      "research": "Research interest",
+      "role": "Undergraduate Researcher"
     }
   ],
   "patents": [
