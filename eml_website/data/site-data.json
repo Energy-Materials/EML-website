@@ -709,7 +709,12 @@
       "email": "",
       "name": "Hui Seong Kim | 김희성",
       "period": "2024.03. - present",
-      "photo": "assets/person-placeholder.svg",
+      "photo": "assets/uploads/2026-09-04/image-FG1uuoG6Qy1oInrXUlUZIY9k.webp",
+      "photoDisplay": {
+        "positionX": 50,
+        "positionY": 50,
+        "zoom": 1.05
+      },
       "research": "Energy materials",
       "role": "Undergraduate Researcher"
     },
@@ -738,6 +743,19 @@
         "positionX": 50,
         "positionY": 50,
         "zoom": 1
+      },
+      "research": "Research interest",
+      "role": "Undergraduate Researcher"
+    },
+    {
+      "email": "",
+      "name": "Young Suk Shim | 심영석 ",
+      "period": "2026.03. - present",
+      "photo": "assets/uploads/2026-09-04/image-C0NeAo3Fhe4S3JXVFBh2Q_d3.webp",
+      "photoDisplay": {
+        "positionX": 48.6,
+        "positionY": 50,
+        "zoom": 1.15
       },
       "research": "Research interest",
       "role": "Undergraduate Researcher"
