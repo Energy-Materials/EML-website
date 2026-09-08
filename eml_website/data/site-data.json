@@ -1277,7 +1277,7 @@
       "title": "In-situ / Operando Analysis"
     },
     {
-      "description": "",
+      "description": "Phase dynamics by multi-phase conversion reactions between solid, liquid, and gas.",
       "id": "phase-dynamics",
       "image": "assets/research-phase.svg",
       "short": "Solid-liquid-gas conversion reactions",
