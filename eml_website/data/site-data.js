@@ -821,7 +821,7 @@ window.EML_DATA = {
         "title": "Gallery"
       },
       "section": {
-        "description": "Each gallery post can contain multiple photos. Click a card to open a larger carousel with keyboard, swipe, and previous/next controls.",
+        "description": "Each gallery post includes a collection of photos. Click a card to take a closer look and browse through the moments.",
         "smallLabel": "Lab Gallery",
         "title": "Click a card\nto view photos"
       }
