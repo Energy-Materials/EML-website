@@ -854,7 +854,7 @@ window.EML_DATA = {
     },
     "publications": {
       "banner": {
-        "description": "Discover our research achievements and innovations.",
+        "description": "Publications and patents resulting from our research activities.",
         "smallLabel": "EML",
         "title": "Publications"
       }
