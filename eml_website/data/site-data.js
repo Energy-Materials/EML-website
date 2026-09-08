@@ -716,7 +716,7 @@ window.EML_DATA = {
         "zoom": 1.05
       },
       "research": "Energy materials",
-      "role": "Undergraduate Researcher"
+      "role": "Master's Student"
     },
     {
       "email": "",
