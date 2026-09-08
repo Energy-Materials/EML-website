@@ -847,7 +847,7 @@ window.EML_DATA = {
     },
     "members": {
       "banner": {
-        "description": "Meet the people behind our research.",
+        "description": "Meet the people behind our research and learn more about our team",
         "smallLabel": "EML",
         "title": "Members"
       }
