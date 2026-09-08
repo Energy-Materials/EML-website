@@ -8,6 +8,85 @@
     { key: 'gallery', title: 'Gallery', description: '연구실 사진과 소식 목록 상단 배너' },
     { key: 'contact', title: 'Contact', description: '연락처와 찾아오는 길 상단 배너' },
   ]);
+  const pageContentPages = Object.freeze([
+    { key: 'home', title: 'Home' },
+    { key: 'research', title: 'Research' },
+    { key: 'members', title: 'Members' },
+    { key: 'publications', title: 'Publications' },
+    { key: 'gallery', title: 'Gallery' },
+    { key: 'contact', title: 'Contact' },
+  ]);
+  const pageContentDefaults = Object.freeze({
+    home: {
+      research: {
+        smallLabel: 'Research Focus',
+        title: 'Our Research',
+        subtitle: 'Battery materials and interface science',
+        description: 'Research, Publications, and Gallery are connected from the home page so visitors can quickly enter the main content.',
+        buttonText: 'View Research',
+      },
+      publicationsPreview: {
+        smallLabel: 'Publication',
+        title: 'Recent Publications',
+        buttonText: 'View Publications',
+      },
+      galleryPreview: {
+        smallLabel: 'Gallery',
+        title: 'Laboratory Gallery',
+        buttonText: 'View Gallery',
+      },
+    },
+    research: {
+      banner: {
+        smallLabel: 'EML',
+        title: 'Research',
+        description: 'Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.',
+      },
+      topicTabLabel: 'Research Topic',
+      statement: { title: 'Research Statement' },
+      topics: {
+        smallLabel: 'Research Topic',
+        title: 'Materials, interfaces,\nand reaction dynamics',
+      },
+    },
+    members: {
+      banner: {
+        smallLabel: 'EML',
+        title: 'Members',
+        description: 'Professor, current members, and alumni in one consistent card system.',
+      },
+    },
+    publications: {
+      banner: {
+        smallLabel: 'EML',
+        title: 'Publications',
+        description: 'Journal articles and patents are organized for easy update from admin data.',
+      },
+    },
+    gallery: {
+      banner: {
+        smallLabel: 'EML',
+        title: 'Gallery',
+        description: 'Lab seminars, conferences, awards, and group events in clickable card format.',
+      },
+      section: {
+        smallLabel: 'Lab Gallery',
+        title: 'Click a card\nto view photos',
+        description: 'Each gallery post can contain multiple photos. Click a card to open a larger carousel with keyboard, swipe, and previous/next controls.',
+      },
+    },
+    contact: {
+      banner: {
+        smallLabel: 'EML',
+        title: 'Contact',
+        description: 'Join us and contact the Energy Materials Laboratory.',
+      },
+      section: {
+        smallLabel: 'Contact',
+        title: 'Get in touch',
+      },
+    },
+  });
   const sidebar = document.querySelector('[data-sidebar]');
   const content = document.querySelector('[data-admin-content]');
   const authShell = document.querySelector('[data-auth-shell]');
@@ -21,6 +100,7 @@
   const topSave = document.querySelector('[data-top-save]');
   const sessionDraftExport = document.querySelector('[data-export-session-draft]');
   let activeSection = 'dashboard';
+  let activePageContentPage = 'home';
   let dragImage = null;
   let data = clone(window.EML_DATA || {});
   let loadedRevision = 0;
@@ -725,6 +805,7 @@
       dashboard: renderDashboard,
       brand: renderBrand,
       banners: renderBanners,
+      pageContent: renderPageContent,
       site: renderSite,
       home: renderHome,
       research: renderResearch,
@@ -836,6 +917,194 @@
           </article>`;
         }).join('')}
       </div>
+      ${saveBar()}
+    </section>`;
+  }
+
+  function pageContentValue(path, fallback = '') {
+    const value = getPath(path);
+    return typeof value === 'string' ? value : fallback;
+  }
+
+  function pageContentGroup(key, title, description, fields) {
+    const headingId = `page-content-${activePageContentPage}-${key}-heading`;
+    return `<section class="page-content-group" aria-labelledby="${escapeAttr(headingId)}">
+      <div class="page-content-group-heading">
+        <h2 id="${escapeAttr(headingId)}">${escapeHTML(title)}</h2>
+        ${description ? `<p>${escapeHTML(description)}</p>` : ''}
+      </div>
+      <div class="page-content-group-fields">${fields}</div>
+    </section>`;
+  }
+
+  function renderPageContentBanner(pageKey) {
+    const defaults = pageContentDefaults[pageKey].banner;
+    const smallLabelFallback = (data.site && data.site.shortName) || defaults.smallLabel;
+    return pageContentGroup(
+      'banner',
+      'Top Banner Text',
+      '배너 이미지는 Subpage Banners에서 관리하고, 이곳에서는 배너 문구만 수정합니다.',
+      `<div class="grid-2">
+        ${inputField(`pageContent.${pageKey}.banner.smallLabel`, 'Small Label', pageContentValue(`pageContent.${pageKey}.banner.smallLabel`, smallLabelFallback))}
+        ${inputField(`pageContent.${pageKey}.banner.title`, 'Page Title', pageContentValue(`pageContent.${pageKey}.banner.title`, defaults.title))}
+      </div>
+      <div class="page-content-wide-field">
+        ${textareaField(`pageContent.${pageKey}.banner.description`, 'Description', pageContentValue(`pageContent.${pageKey}.banner.description`, defaults.description))}
+      </div>`,
+    );
+  }
+
+  function renderPageContentHome() {
+    const h = data.home || {};
+    const defaults = pageContentDefaults.home;
+    return `<div class="page-content-groups">
+      ${pageContentGroup(
+        'home-hero',
+        'Home Hero',
+        '기존 Home 메뉴와 같은 메인 배너 문구를 편집합니다.',
+        `<div class="grid-2">
+          ${inputField('home.eyebrow', 'Eyebrow', h.eyebrow)}
+          ${inputField('home.subtitleKr', 'Korean Subtitle', h.subtitleKr)}
+          ${inputField('home.ctaPrimary', 'Primary Button Text', h.ctaPrimary)}
+          ${inputField('home.ctaSecondary', 'Secondary Button Text', h.ctaSecondary)}
+        </div>
+        <div class="page-content-wide-field">${arrayField('home.titleLines', 'Main Title Lines', h.titleLines || [])}</div>
+        <div class="page-content-wide-field">${textareaField('home.intro', 'Intro Text', h.intro || '')}</div>`,
+      )}
+      ${pageContentGroup(
+        'home-research',
+        'Our Research Preview',
+        'Home 화면의 왼쪽 Research 소개 문구와 버튼을 수정합니다.',
+        `<div class="grid-2">
+          ${inputField('pageContent.home.research.smallLabel', 'Small Label', pageContentValue('pageContent.home.research.smallLabel', defaults.research.smallLabel))}
+          ${inputField('pageContent.home.research.title', 'Title', pageContentValue('pageContent.home.research.title', defaults.research.title))}
+          ${inputField('pageContent.home.research.subtitle', 'Subtitle', pageContentValue('pageContent.home.research.subtitle', defaults.research.subtitle))}
+          ${inputField('pageContent.home.research.buttonText', 'Button Text', pageContentValue('pageContent.home.research.buttonText', defaults.research.buttonText))}
+        </div>
+        <div class="page-content-wide-field">${textareaField('pageContent.home.research.description', 'Description', pageContentValue('pageContent.home.research.description', defaults.research.description))}</div>`,
+      )}
+      ${pageContentGroup(
+        'home-previews',
+        'Recent Content Panels',
+        'Home 화면 하단의 Publications와 Gallery 박스 제목 및 버튼 문구입니다.',
+        `<div class="page-content-preview-grid">
+          <section class="page-content-subgroup" aria-labelledby="page-content-home-publications-heading">
+            <h3 id="page-content-home-publications-heading">Publications Preview</h3>
+            ${inputField('pageContent.home.publicationsPreview.smallLabel', 'Small Label', pageContentValue('pageContent.home.publicationsPreview.smallLabel', defaults.publicationsPreview.smallLabel))}
+            ${inputField('pageContent.home.publicationsPreview.title', 'Title', pageContentValue('pageContent.home.publicationsPreview.title', defaults.publicationsPreview.title))}
+            ${inputField('pageContent.home.publicationsPreview.buttonText', 'Button Text', pageContentValue('pageContent.home.publicationsPreview.buttonText', defaults.publicationsPreview.buttonText))}
+          </section>
+          <section class="page-content-subgroup" aria-labelledby="page-content-home-gallery-heading">
+            <h3 id="page-content-home-gallery-heading">Gallery Preview</h3>
+            ${inputField('pageContent.home.galleryPreview.smallLabel', 'Small Label', pageContentValue('pageContent.home.galleryPreview.smallLabel', defaults.galleryPreview.smallLabel))}
+            ${inputField('pageContent.home.galleryPreview.title', 'Title', pageContentValue('pageContent.home.galleryPreview.title', defaults.galleryPreview.title))}
+            ${inputField('pageContent.home.galleryPreview.buttonText', 'Button Text', pageContentValue('pageContent.home.galleryPreview.buttonText', defaults.galleryPreview.buttonText))}
+          </section>
+        </div>`,
+      )}
+    </div>`;
+  }
+
+  function renderPageContentResearch() {
+    const defaults = pageContentDefaults.research;
+    return `<div class="page-content-groups">
+      ${renderPageContentBanner('research')}
+      ${pageContentGroup(
+        'research-body',
+        'Research Page Text',
+        'Research Statement 내용은 기존 Research 메뉴와 같은 데이터를 사용합니다.',
+        `<div class="grid-2">
+          ${inputField('pageContent.research.topicTabLabel', 'Topic Tab Label', pageContentValue('pageContent.research.topicTabLabel', defaults.topicTabLabel))}
+          ${inputField('pageContent.research.statement.title', 'Statement Title', pageContentValue('pageContent.research.statement.title', defaults.statement.title))}
+          ${inputField('pageContent.research.topics.smallLabel', 'Topics Small Label', pageContentValue('pageContent.research.topics.smallLabel', defaults.topics.smallLabel))}
+        </div>
+        <div class="page-content-wide-field">${textareaField('pageContent.research.topics.title', 'Topics Title', pageContentValue('pageContent.research.topics.title', defaults.topics.title))}</div>
+        <div class="page-content-wide-field">${textareaField('researchStatement', 'Research Statement', data.researchStatement || '')}</div>`,
+      )}
+    </div>`;
+  }
+
+  function renderPageContentMembers() {
+    return `<div class="page-content-groups">
+      ${renderPageContentBanner('members')}
+      <p class="page-content-note" role="note">Professor, Members, Alumni의 개별 정보는 기존 각 메뉴에서 계속 관리합니다.</p>
+    </div>`;
+  }
+
+  function renderPageContentPublications() {
+    return `<div class="page-content-groups">
+      ${renderPageContentBanner('publications')}
+      <p class="page-content-note" role="note">논문과 특허 데이터는 기존 Publications 메뉴에서 계속 관리합니다.</p>
+    </div>`;
+  }
+
+  function renderPageContentGallery() {
+    const defaults = pageContentDefaults.gallery;
+    return `<div class="page-content-groups">
+      ${renderPageContentBanner('gallery')}
+      ${pageContentGroup(
+        'gallery-body',
+        'Gallery Section Text',
+        'Gallery 카드 목록 위에 표시되는 소개 문구입니다.',
+        `<div class="grid-2">
+          ${inputField('pageContent.gallery.section.smallLabel', 'Small Label', pageContentValue('pageContent.gallery.section.smallLabel', defaults.section.smallLabel))}
+          ${textareaField('pageContent.gallery.section.title', 'Title', pageContentValue('pageContent.gallery.section.title', defaults.section.title))}
+        </div>
+        <div class="page-content-wide-field">${textareaField('pageContent.gallery.section.description', 'Description', pageContentValue('pageContent.gallery.section.description', defaults.section.description))}</div>`,
+      )}
+    </div>`;
+  }
+
+  function renderPageContentContact() {
+    const defaults = pageContentDefaults.contact;
+    return `<div class="page-content-groups">
+      ${renderPageContentBanner('contact')}
+      ${pageContentGroup(
+        'contact-body',
+        'Contact Section Text',
+        '연락처 카드 위에 표시되는 제목 문구입니다. 실제 주소와 이메일은 Contact / Footer에서 관리합니다.',
+        `<div class="grid-2">
+          ${inputField('pageContent.contact.section.smallLabel', 'Small Label', pageContentValue('pageContent.contact.section.smallLabel', defaults.section.smallLabel))}
+          ${inputField('pageContent.contact.section.title', 'Title', pageContentValue('pageContent.contact.section.title', defaults.section.title))}
+        </div>
+        <div class="page-content-wide-field">${textareaField('site.joinMessage', 'Join Us Description', data.site?.joinMessage || '')}</div>`,
+      )}
+    </div>`;
+  }
+
+  function renderPageContentPanel(pageKey) {
+    const renderers = {
+      home: renderPageContentHome,
+      research: renderPageContentResearch,
+      members: renderPageContentMembers,
+      publications: renderPageContentPublications,
+      gallery: renderPageContentGallery,
+      contact: renderPageContentContact,
+    };
+    return renderers[pageKey]();
+  }
+
+  function renderPageContent() {
+    const selectedPage = pageContentPages.some((page) => page.key === activePageContentPage)
+      ? activePageContentPage
+      : 'home';
+    activePageContentPage = selectedPage;
+    const selected = pageContentPages.find((page) => page.key === selectedPage);
+    return `<section class="editor-card">
+      ${header(
+        'Page Content',
+        '페이지별 제목, 소개 문구와 버튼 텍스트를 한곳에서 관리합니다.',
+        `<a class="secondary" href="index.html#${escapeAttr(selectedPage)}" target="_blank" rel="noreferrer" aria-label="게시된 ${escapeAttr(selected.title)} 페이지 보기">게시된 페이지 보기</a>`,
+      )}
+      <div class="page-content-tabs" role="tablist" aria-label="편집할 홈페이지 페이지" aria-orientation="horizontal" data-page-content-tabs>
+        ${pageContentPages.map((page) => {
+          const active = page.key === selectedPage;
+          return `<button class="page-content-tab${active ? ' is-active' : ''}" id="page-content-tab-${escapeAttr(page.key)}" type="button" role="tab" aria-selected="${active}" aria-controls="page-content-panel" tabindex="${active ? '0' : '-1'}" data-page-content-tab="${escapeAttr(page.key)}">${escapeHTML(page.title)}</button>`;
+        }).join('')}
+      </div>
+      <section class="page-content-panel" id="page-content-panel" role="tabpanel" aria-labelledby="page-content-tab-${escapeAttr(selectedPage)}" data-page-content-panel>
+        ${renderPageContentPanel(selectedPage)}
+      </section>
       ${saveBar()}
     </section>`;
   }
@@ -1388,6 +1657,43 @@
     });
   }
 
+  function bindPageContentTabs() {
+    const tabList = content.querySelector('[data-page-content-tabs]');
+    if (!tabList) return;
+    const tabs = Array.from(tabList.querySelectorAll('[data-page-content-tab]'));
+
+    function activatePage(tab) {
+      const nextPage = tab && tab.dataset.pageContentTab;
+      if (!pageContentPages.some((page) => page.key === nextPage)) return;
+      if (activePageContentPage === nextPage) {
+        tab.focus({ preventScroll: true });
+        return;
+      }
+      activePageContentPage = nextPage;
+      render();
+      window.requestAnimationFrame(() => {
+        content.querySelector(`[data-page-content-tab="${nextPage}"]`)?.focus({ preventScroll: true });
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => activatePage(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const current = Math.max(0, tabs.indexOf(tab));
+        const next = event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? tabs.length - 1
+            : event.key === 'ArrowRight'
+              ? (current + 1) % tabs.length
+              : (current - 1 + tabs.length) % tabs.length;
+        activatePage(tabs[next]);
+      });
+    });
+  }
+
   function bindCommon() {
     content.querySelectorAll('[data-path]').forEach((field) => {
       if (field.matches?.('[data-rich-text-editor]')) return;
@@ -1419,6 +1725,7 @@
       });
     });
     bindRichTextEditors();
+    if (typeof bindPageContentTabs === 'function') bindPageContentTabs();
     content.querySelectorAll('[data-save]').forEach((button) => button.addEventListener('click', async () => saveData(true)));
     content.querySelectorAll('[data-preview]').forEach((button) => button.addEventListener('click', async () => {
       const previewWindow = window.open('', '_blank');

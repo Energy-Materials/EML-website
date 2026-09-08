@@ -26,6 +26,78 @@
 
   let data = clone(window.EML_DATA || {});
 
+  const DEFAULT_PAGE_CONTENT = Object.freeze({
+    home: Object.freeze({
+      research: Object.freeze({
+        smallLabel: 'Research Focus',
+        title: 'Our Research',
+        subtitle: 'Battery materials and interface science',
+        description: 'Research, Publications, and Gallery are connected from the home page so visitors can quickly enter the main content.',
+        buttonText: 'View Research',
+      }),
+      publicationsPreview: Object.freeze({
+        smallLabel: 'Publication',
+        title: 'Recent Publications',
+        buttonText: 'View Publications',
+      }),
+      galleryPreview: Object.freeze({
+        smallLabel: 'Gallery',
+        title: 'Laboratory Gallery',
+        buttonText: 'View Gallery',
+      }),
+    }),
+    research: Object.freeze({
+      banner: Object.freeze({
+        smallLabel: 'EML',
+        title: 'Research',
+        description: 'Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.',
+      }),
+      topicTabLabel: 'Research Topic',
+      statement: Object.freeze({ title: 'Research Statement' }),
+      topics: Object.freeze({
+        smallLabel: 'Research Topic',
+        title: 'Materials, interfaces,\nand reaction dynamics',
+      }),
+    }),
+    members: Object.freeze({
+      banner: Object.freeze({
+        smallLabel: 'EML',
+        title: 'Members',
+        description: 'Professor, current members, and alumni in one consistent card system.',
+      }),
+    }),
+    publications: Object.freeze({
+      banner: Object.freeze({
+        smallLabel: 'EML',
+        title: 'Publications',
+        description: 'Journal articles and patents are organized for easy update from admin data.',
+      }),
+    }),
+    gallery: Object.freeze({
+      banner: Object.freeze({
+        smallLabel: 'EML',
+        title: 'Gallery',
+        description: 'Lab seminars, conferences, awards, and group events in clickable card format.',
+      }),
+      section: Object.freeze({
+        smallLabel: 'Lab Gallery',
+        title: 'Click a card\nto view photos',
+        description: 'Each gallery post can contain multiple photos. Click a card to open a larger carousel with keyboard, swipe, and previous/next controls.',
+      }),
+    }),
+    contact: Object.freeze({
+      banner: Object.freeze({
+        smallLabel: 'EML',
+        title: 'Contact',
+        description: 'Join us and contact the Energy Materials Laboratory.',
+      }),
+      section: Object.freeze({
+        smallLabel: 'Contact',
+        title: 'Get in touch',
+      }),
+    }),
+  });
+
   function escapeHTML(value) {
     return String(value ?? '')
       .replaceAll('&', '&amp;')
@@ -33,6 +105,28 @@
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#039;');
+  }
+
+  function nestedValue(source, path) {
+    let current = source;
+    for (const key of path) {
+      if (!current || typeof current !== 'object' || Array.isArray(current)
+        || !Object.prototype.hasOwnProperty.call(current, key)) return undefined;
+      current = current[key];
+    }
+    return current;
+  }
+
+  function pageContentText(path, legacyFallback) {
+    const custom = nestedValue(data.pageContent, path);
+    if (typeof custom === 'string') return custom;
+    if (typeof legacyFallback === 'string') return legacyFallback;
+    const defaultValue = nestedValue(DEFAULT_PAGE_CONTENT, path);
+    return typeof defaultValue === 'string' ? defaultValue : '';
+  }
+
+  function escapeMultilineHTML(value) {
+    return escapeHTML(value).replace(/\r\n|\r|\n/g, '<br />');
   }
 
   function escapeAttr(value) { return escapeHTML(value).replaceAll('`', '&#096;'); }
@@ -293,11 +387,11 @@
       <section class="section research-preview">
         <div class="container home-research-layout">
           <div class="home-research-copy reveal">
-            <p class="section-kicker">Research Focus</p>
-            <h2 class="section-title">Our Research</h2>
-            <h3 class="research-theme-title">Battery materials and interface science</h3>
-            <p class="section-lead">Research, Publications, and Gallery are connected from the home page so visitors can quickly enter the main content.</p>
-            <button class="btn secondary" type="button" data-go="research" style="margin-top:24px">View Research <span class="button-icon" aria-hidden="true">→</span></button>
+            <p class="section-kicker">${escapeHTML(pageContentText(['home', 'research', 'smallLabel']))}</p>
+            <h2 class="section-title">${escapeHTML(pageContentText(['home', 'research', 'title']))}</h2>
+            <h3 class="research-theme-title">${escapeHTML(pageContentText(['home', 'research', 'subtitle']))}</h3>
+            <p class="section-lead">${escapeHTML(pageContentText(['home', 'research', 'description']))}</p>
+            <button class="btn secondary" type="button" data-go="research" style="margin-top:24px">${escapeHTML(pageContentText(['home', 'research', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
           <div class="research-card-grid">
             ${topics.map((topic) => `
@@ -316,8 +410,8 @@
       <section class="section highlight-band">
         <div class="container home-split">
           <div class="panel reveal">
-            <p class="section-kicker">Publication</p>
-            <h3>Recent Publications</h3>
+            <p class="section-kicker">${escapeHTML(pageContentText(['home', 'publicationsPreview', 'smallLabel']))}</p>
+            <h3>${escapeHTML(pageContentText(['home', 'publicationsPreview', 'title']))}</h3>
             <div class="publication-list">
               ${publications.map((pub) => `
                 <button class="pub-item" type="button" data-go="publications">
@@ -326,11 +420,11 @@
                 </button>
               `).join('')}
             </div>
-            <button class="btn ghost" type="button" data-go="publications">View Publications <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn ghost" type="button" data-go="publications">${escapeHTML(pageContentText(['home', 'publicationsPreview', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
           <div class="panel reveal">
-            <p class="section-kicker">Gallery</p>
-            <h3>Laboratory Gallery</h3>
+            <p class="section-kicker">${escapeHTML(pageContentText(['home', 'galleryPreview', 'smallLabel']))}</p>
+            <h3>${escapeHTML(pageContentText(['home', 'galleryPreview', 'title']))}</h3>
             <div class="news-list">
               ${gallery.map((item) => {
                 const realIndex = (data.gallery || []).indexOf(item);
@@ -342,7 +436,7 @@
                 `;
               }).join('')}
             </div>
-            <button class="btn ghost" type="button" data-go="gallery">View Gallery <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn ghost" type="button" data-go="gallery">${escapeHTML(pageContentText(['home', 'galleryPreview', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
         </div>
       </section>
@@ -353,12 +447,21 @@
     const s = data.site || {};
     const defaultHeroImage = asset(s.heroImage, 'assets/hero-concept-from-pdf.png');
     const heroImage = asset(s.subHeroImages?.[pageKey], defaultHeroImage);
+    const smallLabel = typeof pageContentText === 'function'
+      ? pageContentText([pageKey, 'banner', 'smallLabel'], s.shortName || 'EML')
+      : (s.shortName || 'EML');
+    const bannerTitle = typeof pageContentText === 'function'
+      ? pageContentText([pageKey, 'banner', 'title'], title)
+      : title;
+    const description = typeof pageContentText === 'function'
+      ? pageContentText([pageKey, 'banner', 'description'], desc)
+      : desc;
     return `
       <section class="sub-hero" data-sub-hero="${escapeAttr(pageKey)}" style="--hero-image: url('${escapeAttr(heroImage)}')">
         <div class="container">
-          <p class="section-kicker">${escapeHTML(s.shortName || 'EML')}</p>
-          <h1>${escapeHTML(title)}</h1>
-          <p>${escapeHTML(desc || '')}</p>
+          <p class="section-kicker">${escapeHTML(smallLabel)}</p>
+          <h1>${escapeHTML(bannerTitle)}</h1>
+          <p>${escapeHTML(description)}</p>
         </div>
       </section>
     `;
@@ -367,7 +470,7 @@
   function renderResearch() {
     return `
       ${renderSubHero('Research', 'Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.', 'research')}
-      <div class="single-tab-label"><span>Research Topic</span></div>
+      <div class="single-tab-label"><span>${escapeHTML(pageContentText(['research', 'topicTabLabel']))}</span></div>
       <section class="section compact">
         <div class="container">${renderResearchTopics()}</div>
       </section>
@@ -378,13 +481,13 @@
     const topics = data.researchTopics || [];
     return `
       <div class="statement-box reveal">
-        <h2>Research Statement</h2>
+        <h2>${escapeHTML(pageContentText(['research', 'statement', 'title']))}</h2>
         <p>${escapeHTML(data.researchStatement || '')}</p>
       </div>
       <div class="section-head reveal">
         <div>
-          <p class="section-kicker">Research Topic</p>
-          <h2 class="section-title">Materials, interfaces,<br />and reaction dynamics</h2>
+          <p class="section-kicker">${escapeHTML(pageContentText(['research', 'topics', 'smallLabel']))}</p>
+          <h2 class="section-title">${escapeMultilineHTML(pageContentText(['research', 'topics', 'title']))}</h2>
         </div>
       </div>
       <div class="topic-list">
@@ -652,10 +755,10 @@
         <div class="container">
           <div class="section-head reveal">
             <div>
-              <p class="section-kicker">Lab Gallery</p>
-              <h2 class="section-title small-title">Click a card<br />to view photos</h2>
+              <p class="section-kicker">${escapeHTML(pageContentText(['gallery', 'section', 'smallLabel']))}</p>
+              <h2 class="section-title small-title">${escapeMultilineHTML(pageContentText(['gallery', 'section', 'title']))}</h2>
             </div>
-            <p class="section-lead">Each gallery post can contain multiple photos. Click a card to open a larger carousel with keyboard, swipe, and previous/next controls.</p>
+            <p class="section-lead">${escapeHTML(pageContentText(['gallery', 'section', 'description']))}</p>
           </div>
           <div class="gallery-grid" aria-live="polite">
             ${(data.gallery || []).length ? (data.gallery || []).map((item, index) => {
@@ -693,8 +796,8 @@
       <section class="section compact">
         <div class="container contact-grid">
           <div class="contact-card reveal">
-            <p class="section-kicker">Contact</p>
-            <h2>Get in touch</h2>
+            <p class="section-kicker">${escapeHTML(pageContentText(['contact', 'section', 'smallLabel']))}</p>
+            <h2>${escapeHTML(pageContentText(['contact', 'section', 'title']))}</h2>
             <div class="contact-row"><strong>Lab</strong><span>${escapeHTML(s.labName)}<br />${escapeHTML(s.labNameKr)}</span></div>
             <div class="contact-row"><strong>Address</strong><span>${escapeHTML(s.address)}</span></div>
             ${s.phone ? `<div class="contact-row"><strong>Phone</strong><span>${escapeHTML(s.phone)}</span></div>` : ''}

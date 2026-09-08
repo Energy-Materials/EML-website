@@ -802,6 +802,79 @@ window.EML_DATA = {
       "role": "Undergraduate Researcher"
     }
   ],
+  "pageContent": {
+    "contact": {
+      "banner": {
+        "description": "Join us and contact the Energy Materials Laboratory.",
+        "smallLabel": "EML",
+        "title": "Contact"
+      },
+      "section": {
+        "smallLabel": "Contact",
+        "title": "Get in touch"
+      }
+    },
+    "gallery": {
+      "banner": {
+        "description": "Lab seminars, conferences, awards, and group events in clickable card format.",
+        "smallLabel": "EML",
+        "title": "Gallery"
+      },
+      "section": {
+        "description": "Each gallery post can contain multiple photos. Click a card to open a larger carousel with keyboard, swipe, and previous/next controls.",
+        "smallLabel": "Lab Gallery",
+        "title": "Click a card\nto view photos"
+      }
+    },
+    "home": {
+      "galleryPreview": {
+        "buttonText": "View Gallery",
+        "smallLabel": "Gallery",
+        "title": "Laboratory Gallery"
+      },
+      "publicationsPreview": {
+        "buttonText": "View Publications",
+        "smallLabel": "Publication",
+        "title": "Recent Publications"
+      },
+      "research": {
+        "buttonText": "View Research",
+        "description": "Research, Publications, and Gallery are connected from the home page so visitors can quickly enter the main content.",
+        "smallLabel": "Research Focus",
+        "subtitle": "Battery materials and interface science",
+        "title": "Our Research"
+      }
+    },
+    "members": {
+      "banner": {
+        "description": "Professor, current members, and alumni in one consistent card system.",
+        "smallLabel": "EML",
+        "title": "Members"
+      }
+    },
+    "publications": {
+      "banner": {
+        "description": "Journal articles and patents are organized for easy update from admin data.",
+        "smallLabel": "EML",
+        "title": "Publications"
+      }
+    },
+    "research": {
+      "banner": {
+        "description": "Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.",
+        "smallLabel": "EML",
+        "title": "Research"
+      },
+      "statement": {
+        "title": "Research Statement"
+      },
+      "topicTabLabel": "Research Topic",
+      "topics": {
+        "smallLabel": "Research Topic",
+        "title": "Materials, interfaces,\nand reaction dynamics"
+      }
+    }
+  },
   "patents": [
     {
       "inventors": "Won-Sub Yoon, Kowsalya Palanisamy, Ji Hyun Um, Mihee Jeong",
