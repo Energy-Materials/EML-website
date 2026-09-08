@@ -720,7 +720,7 @@ window.EML_DATA = {
     },
     {
       "email": "",
-      "name": "Jun hee Jung | 정준희",
+      "name": "Jun Hee Jung | 정준희",
       "period": "2024.03. - present",
       "photo": "assets/person-placeholder.svg",
       "research": "Battery materials",
