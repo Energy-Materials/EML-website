@@ -1256,21 +1256,21 @@
   "researchStatement": "",
   "researchTopics": [
     {
-      "description": "",
+      "description": "Electrode surface modification using various inorganic and inorganic/organic hybrid materials. The goal is to tune interfacial stability, transport pathways, and electrochemical reversibility for next-generation energy storage systems.",
       "id": "surface-modification",
       "image": "assets/research-electrode-interface.svg",
       "short": "Inorganic and hybrid surface design",
       "title": "Electrode Surface Modification"
     },
     {
-      "description": "",
+      "description": "Electrode structuring with optimal hierarchy and dimensionality. We design electrode architectures that improve ionic and electronic transport while maintaining mechanical and chemical stability during repeated cycling.",
       "id": "electrode-structuring",
       "image": "assets/research-architecture.svg",
       "short": "Optimal hierarchy and dimensionality",
       "title": "Electrode Structuring"
     },
     {
-      "description": "",
+      "description": "In situ analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrode surfaces evolve during charge and discharge.",
       "id": "operando-analysis",
       "image": "assets/research-operando.svg",
       "short": "Real-time reaction visualization",
