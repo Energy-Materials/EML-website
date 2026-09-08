@@ -21,6 +21,29 @@ const REQUIRED_RECORD_ARRAYS = [
   'gallery'
 ];
 const SUB_HERO_PAGE_KEYS = ['research', 'members', 'publications', 'gallery', 'contact'];
+const PAGE_CONTENT_SCHEMA = Object.freeze({
+  home: {
+    research: { smallLabel: 'string', title: 'string', subtitle: 'string', description: 'string', buttonText: 'string' },
+    publicationsPreview: { smallLabel: 'string', title: 'string', buttonText: 'string' },
+    galleryPreview: { smallLabel: 'string', title: 'string', buttonText: 'string' },
+  },
+  research: {
+    banner: { smallLabel: 'string', title: 'string', description: 'string' },
+    topicTabLabel: 'string',
+    statement: { title: 'string' },
+    topics: { smallLabel: 'string', title: 'string' },
+  },
+  members: { banner: { smallLabel: 'string', title: 'string', description: 'string' } },
+  publications: { banner: { smallLabel: 'string', title: 'string', description: 'string' } },
+  gallery: {
+    banner: { smallLabel: 'string', title: 'string', description: 'string' },
+    section: { smallLabel: 'string', title: 'string', description: 'string' },
+  },
+  contact: {
+    banner: { smallLabel: 'string', title: 'string', description: 'string' },
+    section: { smallLabel: 'string', title: 'string' },
+  },
+});
 const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 const MAX_DEPTH = 24;
 const MAX_NODES = 100_000;
@@ -110,6 +133,32 @@ function requireStringArray(record, field, label, errors) {
   record[field].forEach((entry, index) => {
     if (typeof entry !== 'string') errors.push(`${label}.${field}.${index} must be a string.`);
   });
+}
+
+function validatePageContentNode(value, schema, label, errors) {
+  if (!isPlainRecord(value)) {
+    errors.push(`${label} must be an object.`);
+    return;
+  }
+  Object.keys(value).forEach((key) => {
+    if (!Object.prototype.hasOwnProperty.call(schema, key)) {
+      errors.push(`${label}.${key} is not supported.`);
+    }
+  });
+  Object.keys(schema).forEach((key) => {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) return;
+    const expected = schema[key];
+    if (expected === 'string') {
+      if (typeof value[key] !== 'string') errors.push(`${label}.${key} must be a string.`);
+      return;
+    }
+    validatePageContentNode(value[key], expected, `${label}.${key}`, errors);
+  });
+}
+
+function validateOptionalPageContent(content, errors) {
+  if (!Object.prototype.hasOwnProperty.call(content, 'pageContent')) return;
+  validatePageContentNode(content.pageContent, PAGE_CONTENT_SCHEMA, 'pageContent', errors);
 }
 
 function validateEmail(value, label, errors) {
@@ -258,6 +307,7 @@ function validateKnownShape(content, errors) {
   REQUIRED_RECORDS.forEach((key) => requireRecord(content, key, errors));
   REQUIRED_RECORD_ARRAYS.forEach((key) => requireRecordArray(content, key, errors));
   requireString(content, 'researchStatement', 'content', errors);
+  validateOptionalPageContent(content, errors);
 
   if (isPlainRecord(content.site)) {
     ['labName', 'labNameKr', 'university', 'universityKr', 'shortName', 'email', 'address', 'copyright',

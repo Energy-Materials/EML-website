@@ -2,9 +2,58 @@
   'use strict';
 
   const subHeroPageKeys = ['research', 'members', 'publications', 'gallery', 'contact'];
+  const pageContentSchema = Object.freeze({
+    home: {
+      research: { smallLabel: 'string', title: 'string', subtitle: 'string', description: 'string', buttonText: 'string' },
+      publicationsPreview: { smallLabel: 'string', title: 'string', buttonText: 'string' },
+      galleryPreview: { smallLabel: 'string', title: 'string', buttonText: 'string' },
+    },
+    research: {
+      banner: { smallLabel: 'string', title: 'string', description: 'string' },
+      topicTabLabel: 'string',
+      statement: { title: 'string' },
+      topics: { smallLabel: 'string', title: 'string' },
+    },
+    members: { banner: { smallLabel: 'string', title: 'string', description: 'string' } },
+    publications: { banner: { smallLabel: 'string', title: 'string', description: 'string' } },
+    gallery: {
+      banner: { smallLabel: 'string', title: 'string', description: 'string' },
+      section: { smallLabel: 'string', title: 'string', description: 'string' },
+    },
+    contact: {
+      banner: { smallLabel: 'string', title: 'string', description: 'string' },
+      section: { smallLabel: 'string', title: 'string' },
+    },
+  });
 
   function isRecord(value) {
     return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+  }
+
+  function validatePageContentNode(value, schema, label, errors) {
+    if (!isRecord(value)) {
+      errors.push(`${label}는 객체여야 합니다.`);
+      return;
+    }
+    Object.keys(value).forEach((key) => {
+      if (!Object.prototype.hasOwnProperty.call(schema, key)) {
+        errors.push(`${label}.${key}는 지원하지 않는 항목입니다.`);
+      }
+    });
+    Object.keys(schema).forEach((key) => {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) return;
+      const expected = schema[key];
+      if (expected === 'string') {
+        if (typeof value[key] !== 'string') errors.push(`${label}.${key}는 문자열이어야 합니다.`);
+        return;
+      }
+      validatePageContentNode(value[key], expected, `${label}.${key}`, errors);
+    });
+  }
+
+  function validateOptionalPageContent(value, errors) {
+    if (!Object.prototype.hasOwnProperty.call(value, 'pageContent')) return;
+    validatePageContentNode(value.pageContent, pageContentSchema, 'pageContent', errors);
   }
 
   function isSafeExternalUrl(value) {
@@ -138,6 +187,8 @@
     ['site', 'home', 'professor'].forEach((key) => {
       if (!isRecord(value[key])) errors.push(`${key}는 객체여야 합니다.`);
     });
+
+    validateOptionalPageContent(value, errors);
 
     if (isRecord(value.site) && Object.prototype.hasOwnProperty.call(value.site, 'subHeroImages')) {
       const subHeroImages = value.site.subHeroImages;
