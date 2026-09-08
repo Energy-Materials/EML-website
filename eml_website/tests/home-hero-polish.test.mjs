@@ -20,8 +20,8 @@ assert.match(
 );
 assert.match(
   appSource,
-  /const bounds = canvas\.getBoundingClientRect\(\);[\s\S]*?renderScaleX = canvas\.width \/ canvasWidth;[\s\S]*?renderScaleY = canvas\.height \/ canvasHeight;/,
-  'Particle rendering must derive its backing-store scale from the actual canvas bounds.',
+  /const bounds = \(hero \|\| canvas\)\.getBoundingClientRect\(\);[\s\S]*?renderScaleX = canvas\.width \/ canvasWidth;[\s\S]*?renderScaleY = canvas\.height \/ canvasHeight;/,
+  'Particle rendering must derive its backing-store scale from the untransformed hero bounds.',
 );
 
 console.log('Home hero logo removal and zoom-safe particles contract passed.');

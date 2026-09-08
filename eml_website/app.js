@@ -9,6 +9,8 @@
   let particleFrame = null;
   let particleCanvas = null;
   let particleResize = null;
+  let particleSceneImage = null;
+  let particleResizeObserver = null;
   let lightboxState = { itemIndex: 0, imageIndex: 0, touchX: null, touchY: null };
   let modalReturnFocus = null;
   let lightboxReturnFocus = null;
@@ -130,6 +132,20 @@
   }
 
   function escapeAttr(value) { return escapeHTML(value).replaceAll('`', '&#096;'); }
+
+  function getCoverSceneMetrics(viewportWidth, viewportHeight, aspectRatio) {
+    const width = Math.max(1, Number(viewportWidth) || 1);
+    const height = Math.max(1, Number(viewportHeight) || 1);
+    const ratio = Number.isFinite(aspectRatio) && aspectRatio > 0 ? aspectRatio : (1111 / 627);
+    const sceneWidth = Math.max(width, height * ratio);
+    const sceneHeight = Math.max(height, width / ratio);
+    return {
+      sceneWidth,
+      sceneHeight,
+      sceneOffsetX: (width - sceneWidth) / 2,
+      sceneOffsetY: (height - sceneHeight) / 2,
+    };
+  }
 
   function parseInlineFormatting(value, allowedFormats = []) {
     const raw = String(value ?? '');
@@ -360,7 +376,7 @@
     const heroImage = asset(s.heroImage, 'assets/hero-concept-from-pdf.png');
     return `
       <section class="hero" aria-label="Main home banner" style="--hero-image: url('${escapeAttr(heroImage)}')">
-        <canvas class="hero-particles" data-particles aria-hidden="true"></canvas>
+        <canvas class="hero-particles" data-particles data-particle-scene-image="${escapeAttr(heroImage)}" aria-hidden="true"></canvas>
         <div class="hero-content">
           <p class="hero-label">${escapeHTML(h.eyebrow || s.university || '')}</p>
           <h1 class="hero-title">
@@ -1129,18 +1145,30 @@
   function initParticles() {
     const canvas = document.querySelector('[data-particles]');
     if (!canvas || reducedMotionQuery.matches) return;
-    particleCanvas = canvas;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    particleCanvas = canvas;
+    const hero = canvas.closest('.hero');
     const particles = [];
-    const count = Math.min(88, Math.floor(window.innerWidth / 18));
+    const count = 88;
     let canvasWidth = 1;
     let canvasHeight = 1;
+    let sceneWidth = 1;
+    let sceneHeight = 1;
+    let sceneOffsetX = 0;
+    let sceneOffsetY = 0;
+    let sceneAspectRatio = 1111 / 627;
     let renderScaleX = 1;
     let renderScaleY = 1;
     function resize() {
-      const bounds = canvas.getBoundingClientRect();
+      const bounds = (hero || canvas).getBoundingClientRect();
       canvasWidth = Math.max(1, bounds.width);
       canvasHeight = Math.max(1, bounds.height);
+      const scene = getCoverSceneMetrics(canvasWidth, canvasHeight, sceneAspectRatio);
+      sceneWidth = scene.sceneWidth;
+      sceneHeight = scene.sceneHeight;
+      sceneOffsetX = scene.sceneOffsetX;
+      sceneOffsetY = scene.sceneOffsetY;
       const pixelRatio = Math.min(2, Math.max(1, Number(window.devicePixelRatio) || 1));
       const pixelWidth = Math.max(1, Math.round(canvasWidth * pixelRatio));
       const pixelHeight = Math.max(1, Math.round(canvasHeight * pixelRatio));
@@ -1154,14 +1182,17 @@
     }
     particleResize = resize;
     function resetParticle(p) {
-      p.x = Math.random() * canvasWidth * 0.78;
-      p.y = Math.random() * canvasHeight;
+      p.u = Math.random() * 0.78;
+      p.v = Math.random();
       p.r = Math.random() * 2.4 + 0.7;
       p.vx = Math.random() * 0.58 + 0.22;
       p.vy = (Math.random() - 0.5) * 0.42;
       p.alpha = Math.random() * 0.52 + 0.18;
     }
     resize();
+    // Keep the original 20 CSS-pixel overflow allowance in scene space so a resize
+    // changes only the camera crop and never makes an edge particle reset early.
+    const sceneVerticalMargin = 20 / sceneHeight;
     for (let i = 0; i < count; i += 1) {
       const p = {};
       resetParticle(p);
@@ -1173,16 +1204,22 @@
       ctx.setTransform(renderScaleX, 0, 0, renderScaleY, 0, 0);
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
+      const animationTime = Date.now() / 900;
       particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += Math.sin((Date.now() / 900) + i) * 0.16 + p.vy;
-        if (p.x > canvasWidth || p.y < -20 || p.y > canvasHeight + 20) resetParticle(p);
-        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 8);
+        p.u += p.vx / sceneWidth;
+        p.v += (Math.sin(animationTime + i) * 0.16 + p.vy) / sceneHeight;
+        if (p.u > 1 || p.v < -sceneVerticalMargin || p.v > (1 + sceneVerticalMargin)) resetParticle(p);
+        const x = sceneOffsetX + (p.u * sceneWidth);
+        const y = sceneOffsetY + (p.v * sceneHeight);
+        const glowRadius = p.r * 8;
+        if (x + glowRadius < 0 || x - glowRadius > canvasWidth
+          || y + glowRadius < 0 || y - glowRadius > canvasHeight) return;
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
         gradient.addColorStop(0, `rgba(167, 219, 255, ${p.alpha})`);
         gradient.addColorStop(1, 'rgba(95, 145, 191, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * 8, 0, Math.PI * 2);
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
         ctx.fill();
       });
       ctx.restore();
@@ -1190,16 +1227,48 @@
     }
     window.addEventListener('resize', resize, { passive: true });
     window.visualViewport?.addEventListener('resize', resize, { passive: true });
-    draw();
+    if ('ResizeObserver' in window && hero) {
+      particleResizeObserver = new ResizeObserver(resize);
+      particleResizeObserver.observe(hero);
+    }
+    let drawingStarted = false;
+    const startDrawing = () => {
+      if (drawingStarted || particleCanvas !== canvas || !canvas.isConnected) return;
+      drawingStarted = true;
+      draw();
+    };
+    const sceneImageSource = canvas.dataset.particleSceneImage;
+    if (sceneImageSource) {
+      const sceneImage = new Image();
+      particleSceneImage = sceneImage;
+      sceneImage.onload = () => {
+        if (particleCanvas !== canvas || !canvas.isConnected) return;
+        const naturalRatio = sceneImage.naturalWidth / sceneImage.naturalHeight;
+        if (Number.isFinite(naturalRatio) && naturalRatio > 0) {
+          sceneAspectRatio = naturalRatio;
+          resize();
+        }
+        startDrawing();
+      };
+      sceneImage.onerror = startDrawing;
+      sceneImage.src = sceneImageSource;
+    } else startDrawing();
   }
 
   function cancelParticles() {
     if (particleFrame) cancelAnimationFrame(particleFrame);
     if (particleResize) window.removeEventListener('resize', particleResize);
     if (particleResize) window.visualViewport?.removeEventListener('resize', particleResize);
+    if (particleSceneImage) {
+      particleSceneImage.onload = null;
+      particleSceneImage.onerror = null;
+    }
+    if (particleResizeObserver) particleResizeObserver.disconnect();
     particleFrame = null;
     particleCanvas = null;
     particleResize = null;
+    particleSceneImage = null;
+    particleResizeObserver = null;
   }
 
   modal.addEventListener('click', (event) => {
