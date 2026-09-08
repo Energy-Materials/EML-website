@@ -847,7 +847,7 @@
     },
     "members": {
       "banner": {
-        "description": "Professor, current members, and alumni in one consistent card system.",
+        "description": "Meet the people behind our research.",
         "smallLabel": "EML",
         "title": "Members"
       }
@@ -861,7 +861,7 @@
     },
     "research": {
       "banner": {
-        "description": "Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.",
+        "description": "Advancing materials for next-generation energy storage.",
         "smallLabel": "EML",
         "title": "Research"
       },
