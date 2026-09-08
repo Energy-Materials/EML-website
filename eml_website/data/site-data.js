@@ -805,7 +805,7 @@ window.EML_DATA = {
   "pageContent": {
     "contact": {
       "banner": {
-        "description": "Join us and contact the Energy Materials Laboratory.",
+        "description": "Get in touch with us for research inquiries, collaborations, or more information.",
         "smallLabel": "EML",
         "title": "Contact"
       },
