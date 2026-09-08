@@ -2,7 +2,7 @@ window.EML_DATA = {
   "alumni": [
     {
       "date": "2026.02",
-      "name": "김태현",
+      "name": "이태현",
       "next": "서강대학교 박사 과정"
     },
     {
@@ -22,7 +22,7 @@ window.EML_DATA = {
     },
     {
       "date": "2025.02",
-      "name": "이태현",
+      "name": "김태현",
       "next": "-"
     },
     {
