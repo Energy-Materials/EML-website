@@ -929,7 +929,7 @@
   },
   "publications": [
     {
-      "authors": "<strong>Ji Hyun Um,†</strong> Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho ",
+      "authors": "Ji Hyun Um,<strong>†</strong> Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho ",
       "journal": "Acc. Chem. Res. 2023, 56, 440",
       "link_url": "https://doi.org/10.1021/acs.accounts.2c00652",
       "note": "†These authors are equally contributed. Supplementary Cover",
@@ -1033,7 +1033,7 @@
       "link_url": "https://doi.org/10.1016/j.jpowsour.2019.227321",
       "note": "",
       "number": 25,
-      "title": "Catalytic effect of reduced graphene oxide on facilitating reversible conversion reaction in SnO 2 for next-generation Li rechargeable batteries",
+      "title": "Catalytic effect of reduced graphene oxide on facilitating reversible conversion reaction in SnO<sub>2</sub> for next-generation Li rechargeable batteries",
       "year": "2020"
     },
     {
@@ -1051,7 +1051,7 @@
       "link_url": "https://doi.org/10.33961/jecst.2019.00493",
       "note": "",
       "number": 23,
-      "title": "SnO 2-coated 3D etched Cu foam for lithium-ion battery anode",
+      "title": "SnO<sub>2</sub>-coated 3D etched Cu foam for lithium-ion battery anode",
       "year": "2020"
     },
     {
@@ -1078,7 +1078,7 @@
       "link_url": "https://doi.org/10.1016/j.jpowsour.2018.12.035",
       "note": "",
       "number": 20,
-      "title": "Comparative study of bulk and nano-structured mesoporous SnO 2 electrodes on the electrochemical performances for next generation Li rechargeable batteries",
+      "title": "Comparative study of bulk and nano-structured mesoporous SnO<sub>2</sub> electrodes on the electrochemical performances for next generation Li rechargeable batteries",
       "year": "2019"
     },
     {
