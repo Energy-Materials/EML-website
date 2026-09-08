@@ -854,7 +854,7 @@ window.EML_DATA = {
     },
     "publications": {
       "banner": {
-        "description": "Journal articles and patents are organized for easy update from admin data.",
+        "description": "Discover our research achievements and innovations.",
         "smallLabel": "EML",
         "title": "Publications"
       }
