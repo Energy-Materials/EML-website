@@ -816,7 +816,7 @@ window.EML_DATA = {
     },
     "gallery": {
       "banner": {
-        "description": "Lab seminars, conferences, awards, and group events in clickable card format.",
+        "description": "Inside our research and lab life.",
         "smallLabel": "EML",
         "title": "Gallery"
       },
@@ -839,7 +839,7 @@ window.EML_DATA = {
       },
       "research": {
         "buttonText": "View Research",
-        "description": "Research, Publications, and Gallery are connected from the home page so visitors can quickly enter the main content.",
+        "description": "...",
         "smallLabel": "Research Focus",
         "subtitle": "Battery materials and interface science",
         "title": "Our Research"
@@ -1253,7 +1253,7 @@ window.EML_DATA = {
       "year": "2010"
     }
   ],
-  "researchStatement": "Discovering new materials has driven a paradigm shift in existing science and technology. Our group aims to develop advanced energy materials and understand electrochemical reaction behaviors through rational electrode interface design, structural control, in-situ/operando analysis, and phase-dynamics studies.",
+  "researchStatement": "",
   "researchTopics": [
     {
       "description": "",
