@@ -228,6 +228,9 @@ select:focus-visible,
   inset: 0;
   background: linear-gradient(90deg, rgba(4, 13, 23, 0.90) 0%, rgba(4, 13, 23, 0.66) 45%, rgba(4, 13, 23, 0.22) 100%),
               var(--hero-image) center / cover no-repeat;
+}
+.hero::before,
+.hero-particles {
   transform: scale(1.025);
   animation: heroZoom 26s ease-in-out infinite alternate;
 }
@@ -244,7 +247,7 @@ select:focus-visible,
   opacity: 0.55;
   animation: gridMove 19s linear infinite;
 }
-.hero-particles { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; opacity: .78; }
+.hero-particles { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; opacity: .78; pointer-events: none; }
 .hero-content {
   position: relative;
   z-index: 3;
