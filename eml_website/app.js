@@ -37,6 +37,67 @@
 
   function escapeAttr(value) { return escapeHTML(value).replaceAll('`', '&#096;'); }
 
+  function parseInlineFormatting(value, allowedFormats = []) {
+    const raw = String(value ?? '');
+    const allowed = new Set(Array.isArray(allowedFormats) ? allowedFormats : []);
+    const tokenPattern = /<[^>]*>|[<>]/g;
+    let cursor = 0;
+    let activeFormat = '';
+    let activeTextStart = 0;
+    let html = '';
+    let text = '';
+    let tokenCount = 0;
+    let match;
+
+    if (raw.length > 20000) {
+      return { valid: false, html: escapeHTML(raw), text: raw };
+    }
+
+    while ((match = tokenPattern.exec(raw))) {
+      const plainChunk = raw.slice(cursor, match.index);
+      html += escapeHTML(plainChunk);
+      text += plainChunk;
+      cursor = match.index + match[0].length;
+      tokenCount += 1;
+
+      const tag = match[0].match(/^<(\/?)((?:strong|sup|sub))>$/);
+      if (!tag || !allowed.has(tag[2]) || tokenCount > 1000) {
+        return { valid: false, html: escapeHTML(raw), text: raw };
+      }
+
+      const closing = tag[1] === '/';
+      const format = tag[2];
+      if (!closing) {
+        if (activeFormat) return { valid: false, html: escapeHTML(raw), text: raw };
+        activeFormat = format;
+        activeTextStart = text.length;
+        html += `<${format}>`;
+      } else {
+        if (activeFormat !== format || !/[^\s\u200B-\u200D\u2060\uFEFF]/u.test(text.slice(activeTextStart))) {
+          return { valid: false, html: escapeHTML(raw), text: raw };
+        }
+        activeFormat = '';
+        html += `</${format}>`;
+      }
+    }
+
+    const remaining = raw.slice(cursor);
+    html += escapeHTML(remaining);
+    text += remaining;
+    if (activeFormat) {
+      return { valid: false, html: escapeHTML(raw), text: raw };
+    }
+    return { valid: true, html, text };
+  }
+
+  function renderInlineFormatting(value, allowedFormats = []) {
+    return parseInlineFormatting(value, allowedFormats).html;
+  }
+
+  function plainInlineText(value, allowedFormats = []) {
+    return parseInlineFormatting(value, allowedFormats).text;
+  }
+
   function asset(path, fallback = '') {
     const raw = String(path || fallback || '').trim();
     if (!raw || /[\u0000-\u001f"'()\\]/.test(raw)) return fallback || '';
@@ -101,7 +162,7 @@
   function renderPublicationExternalLink(item, typeLabel) {
     const href = externalLinkUrl(item?.link_url);
     if (!href) return '';
-    const title = String(item?.title || '').trim();
+    const title = plainInlineText(item?.title, ['sup', 'sub']).trim();
     const label = `${typeLabel} 외부 링크${title ? `: ${title}` : ''} (새 탭에서 열림)`;
     return `
       <a class="publication-external-link" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(label)}" title="외부 링크를 새 탭에서 열기">
@@ -260,7 +321,7 @@
             <div class="publication-list">
               ${publications.map((pub) => `
                 <button class="pub-item" type="button" data-go="publications">
-                  <b>${escapeHTML(pub.title)}</b>
+                  <b class="publication-inline publication-title">${renderInlineFormatting(pub.title, ['sup', 'sub'])}</b>
                   <span>${escapeHTML(pub.journal)} · ${escapeHTML(pub.year)}</span>
                 </button>
               `).join('')}
@@ -453,11 +514,22 @@
   }
 
   function filterPublicationItems(list, selectedYear = 'all', query = '') {
-    const term = String(query || '').trim().toLocaleLowerCase();
+    const normalize = (value) => String(value ?? '').normalize('NFKC').toLocaleLowerCase();
+    const term = normalize(query).trim();
     return (Array.isArray(list) ? list : []).filter((item) => {
       if (selectedYear !== 'all' && publicationYear(item?.year) !== selectedYear) return false;
       if (!term) return true;
-      return String(JSON.stringify(item) || '').toLocaleLowerCase().includes(term);
+      const searchable = [
+        item?.year,
+        item?.number,
+        plainInlineText(item?.title, ['sup', 'sub']),
+        plainInlineText(item?.authors, ['strong']),
+        item?.inventors,
+        item?.journal,
+        item?.note,
+        item?.link_url,
+      ].filter((field) => field != null).join(' ');
+      return normalize(searchable).includes(term);
     });
   }
 
@@ -525,8 +597,8 @@
               <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
                 <div class="year-badge"><small>#${escapeHTML(pub.number ?? '')}</small>${escapeHTML(publicationYear(pub.year))}</div>
                 <div class="publication-card-content">
-                  <h3>${escapeHTML(pub.title)}</h3>
-                  <p>${escapeHTML(pub.authors)}</p>
+                  <h3 class="publication-inline publication-title">${renderInlineFormatting(pub.title, ['sup', 'sub'])}</h3>
+                  <p class="publication-inline publication-authors">${renderInlineFormatting(pub.authors, ['strong'])}</p>
                   <p><strong>${escapeHTML(pub.journal)}</strong></p>
                   ${pub.note ? `<span class="note">${escapeHTML(pub.note)}</span>` : ''}
                 </div>

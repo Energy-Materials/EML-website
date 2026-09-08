@@ -173,6 +173,68 @@ function validateOptionalExternalUrl(entry, field, label, errors) {
   }
 }
 
+const PUBLICATION_TITLE_TAGS = ['sup', 'sub'];
+const PUBLICATION_AUTHOR_TAGS = ['strong'];
+const MAX_PUBLICATION_RICH_TEXT_LENGTH = 20_000;
+const MAX_PUBLICATION_RICH_TEXT_TOKENS = 1_000;
+
+function hasVisiblePublicationText(value) {
+  return /[^\s\u200B-\u200D\u2060\uFEFF]/u.test(value);
+}
+
+function validatePublicationInlineMarkup(value, label, allowedTags, errors) {
+  if (typeof value !== 'string' || value.trim() === '') return;
+  if (value.length > MAX_PUBLICATION_RICH_TEXT_LENGTH) {
+    errors.push(`${label} must not exceed ${MAX_PUBLICATION_RICH_TEXT_LENGTH.toLocaleString()} characters.`);
+    return;
+  }
+
+  const allowedMarkup = allowedTags.map((tag) => `<${tag}>...</${tag}>`).join(' or ');
+  const tokenPattern = /<[^>]*>|[<>]/g;
+  const exactTagPattern = /^<(\/?)((?:strong|sup|sub))>$/;
+  let activeTag = '';
+  let cursor = 0;
+  let visibleText = '';
+  let tokenCount = 0;
+  let match;
+
+  while ((match = tokenPattern.exec(value)) !== null) {
+    const textBeforeTag = value.slice(cursor, match.index);
+    visibleText += textBeforeTag;
+    cursor = match.index + match[0].length;
+    tokenCount += 1;
+    if (tokenCount > MAX_PUBLICATION_RICH_TEXT_TOKENS) {
+      errors.push(`${label} must not contain more than ${MAX_PUBLICATION_RICH_TEXT_TOKENS.toLocaleString()} formatting tags.`);
+      return;
+    }
+
+    const tagMatch = exactTagPattern.exec(match[0]);
+    if (!tagMatch || !allowedTags.includes(tagMatch[2])) {
+      errors.push(`${label} may contain only exact lowercase ${allowedMarkup} tags without attributes.`);
+      return;
+    }
+
+    const closing = tagMatch[1] === '/';
+    const tag = tagMatch[2];
+    if ((!closing && activeTag) || (closing && activeTag !== tag)) {
+      errors.push(`${label} formatting tags must not be nested and must have matching opening and closing tags.`);
+      return;
+    }
+    if (closing && !hasVisiblePublicationText(textBeforeTag)) {
+      errors.push(`${label} formatting tags must each contain visible text.`);
+      return;
+    }
+    activeTag = closing ? '' : tag;
+  }
+
+  visibleText += value.slice(cursor);
+  if (activeTag) {
+    errors.push(`${label} formatting tags must not be nested and must have matching opening and closing tags.`);
+    return;
+  }
+  if (!hasVisiblePublicationText(visibleText)) errors.push(`${label} must contain visible text.`);
+}
+
 const IMAGE_DISPLAY_KEYS = ['positionX', 'positionY', 'zoom'];
 
 function validateImageDisplay(display, label, errors) {
@@ -291,6 +353,8 @@ function validateKnownShape(content, errors) {
       seenPublicationNumbers.add(entry.number);
     }
     ['year', 'title', 'authors', 'journal'].forEach((field) => requireString(entry, field, label, errors, { allowEmpty: false }));
+    validatePublicationInlineMarkup(entry.title, `${label}.title`, PUBLICATION_TITLE_TAGS, errors);
+    validatePublicationInlineMarkup(entry.authors, `${label}.authors`, PUBLICATION_AUTHOR_TAGS, errors);
     requireString(entry, 'note', label, errors);
     validateOptionalExternalUrl(entry, 'link_url', label, errors);
   });
