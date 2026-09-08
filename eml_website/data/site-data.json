@@ -1256,28 +1256,28 @@
   "researchStatement": "Discovering new materials has driven a paradigm shift in existing science and technology. Our group aims to develop advanced energy materials and understand electrochemical reaction behaviors through rational electrode interface design, structural control, in-situ/operando analysis, and phase-dynamics studies.",
   "researchTopics": [
     {
-      "description": "Electrode surface modification using various inorganic and inorganic/organic hybrid materials. The goal is to tune interfacial stability, transport pathways, and electrochemical reversibility for next-generation energy storage systems.",
+      "description": "",
       "id": "surface-modification",
       "image": "assets/research-electrode-interface.svg",
       "short": "Inorganic and hybrid surface design",
       "title": "Electrode Surface Modification"
     },
     {
-      "description": "Electrode structuring with optimal hierarchy and dimensionality. We design electrode architectures that improve ionic and electronic transport while maintaining mechanical and chemical stability during repeated cycling.",
+      "description": "",
       "id": "electrode-structuring",
       "image": "assets/research-architecture.svg",
       "short": "Optimal hierarchy and dimensionality",
       "title": "Electrode Structuring"
     },
     {
-      "description": "In situ analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrodes evolve during charge and discharge.",
+      "description": "",
       "id": "operando-analysis",
       "image": "assets/research-operando.svg",
       "short": "Real-time reaction visualization",
       "title": "In-situ / Operando Analysis"
     },
     {
-      "description": "Phase dynamics by multi-phase conversion reactions between solid, liquid, and gas. We study reaction pathways and structure-property relationships in conversion-type energy materials.",
+      "description": "",
       "id": "phase-dynamics",
       "image": "assets/research-phase.svg",
       "short": "Solid-liquid-gas conversion reactions",
