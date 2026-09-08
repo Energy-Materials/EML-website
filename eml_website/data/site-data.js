@@ -816,7 +816,7 @@ window.EML_DATA = {
     },
     "gallery": {
       "banner": {
-        "description": "Inside our research and lab life.",
+        "description": "Moments from our research, activities, and life in the lab.",
         "smallLabel": "EML",
         "title": "Gallery"
       },
@@ -847,21 +847,21 @@ window.EML_DATA = {
     },
     "members": {
       "banner": {
-        "description": "Professor, current members, and alumni in one consistent card system.",
+        "description": "Meet the people behind our research.",
         "smallLabel": "EML",
         "title": "Members"
       }
     },
     "publications": {
       "banner": {
-        "description": "Journal articles and patents are organized for easy update from admin data.",
+        "description": "Discover our research achievements and innovations.",
         "smallLabel": "EML",
         "title": "Publications"
       }
     },
     "research": {
       "banner": {
-        "description": "Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.",
+        "description": "Advancing materials for next-generation energy storage.",
         "smallLabel": "EML",
         "title": "Research"
       },
