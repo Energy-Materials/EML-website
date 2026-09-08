@@ -31,8 +31,13 @@ assert.match(
 );
 assert.match(
   stylesSource,
-  /\.footer-email-block\s*\{[^}]*width:\s*100%[^}]*text-align:\s*right/,
-  'The footer email text must end at the shared right edge.',
+  /\.footer-email-block\s*\{[^}]*justify-self:\s*end[^}]*width:\s*fit-content[^}]*max-width:\s*100%[^}]*text-align:\s*left/,
+  'The footer email lines must form one content-width group anchored to the shared right edge.',
+);
+assert.match(
+  stylesSource,
+  /\.footer-email-block p\s*\{[^}]*width:\s*100%[^}]*text-align:\s*right/,
+  'The email address must retain the group right edge while its label stays left-aligned.',
 );
 
 console.log('Footer container alignment contract passed.');

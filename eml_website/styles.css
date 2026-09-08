@@ -405,8 +405,9 @@ select:focus-visible,
 .footer-logo { width: 168px; height: auto; object-fit: contain; margin-bottom: 16px; }
 .footer-grid h3 { margin: 0 0 10px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #fff; }
 .footer-grid p { margin: 0; color: rgba(215,231,242,.78); font-size: 14px; overflow-wrap: anywhere; }
-.footer-email-block { width: 100%; text-align: right; }
-.footer-email-block a { display: inline-block; max-width: 100%; }
+.footer-email-block { justify-self: end; width: fit-content; max-width: 100%; text-align: left; }
+.footer-email-block p { width: 100%; text-align: right; }
+.footer-email-block a { display: block; max-width: 100%; }
 .copyright { margin: 24px 0 0; color: rgba(215,231,242,.58); font-size: 12px; }
 
 .modal, .lightbox { position: fixed; inset: 0; z-index: 200; display: none; }
