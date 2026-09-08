@@ -373,6 +373,11 @@ select:focus-visible,
 .year-badge small { display: block; font-size: 10px; font-weight: 800; letter-spacing: .08em; opacity: .72; }
 .publication-card h3 { margin: 0; font-size: 20px; letter-spacing: -0.035em; line-height: 1.32; }
 .publication-card p { margin: 7px 0 0; color: #5a6d7f; font-size: 14px; }
+.publication-inline sup,
+.publication-inline sub { position: relative; vertical-align: baseline; font-size: .7em; line-height: 0; }
+.publication-inline sup { top: -.52em; }
+.publication-inline sub { bottom: -.18em; }
+.publication-authors strong { color: #314b61; font-weight: 850; }
 .publication-card .note { display: inline-flex; max-width: 100%; margin-top: 12px; padding: 5px 10px; border-radius: 999px; background: #eef6fc; color: #2f638e; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
 .empty-state { width: 100%; padding: clamp(28px, 5vw, 48px); border: 1px dashed rgba(95,145,191,.38); border-radius: var(--radius-md); background: var(--soft-blue); color: var(--muted); text-align: center; }
 .empty-state strong { display: block; color: var(--ink); font-size: 18px; }

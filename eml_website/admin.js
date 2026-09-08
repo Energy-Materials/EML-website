@@ -43,6 +43,8 @@
   let deploymentInProgress = false;
   let deploymentWatchSettled = true;
   let pendingPublishedContent = null;
+  const richTextSelections = new WeakMap();
+  let richTextSelectionListenerBound = false;
 
   const defaultImageDisplay = Object.freeze({ positionX: 50, positionY: 50, zoom: 1 });
 
@@ -177,6 +179,139 @@
       .replaceAll("'", '&#039;');
   }
   function escapeAttr(value) { return escapeHTML(value).replaceAll('`', '&#096;'); }
+
+  const richTextFormatNames = Object.freeze(['strong', 'sup', 'sub']);
+  const richTextDiscardElements = new Set(['script', 'style', 'template', 'iframe', 'object', 'embed', 'svg', 'math']);
+  const richTextBlockElements = new Set(['address', 'article', 'aside', 'blockquote', 'div', 'footer', 'header', 'li', 'main', 'nav', 'ol', 'p', 'section', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul']);
+
+  function normalizeRichTextFormats(value) {
+    const requested = Array.isArray(value) ? value : String(value || '').split(/\s+/);
+    return richTextFormatNames.filter((format) => requested.includes(format));
+  }
+
+  function richTextElementTag(element, formats) {
+    const tag = String(element?.localName || '').toLowerCase();
+    if ((tag === 'strong' || tag === 'b') && formats.includes('strong')) return 'strong';
+    if (tag === 'sup' && formats.includes('sup')) return 'sup';
+    if (tag === 'sub' && formats.includes('sub')) return 'sub';
+    return '';
+  }
+
+  function richTextHasMeaningfulText(value) {
+    return Boolean(String(value ?? '')
+      .replace(/<\/?(?:strong|sup|sub)>/g, '')
+      .replace(/[\u200b-\u200d\u2060\ufeff]/g, '')
+      .replace(/\u00a0/g, ' ')
+      .trim());
+  }
+
+  function removeEmptyRichTextTags(value) {
+    let current = String(value ?? '');
+    let previous;
+    do {
+      previous = current;
+      current = current.replace(
+        /<(strong|sup|sub)>([\s\u200b-\u200d\u2060\ufeff]*)<\/\1>/g,
+        '$2',
+      );
+    } while (current !== previous);
+    return current;
+  }
+
+  function serializeRichTextNode(node, formats, activeFormats = new Set()) {
+    if (!node) return '';
+    if (node.nodeType === 3) {
+      return String(node.nodeValue || '').replace(/[\r\n\t]+/g, ' ');
+    }
+    if (node.nodeType !== 1) return '';
+
+    const sourceTag = String(node.localName || '').toLowerCase();
+    if (richTextDiscardElements.has(sourceTag)) return '';
+    if (sourceTag === 'br') return ' ';
+
+    const outputTag = richTextElementTag(node, formats);
+    const nextActiveFormats = new Set(activeFormats);
+    const hasVerticalFormat = activeFormats.has('sup') || activeFormats.has('sub');
+    const canWrap = Boolean(outputTag)
+      && !activeFormats.has(outputTag)
+      && !((outputTag === 'sup' || outputTag === 'sub') && hasVerticalFormat);
+    if (canWrap) nextActiveFormats.add(outputTag);
+
+    const children = Array.from(node.childNodes || [], (child) => (
+      serializeRichTextNode(child, formats, nextActiveFormats)
+    )).join('');
+    if (canWrap && richTextHasMeaningfulText(children)) return `<${outputTag}>${children}</${outputTag}>`;
+    return richTextBlockElements.has(sourceTag) ? ` ${children} ` : children;
+  }
+
+  function serializeRichTextChildren(root, formats) {
+    const serialized = Array.from(root?.childNodes || [], (node) => (
+      serializeRichTextNode(node, formats)
+    )).join('').replace(/[\r\n\t]+/g, ' ');
+    return removeEmptyRichTextTags(serialized);
+  }
+
+  function parseRichTextMarkup(value, requestedFormats) {
+    const source = String(value ?? '');
+    const formats = normalizeRichTextFormats(requestedFormats);
+    const tokens = [];
+    const tokenPattern = /<[^>]*>|[<>]/g;
+    const exactTagPattern = /^<(\/?)((?:strong|sup|sub))>$/;
+    let activeTag = '';
+    let activeContentStart = 0;
+    let cursor = 0;
+    let tokenCount = 0;
+    let match;
+    if (source.length > 20000) return { valid: false, tokens: [] };
+    while ((match = tokenPattern.exec(source))) {
+      if (match.index > cursor) tokens.push({ type: 'text', value: source.slice(cursor, match.index) });
+      const token = match[0];
+      const tagMatch = exactTagPattern.exec(token);
+      tokenCount += 1;
+      if (!tagMatch || !formats.includes(tagMatch[2]) || tokenCount > 1000) {
+        return { valid: false, tokens: [] };
+      }
+      const closing = tagMatch[1] === '/';
+      const tag = tagMatch[2];
+      if (closing) {
+        if (activeTag !== tag || !richTextHasMeaningfulText(source.slice(activeContentStart, match.index))) {
+          return { valid: false, tokens: [] };
+        }
+        activeTag = '';
+      } else {
+        if (activeTag) return { valid: false, tokens: [] };
+        activeTag = tag;
+        activeContentStart = tokenPattern.lastIndex;
+      }
+      tokens.push({ type: 'tag', value: token });
+      cursor = tokenPattern.lastIndex;
+    }
+    if (activeTag) return { valid: false, tokens: [] };
+    if (cursor < source.length) tokens.push({ type: 'text', value: source.slice(cursor) });
+    return { valid: true, tokens };
+  }
+
+  function sanitizeRichTextMarkup(value, requestedFormats) {
+    const parsed = parseRichTextMarkup(value, requestedFormats);
+    // Fail closed: malformed or disallowed markup renders as text, never as HTML.
+    if (!parsed.valid) return escapeHTML(value);
+    const safeMarkup = parsed.tokens.map((token) => (
+      token.type === 'tag' ? token.value : escapeHTML(token.value)
+    )).join('');
+    return removeEmptyRichTextTags(safeMarkup);
+  }
+
+  function richTextPlainText(value, requestedFormats = richTextFormatNames) {
+    const parsed = parseRichTextMarkup(value, requestedFormats);
+    const plain = parsed.valid
+      ? parsed.tokens.filter((token) => token.type === 'text').map((token) => token.value).join('')
+      : String(value ?? '');
+    return plain
+      .replace(/[\u200b-\u200d\u2060\ufeff]/g, '')
+      .replace(/\u00a0/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   function imagePreviewSource(value) {
     const publishedPath = String(value || '');
@@ -332,14 +467,19 @@
 
   async function saveData(show = true) {
     if (!editorReady) return false;
-    const invalidField = content.querySelector(':invalid');
+    const invalidRichText = Array.from(content.querySelectorAll('[data-rich-text-editor][aria-required="true"]'))
+      .find((editor) => !richTextHasMeaningfulText(editor.textContent || ''));
+    if (invalidRichText) updateRichTextValidity(invalidRichText);
+    const invalidField = invalidRichText || content.querySelector(':invalid');
     if (invalidField) {
       const collapsedCard = invalidField.closest('details:not([open])');
       if (collapsedCard) collapsedCard.open = true;
-      invalidField.reportValidity();
+      if (typeof invalidField.reportValidity === 'function') invalidField.reportValidity();
       invalidField.focus({ preventScroll: true });
       invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      toast('필수 항목, 숫자와 URL 형식을 확인하세요.');
+      toast(invalidRichText
+        ? '논문 제목과 저자 필수 항목을 입력해 주세요.'
+        : '필수 항목, 숫자와 URL 형식을 확인하세요.');
       return false;
     }
     if (!isDirty && hasPublishedContent) {
@@ -449,9 +589,52 @@
     return `<label class="field"><span>${escapeHTML(label)}${marker}</span><input type="${escapeAttr(type)}" value="${escapeAttr(value ?? '')}" data-path="${escapeAttr(path)}"${numberAttributes}${urlAttributes}${requiredAttributes}${placeholderAttributes}${describedByAttributes} />${help}</label>`;
   }
 
+  function richTextFormatButton(format, editorId, index) {
+    const config = {
+      strong: {
+        label: '선택한 저자 이름 굵게',
+        title: '굵게 (Ctrl/Cmd+B)',
+        content: '<strong aria-hidden="true">B</strong>',
+        shortcut: ' aria-keyshortcuts="Control+B Meta+B"',
+      },
+      sup: {
+        label: '선택한 문자를 위첨자로 전환',
+        title: '위첨자',
+        content: '<span aria-hidden="true">x<sup>2</sup></span>',
+        shortcut: '',
+      },
+      sub: {
+        label: '선택한 문자를 아래첨자로 전환',
+        title: '아래첨자',
+        content: '<span aria-hidden="true">x<sub>2</sub></span>',
+        shortcut: '',
+      },
+    }[format];
+    if (!config) return '';
+    return `<button class="rich-text-format-button" type="button" data-rich-text-format="${escapeAttr(format)}" aria-label="${escapeAttr(config.label)}" aria-controls="${escapeAttr(editorId)}" aria-pressed="false" title="${escapeAttr(config.title)}" tabindex="${index === 0 ? '0' : '-1'}"${config.shortcut}>${config.content}</button>`;
+  }
+
   function textareaField(path, label, value = '', options = {}) {
     const requiredAttributes = options.required ? ' required aria-required="true"' : '';
     const marker = options.required ? '<em class="required-mark">필수</em>' : '';
+    const formats = normalizeRichTextFormats(options.formats);
+    if (formats.length) {
+      const idBase = `rich-text-${String(path).replace(/[^a-z0-9_-]+/gi, '-')}`;
+      const editorId = `${idBase}-editor`;
+      const labelId = `${idBase}-label`;
+      const helpId = `${idBase}-help`;
+      const placeholder = options.placeholder || '내용을 입력하세요.';
+      const helpText = options.help || '서식을 적용할 부분을 먼저 선택한 뒤 위의 버튼을 누르세요.';
+      const safeValue = sanitizeRichTextMarkup(value, formats);
+      return `<div class="field rich-text-field" data-rich-text-field>
+        <span class="rich-text-label" id="${escapeAttr(labelId)}">${escapeHTML(label)}${marker}</span>
+        <div class="rich-text-toolbar" role="toolbar" aria-label="${escapeAttr(`${label} 부분 서식`)}" aria-controls="${escapeAttr(editorId)}" data-rich-text-toolbar>
+          ${formats.map((format, index) => richTextFormatButton(format, editorId, index)).join('')}
+        </div>
+        <div class="rich-text-editor" id="${escapeAttr(editorId)}" contenteditable="true" role="textbox" aria-multiline="false" aria-labelledby="${escapeAttr(labelId)}" aria-describedby="${escapeAttr(helpId)}" aria-required="${String(Boolean(options.required))}" aria-invalid="false" spellcheck="true" autocapitalize="sentences" data-path="${escapeAttr(path)}" data-rich-text-editor data-rich-text-formats="${escapeAttr(formats.join(' '))}" data-placeholder="${escapeAttr(placeholder)}">${safeValue}</div>
+        <p class="help rich-text-help" id="${escapeAttr(helpId)}">${escapeHTML(helpText)}</p>
+      </div>`;
+    }
     return `<label class="field"><span>${escapeHTML(label)}${marker}</span><textarea data-path="${escapeAttr(path)}"${requiredAttributes}>${escapeHTML(value ?? '')}</textarea></label>`;
   }
 
@@ -814,15 +997,29 @@
       <h3>Papers (${data.publications.length})</h3>
       <div class="item-list" style="margin-top:14px">
         ${data.publications.map((p, i) => `<details class="item-card">
-          <summary>#${escapeHTML(p.number ?? '')} · ${escapeHTML(p.year)} · ${escapeHTML(p.title)}</summary>
+          <summary>#${escapeHTML(p.number ?? '')} · ${escapeHTML(p.year)} · ${escapeHTML(
+            typeof richTextPlainText === 'function'
+              ? richTextPlainText(p.title, ['sup', 'sub'])
+              : String(p.title ?? '').replace(/<\/?(?:sup|sub)>/g, ''),
+          )}</summary>
           <div class="item-fields">
             <div class="grid-3">
               ${inputField(`publications.${i}.number`, 'No.', p.number ?? '', 'number', { required: true })}
               ${inputField(`publications.${i}.year`, 'Year', p.year, 'text', { required: true })}
               ${inputField(`publications.${i}.journal`, 'Journal', p.journal, 'text', { required: true })}
             </div>
-            ${textareaField(`publications.${i}.title`, 'Title', p.title, { required: true })}
-            ${textareaField(`publications.${i}.authors`, 'Authors', p.authors, { required: true })}
+            ${textareaField(`publications.${i}.title`, 'Title', p.title, {
+              required: true,
+              formats: ['sup', 'sub'],
+              placeholder: '논문 제목을 입력하세요.',
+              help: '위첨자 또는 아래첨자로 표시할 문자만 선택한 뒤 해당 서식 버튼을 누르세요.',
+            })}
+            ${textareaField(`publications.${i}.authors`, 'Authors', p.authors, {
+              required: true,
+              formats: ['strong'],
+              placeholder: '논문 저자를 입력하세요.',
+              help: '굵게 표시할 이름만 선택한 뒤 B 버튼을 누르세요. Ctrl/Cmd+B도 사용할 수 있습니다.',
+            })}
             ${inputField(`publications.${i}.note`, 'Note', p.note || '')}
             ${inputField(`publications.${i}.link_url`, '외부 링크 URL (선택)', p.link_url || '', 'url', {
               placeholder: 'https://example.com/paper',
@@ -974,8 +1171,226 @@
     return true;
   }
 
+  function richTextFormatsFor(editor) {
+    return normalizeRichTextFormats(editor?.dataset.richTextFormats);
+  }
+
+  function richTextSelectionIsInside(editor, range) {
+    if (!editor || !range) return false;
+    const container = range.commonAncestorContainer;
+    return container === editor || editor.contains(container.nodeType === 1 ? container : container.parentNode);
+  }
+
+  function updateRichTextToolbarState(editor) {
+    const field = editor?.closest('[data-rich-text-field]');
+    const toolbar = field?.querySelector('[data-rich-text-toolbar]');
+    if (!toolbar) return;
+    const selection = window.getSelection?.();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    const selectionInside = richTextSelectionIsInside(editor, range);
+    const commandForFormat = { strong: 'bold', sup: 'superscript', sub: 'subscript' };
+    toolbar.querySelectorAll('[data-rich-text-format]').forEach((button) => {
+      let active = false;
+      if (selectionInside && typeof document.queryCommandState === 'function') {
+        try {
+          active = document.queryCommandState(commandForFormat[button.dataset.richTextFormat]);
+        } catch (error) {
+          active = false;
+        }
+      }
+      button.setAttribute('aria-pressed', String(Boolean(active)));
+    });
+  }
+
+  function rememberRichTextSelection(editor) {
+    const selection = window.getSelection?.();
+    if (!selection?.rangeCount) return false;
+    const range = selection.getRangeAt(0);
+    if (!richTextSelectionIsInside(editor, range)) return false;
+    richTextSelections.set(editor, range.cloneRange());
+    updateRichTextToolbarState(editor);
+    return true;
+  }
+
+  function restoreRichTextSelection(editor) {
+    const range = richTextSelections.get(editor);
+    if (!richTextSelectionIsInside(editor, range)) return false;
+    try {
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return true;
+    } catch (error) {
+      richTextSelections.delete(editor);
+      return false;
+    }
+  }
+
+  function updateRichTextValidity(editor) {
+    const required = editor?.getAttribute('aria-required') === 'true';
+    const empty = !richTextHasMeaningfulText(editor?.textContent || '');
+    const invalid = required && empty;
+    editor?.setAttribute('aria-invalid', String(invalid));
+    editor?.classList.toggle('is-invalid', invalid);
+    return !invalid;
+  }
+
+  function syncRichTextEditor(editor) {
+    const path = editor?.dataset.path;
+    if (!path) return;
+    const nextValue = serializeRichTextChildren(editor, richTextFormatsFor(editor));
+    updateRichTextValidity(editor);
+    if (getPath(path) === nextValue) return;
+    setPath(path, nextValue);
+    markDirty();
+  }
+
+  function currentRichTextRange(editor) {
+    const selection = window.getSelection?.();
+    if (selection?.rangeCount) {
+      const range = selection.getRangeAt(0);
+      if (richTextSelectionIsInside(editor, range)) return range;
+    }
+    if (restoreRichTextSelection(editor)) return window.getSelection().getRangeAt(0);
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    const nextSelection = window.getSelection();
+    nextSelection.removeAllRanges();
+    nextSelection.addRange(range);
+    return range;
+  }
+
+  function insertPlainRichText(editor, value) {
+    const text = String(value || '').replace(/[\r\n\t]+/g, ' ');
+    if (!text) return;
+    editor.focus({ preventScroll: true });
+    const range = currentRichTextRange(editor);
+    range.deleteContents();
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
+    range.setStartAfter(textNode);
+    range.collapse(true);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+    rememberRichTextSelection(editor);
+  }
+
+  function applyRichTextFormat(editor, format) {
+    const formats = richTextFormatsFor(editor);
+    if (!formats.includes(format)) return;
+    rememberRichTextSelection(editor);
+    editor.focus({ preventScroll: true });
+    if (!restoreRichTextSelection(editor)) rememberRichTextSelection(editor);
+    const selection = window.getSelection?.();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    if (!richTextSelectionIsInside(editor, range) || range.collapsed || !richTextHasMeaningfulText(range.toString())) {
+      toast('서식을 적용할 텍스트를 먼저 선택해 주세요.');
+      return;
+    }
+    if (typeof document.execCommand !== 'function') {
+      toast('이 브라우저에서는 선택 영역 서식을 적용할 수 없습니다. 최신 브라우저를 사용해 주세요.');
+      return;
+    }
+
+    const commandForFormat = { strong: 'bold', sup: 'superscript', sub: 'subscript' };
+    const oppositeCommand = format === 'sup' ? 'subscript' : format === 'sub' ? 'superscript' : '';
+    try {
+      if (oppositeCommand && document.queryCommandState?.(oppositeCommand)) {
+        document.execCommand(oppositeCommand, false, null);
+      }
+      if (format === 'strong') document.execCommand('styleWithCSS', false, false);
+      document.execCommand(commandForFormat[format], false, null);
+      syncRichTextEditor(editor);
+      rememberRichTextSelection(editor);
+    } catch (error) {
+      console.error(error);
+      toast('선택 영역에 서식을 적용하지 못했습니다. 다시 선택해 주세요.');
+    }
+  }
+
+  function bindRichTextEditors() {
+    if (!richTextSelectionListenerBound) {
+      document.addEventListener('selectionchange', () => {
+        const selection = window.getSelection?.();
+        const anchor = selection?.anchorNode;
+        const anchorElement = anchor?.nodeType === 1 ? anchor : anchor?.parentElement;
+        const editor = anchorElement?.closest?.('[data-rich-text-editor]');
+        if (editor) rememberRichTextSelection(editor);
+      });
+      richTextSelectionListenerBound = true;
+    }
+
+    content.querySelectorAll('[data-rich-text-editor]').forEach((editor) => {
+      const field = editor.closest('[data-rich-text-field]');
+      const toolbar = field?.querySelector('[data-rich-text-toolbar]');
+      const formats = richTextFormatsFor(editor);
+      updateRichTextValidity(editor);
+
+      editor.addEventListener('input', () => {
+        syncRichTextEditor(editor);
+        rememberRichTextSelection(editor);
+      });
+      ['focus', 'keyup', 'mouseup', 'touchend'].forEach((eventName) => {
+        editor.addEventListener(eventName, () => rememberRichTextSelection(editor));
+      });
+      editor.addEventListener('keydown', (event) => {
+        if (event.isComposing) return;
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          return;
+        }
+        if (event.key.toLowerCase() !== 'b' || (!event.ctrlKey && !event.metaKey) || event.altKey) return;
+        event.preventDefault();
+        if (formats.includes('strong')) applyRichTextFormat(editor, 'strong');
+      });
+      editor.addEventListener('beforeinput', (event) => {
+        if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') event.preventDefault();
+        if (event.inputType === 'formatBold' && !formats.includes('strong')) event.preventDefault();
+        if (event.inputType === 'formatSuperscript' && !formats.includes('sup')) event.preventDefault();
+        if (event.inputType === 'formatSubscript' && !formats.includes('sub')) event.preventDefault();
+      });
+      editor.addEventListener('paste', (event) => {
+        event.preventDefault();
+        insertPlainRichText(editor, event.clipboardData?.getData('text/plain') || '');
+      });
+      editor.addEventListener('drop', (event) => {
+        event.preventDefault();
+        insertPlainRichText(editor, event.dataTransfer?.getData('text/plain') || '');
+      });
+
+      if (!toolbar) return;
+      const buttons = Array.from(toolbar.querySelectorAll('[data-rich-text-format]'));
+      buttons.forEach((button) => {
+        button.addEventListener('pointerdown', (event) => event.preventDefault());
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+        button.addEventListener('click', () => {
+          buttons.forEach((item) => { item.tabIndex = item === button ? 0 : -1; });
+          applyRichTextFormat(editor, button.dataset.richTextFormat);
+        });
+      });
+      toolbar.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || !buttons.length) return;
+        event.preventDefault();
+        const current = Math.max(0, buttons.indexOf(document.activeElement));
+        const next = event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? buttons.length - 1
+            : event.key === 'ArrowRight'
+              ? (current + 1) % buttons.length
+              : (current - 1 + buttons.length) % buttons.length;
+        buttons.forEach((button, index) => { button.tabIndex = index === next ? 0 : -1; });
+        buttons[next].focus();
+      });
+    });
+  }
+
   function bindCommon() {
     content.querySelectorAll('[data-path]').forEach((field) => {
+      if (field.matches?.('[data-rich-text-editor]')) return;
       field.addEventListener('input', () => {
         let value = field.value;
         if (field.type === 'number') {
@@ -1003,6 +1418,7 @@
         markDirty();
       });
     });
+    bindRichTextEditors();
     content.querySelectorAll('[data-save]').forEach((button) => button.addEventListener('click', async () => saveData(true)));
     content.querySelectorAll('[data-preview]').forEach((button) => button.addEventListener('click', async () => {
       const previewWindow = window.open('', '_blank');

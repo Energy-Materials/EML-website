@@ -14,6 +14,9 @@ function extractTopLevelFunction(name) {
 const helperNames = [
   'escapeHTML',
   'escapeAttr',
+  'parseInlineFormatting',
+  'renderInlineFormatting',
+  'plainInlineText',
   'externalLinkUrl',
   'renderPublicationExternalLink',
   'publicationYear',
@@ -95,6 +98,7 @@ const rendererFactory = new Function(
   'renderPublicationExternalLink',
   'escapeAttr',
   'escapeHTML',
+  'renderInlineFormatting',
   'publicationYear',
   `${extractTopLevelFunction('renderPaperList')}\n${extractTopLevelFunction('renderPatentList')}\nreturn { renderPaperList, renderPatentList };`,
 );
@@ -106,6 +110,7 @@ const renderers = rendererFactory(
   helpers.renderPublicationExternalLink,
   helpers.escapeAttr,
   helpers.escapeHTML,
+  helpers.renderInlineFormatting,
   helpers.publicationYear,
 );
 
@@ -118,7 +123,7 @@ function renderedSections(html) {
         countLabel: content.match(/<div class="publication-year-heading">[\s\S]*?<span>([^<]+)<\/span>/)?.[1],
         cardCount: (content.match(/class="publication-card(?:\s|")/g) || []).length,
         badges: [...content.matchAll(/class="year-badge"><small>[^<]*<\/small>([^<]*)<\/div>/g)].map((item) => item[1]),
-        titles: [...content.matchAll(/class="publication-card-content">[\s\S]*?<h3>([^<]*)<\/h3>/g)].map((item) => item[1]),
+        titles: [...content.matchAll(/class="publication-card-content">[\s\S]*?<h3[^>]*>([^<]*)<\/h3>/g)].map((item) => item[1]),
       };
     });
 }

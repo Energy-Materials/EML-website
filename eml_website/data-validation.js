@@ -38,6 +38,68 @@
     }
   }
 
+  const publicationTitleTags = ['sup', 'sub'];
+  const publicationAuthorTags = ['strong'];
+  const maxPublicationRichTextLength = 20_000;
+  const maxPublicationRichTextTokens = 1_000;
+
+  function hasVisiblePublicationText(value) {
+    return /[^\s\u200B-\u200D\u2060\uFEFF]/u.test(value);
+  }
+
+  function validatePublicationInlineMarkup(value, label, allowedTags, errors) {
+    if (typeof value !== 'string' || value.trim() === '') return;
+    if (value.length > maxPublicationRichTextLength) {
+      errors.push(`${label}은 ${maxPublicationRichTextLength.toLocaleString()}자 이하여야 합니다.`);
+      return;
+    }
+
+    const allowedMarkup = allowedTags.map((tag) => `<${tag}>...</${tag}>`).join(' 또는 ');
+    const tokenPattern = /<[^>]*>|[<>]/g;
+    const exactTagPattern = /^<(\/?)((?:strong|sup|sub))>$/;
+    let activeTag = '';
+    let cursor = 0;
+    let visibleText = '';
+    let tokenCount = 0;
+    let match;
+
+    while ((match = tokenPattern.exec(value)) !== null) {
+      const textBeforeTag = value.slice(cursor, match.index);
+      visibleText += textBeforeTag;
+      cursor = match.index + match[0].length;
+      tokenCount += 1;
+      if (tokenCount > maxPublicationRichTextTokens) {
+        errors.push(`${label}에는 서식 태그를 ${maxPublicationRichTextTokens.toLocaleString()}개까지만 사용할 수 있습니다.`);
+        return;
+      }
+
+      const tagMatch = exactTagPattern.exec(match[0]);
+      if (!tagMatch || !allowedTags.includes(tagMatch[2])) {
+        errors.push(`${label}에는 속성이 없는 소문자 ${allowedMarkup} 태그만 사용할 수 있습니다.`);
+        return;
+      }
+
+      const closing = tagMatch[1] === '/';
+      const tag = tagMatch[2];
+      if ((!closing && activeTag) || (closing && activeTag !== tag)) {
+        errors.push(`${label}의 서식 태그는 중첩할 수 없으며 여는 태그와 닫는 태그의 짝이 맞아야 합니다.`);
+        return;
+      }
+      if (closing && !hasVisiblePublicationText(textBeforeTag)) {
+        errors.push(`${label}의 각 서식 태그 안에는 표시할 텍스트가 있어야 합니다.`);
+        return;
+      }
+      activeTag = closing ? '' : tag;
+    }
+
+    visibleText += value.slice(cursor);
+    if (activeTag) {
+      errors.push(`${label}의 서식 태그는 중첩할 수 없으며 여는 태그와 닫는 태그의 짝이 맞아야 합니다.`);
+      return;
+    }
+    if (!hasVisiblePublicationText(visibleText)) errors.push(`${label}에는 표시할 텍스트가 있어야 합니다.`);
+  }
+
   const imageDisplayKeys = ['positionX', 'positionY', 'zoom'];
 
   function validateImageDisplay(display, label, errors) {
@@ -179,6 +241,8 @@
             errors.push(`publications.${index}.${field}는 필수 항목입니다.`);
           }
         });
+        validatePublicationInlineMarkup(item.title, `publications.${index}.title`, publicationTitleTags, errors);
+        validatePublicationInlineMarkup(item.authors, `publications.${index}.authors`, publicationAuthorTags, errors);
         validateOptionalExternalUrl(item, `publications.${index}`, errors);
       });
     }
