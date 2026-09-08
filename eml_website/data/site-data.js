@@ -839,7 +839,7 @@ window.EML_DATA = {
       },
       "research": {
         "buttonText": "View Research",
-        "description": "Controlling electrode surfaces and interfaces plays a key role in improving the performance and stability of electrochemical energy storage systems. Our group focuses on the design and modification of electrode surfaces using functional materials, with particular attention to interfacial stability, ion transport, and electrochemical reaction behavior. Through rational material design and in-situ/operando analysis, we aim to understand fundamental interfacial phenomena and develop advanced electrodes for next-generation energy storage systems.",
+        "description": "Our research focuses on controlling electrode surfaces and interfaces to improve battery performance and stability. We study functional materials, ion transport, and interfacial reactions to better understand and design electrochemical energy systems.",
         "smallLabel": "Research Focus",
         "subtitle": "Battery materials and interface science",
         "title": "Our Research"
