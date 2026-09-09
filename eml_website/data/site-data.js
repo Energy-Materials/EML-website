@@ -929,7 +929,7 @@ window.EML_DATA = {
   },
   "publications": [
     {
-      "authors": "Ji Hyun Um,<strong>†</strong> Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho ",
+      "authors": "Ji Hyun Um,† Seong-Jun Kim,† Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho ",
       "journal": "Acc. Chem. Res. 2023, 56, 440",
       "link_url": "https://doi.org/10.1021/acs.accounts.2c00652",
       "note": "Supplementary Cover",
@@ -1274,7 +1274,7 @@ window.EML_DATA = {
       "id": "operando-analysis",
       "image": "assets/research-operando.svg",
       "short": "Real-time reaction visualization",
-      "title": "In situ / Operando Analysis"
+      "title": "In situ/Operando Analysis"
     },
     {
       "description": "Phase dynamics by multi-phase conversion reactions between solid, liquid, and gas.",
