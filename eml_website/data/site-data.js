@@ -701,7 +701,7 @@ window.EML_DATA = {
     "ctaSecondary": "Contact",
     "ctaSecondaryRoute": "contact",
     "eyebrow": "Kongju National University",
-    "intro": "Welcome to Energy Materials Laboratory (EML) at Kongju National University\n\nDiscovering new materials has driven a paradigm shift in existing science and technology. Our research group aims to overcome the energy limitations of today's batteries and provide new solutions with improved efficiency and stability.\n\n\nWe are working to explore new electrode materials and elucidate their electrochemical reaction behaviors. Especially, our group focuses on a rational electrode interface design, wherein the electrode surface & bulk structures, ionic & electrical conductivities, and electrolyte infiltration properties are comprehensively considered.",
+    "intro": "Welcome to Energy Materials Laboratory (EML) at Kongju National University\n\nDiscovering new materials has driven a paradigm shift in existing science and technology. \nOur research group aims to overcome the energy limitations of today's batteries and provide new solutions with improved efficiency and stability.\nWe are working to explore new electrode materials and elucidate their electrochemical reaction behaviors. Especially, our group focuses on a rational electrode interface design, wherein the electrode surface & bulk structures, ionic & electrical conductivities, and electrolyte infiltration properties are comprehensively considered.",
     "subtitleKr": "국립공주대학교 에너지 재료 연구실",
     "tagline": "Energy · Materials · Innovation",
     "titleLines": [
