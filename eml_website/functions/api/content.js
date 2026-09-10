@@ -160,7 +160,11 @@ function validatePageContentNode(value, schema, label, errors) {
     if (!Object.prototype.hasOwnProperty.call(value, key)) return;
     const expected = schema[key];
     if (expected === 'string') {
-      if (typeof value[key] !== 'string') errors.push(`${label}.${key} must be a string.`);
+      if (typeof value[key] !== 'string') {
+        errors.push(`${label}.${key} must be a string.`);
+      } else {
+        validateInlineMarkup(value[key], `${label}.${key}`, errors);
+      }
       return;
     }
     validatePageContentNode(value[key], expected, `${label}.${key}`, errors);
@@ -222,26 +226,25 @@ function validateOptionalExternalUrl(entry, field, label, errors) {
   }
 }
 
-const PUBLICATION_TITLE_TAGS = ['sup', 'sub'];
-const PUBLICATION_AUTHOR_TAGS = ['strong'];
-const MAX_PUBLICATION_RICH_TEXT_LENGTH = 20_000;
-const MAX_PUBLICATION_RICH_TEXT_TOKENS = 1_000;
+const INLINE_FORMATTING_TAGS = ['strong', 'em', 'sup', 'sub'];
+const MAX_RICH_TEXT_LENGTH = 20_000;
+const MAX_RICH_TEXT_TOKENS = 1_000;
 
-function hasVisiblePublicationText(value) {
+function hasVisibleInlineText(value) {
   return /[^\s\u200B-\u200D\u2060\uFEFF]/u.test(value);
 }
 
-function validatePublicationInlineMarkup(value, label, allowedTags, errors) {
+function validateInlineMarkup(value, label, errors) {
   if (typeof value !== 'string' || value.trim() === '') return;
-  if (value.length > MAX_PUBLICATION_RICH_TEXT_LENGTH) {
-    errors.push(`${label} must not exceed ${MAX_PUBLICATION_RICH_TEXT_LENGTH.toLocaleString()} characters.`);
+  if (value.length > MAX_RICH_TEXT_LENGTH) {
+    errors.push(`${label} must not exceed ${MAX_RICH_TEXT_LENGTH.toLocaleString()} characters.`);
     return;
   }
 
-  const allowedMarkup = allowedTags.map((tag) => `<${tag}>...</${tag}>`).join(' or ');
+  const allowedMarkup = INLINE_FORMATTING_TAGS.map((tag) => `<${tag}>...</${tag}>`).join(' or ');
   const tokenPattern = /<[^>]*>|[<>]/g;
-  const exactTagPattern = /^<(\/?)((?:strong|sup|sub))>$/;
-  let activeTag = '';
+  const exactTagPattern = /^<(\/?)((?:strong|em|sup|sub))>$/;
+  const stack = [];
   let cursor = 0;
   let visibleText = '';
   let tokenCount = 0;
@@ -250,38 +253,62 @@ function validatePublicationInlineMarkup(value, label, allowedTags, errors) {
   while ((match = tokenPattern.exec(value)) !== null) {
     const textBeforeTag = value.slice(cursor, match.index);
     visibleText += textBeforeTag;
+    if (hasVisibleInlineText(textBeforeTag)) stack.forEach((entry) => { entry.hasVisibleText = true; });
     cursor = match.index + match[0].length;
     tokenCount += 1;
-    if (tokenCount > MAX_PUBLICATION_RICH_TEXT_TOKENS) {
-      errors.push(`${label} must not contain more than ${MAX_PUBLICATION_RICH_TEXT_TOKENS.toLocaleString()} formatting tags.`);
+    if (tokenCount > MAX_RICH_TEXT_TOKENS) {
+      errors.push(`${label} must not contain more than ${MAX_RICH_TEXT_TOKENS.toLocaleString()} formatting tags.`);
       return;
     }
 
     const tagMatch = exactTagPattern.exec(match[0]);
-    if (!tagMatch || !allowedTags.includes(tagMatch[2])) {
+    if (!tagMatch) {
       errors.push(`${label} may contain only exact lowercase ${allowedMarkup} tags without attributes.`);
       return;
     }
 
     const closing = tagMatch[1] === '/';
     const tag = tagMatch[2];
-    if ((!closing && activeTag) || (closing && activeTag !== tag)) {
-      errors.push(`${label} formatting tags must not be nested and must have matching opening and closing tags.`);
-      return;
+    if (closing) {
+      const active = stack[stack.length - 1];
+      if (!active || active.tag !== tag) {
+        errors.push(`${label} formatting tags must have matching opening and closing tags; the same tag and <sup>/<sub> must not be nested.`);
+        return;
+      }
+      if (!active.hasVisibleText) {
+        errors.push(`${label} formatting tags must each contain visible text.`);
+        return;
+      }
+      stack.pop();
+    } else {
+      const repeatsTag = stack.some((entry) => entry.tag === tag);
+      const mixesScriptLevel = (tag === 'sup' && stack.some((entry) => entry.tag === 'sub'))
+        || (tag === 'sub' && stack.some((entry) => entry.tag === 'sup'));
+      if (repeatsTag || mixesScriptLevel) {
+        errors.push(`${label} formatting tags must have matching opening and closing tags; the same tag and <sup>/<sub> must not be nested.`);
+        return;
+      }
+      stack.push({ tag, hasVisibleText: false });
     }
-    if (closing && !hasVisiblePublicationText(textBeforeTag)) {
-      errors.push(`${label} formatting tags must each contain visible text.`);
-      return;
-    }
-    activeTag = closing ? '' : tag;
   }
 
-  visibleText += value.slice(cursor);
-  if (activeTag) {
-    errors.push(`${label} formatting tags must not be nested and must have matching opening and closing tags.`);
+  const trailingText = value.slice(cursor);
+  visibleText += trailingText;
+  if (hasVisibleInlineText(trailingText)) stack.forEach((entry) => { entry.hasVisibleText = true; });
+  if (stack.length) {
+    errors.push(`${label} formatting tags must have matching opening and closing tags; the same tag and <sup>/<sub> must not be nested.`);
     return;
   }
-  if (!hasVisiblePublicationText(visibleText)) errors.push(`${label} must contain visible text.`);
+  if (!hasVisibleInlineText(visibleText)) errors.push(`${label} must contain visible text.`);
+}
+
+function validateInlineFields(record, fields, label, errors) {
+  fields.forEach((field) => validateInlineMarkup(record?.[field], `${label}.${field}`, errors));
+}
+
+function validateInlineStringArray(record, field, label, errors) {
+  if (!Array.isArray(record?.[field])) return;
+  record[field].forEach((entry, index) => validateInlineMarkup(entry, `${label}.${field}.${index}`, errors));
 }
 
 const IMAGE_DISPLAY_KEYS = ['positionX', 'positionY', 'zoom'];
@@ -319,12 +346,19 @@ function validateKnownShape(content, errors) {
   REQUIRED_RECORDS.forEach((key) => requireRecord(content, key, errors));
   REQUIRED_RECORD_ARRAYS.forEach((key) => requireRecordArray(content, key, errors));
   requireString(content, 'researchStatement', 'content', errors);
+  validateInlineMarkup(content.researchStatement, 'content.researchStatement', errors);
   validateOptionalPageContent(content, errors);
 
   if (isPlainRecord(content.site)) {
     ['labName', 'labNameKr', 'university', 'universityKr', 'shortName', 'email', 'address', 'copyright',
       'logoWhite', 'logoDark', 'knuLogo', 'heroImage', 'mapEmbed', 'mapImage', 'phone', 'joinMessage']
       .forEach((field) => requireString(content.site, field, 'site', errors));
+    validateInlineFields(
+      content.site,
+      ['labName', 'labNameKr', 'university', 'universityKr', 'address', 'copyright', 'joinMessage'],
+      'site',
+      errors,
+    );
     ['logoWhite', 'logoDark', 'knuLogo', 'heroImage', 'mapImage'].forEach((field) => {
       if (typeof content.site[field] === 'string') validateAssetPath(content.site[field], `site.${field}`, errors);
     });
@@ -354,11 +388,16 @@ function validateKnownShape(content, errors) {
     ['eyebrow', 'subtitleKr', 'tagline', 'intro', 'ctaPrimary', 'ctaSecondary', 'ctaSecondaryRoute']
       .forEach((field) => requireString(content.home, field, 'home', errors));
     requireStringArray(content.home, 'titleLines', 'home', errors);
+    validateInlineFields(content.home, ['eyebrow', 'subtitleKr', 'tagline', 'intro', 'ctaPrimary', 'ctaSecondary'], 'home', errors);
+    validateInlineStringArray(content.home, 'titleLines', 'home', errors);
   }
 
   if (isPlainRecord(content.professor)) {
     ['name', 'role', 'department', 'email', 'photo'].forEach((field) => requireString(content.professor, field, 'professor', errors));
     ['education', 'experience', 'interest'].forEach((field) => requireStringArray(content.professor, field, 'professor', errors));
+    validateInlineFields(content.professor, ['name', 'role', 'department'], 'professor', errors);
+    ['education', 'experience', 'interest']
+      .forEach((field) => validateInlineStringArray(content.professor, field, 'professor', errors));
     if (typeof content.professor.photo === 'string') validateAssetPath(content.professor.photo, 'professor.photo', errors);
     validateEmail(content.professor.email, 'professor.email', errors);
     validateOptionalImageDisplay(content.professor, 'photoDisplay', 'professor', errors);
@@ -369,6 +408,7 @@ function validateKnownShape(content, errors) {
     if (!isPlainRecord(entry)) return;
     const label = `researchTopics.${index}`;
     ['id', 'title', 'short', 'image', 'description'].forEach((field) => requireString(entry, field, label, errors));
+    validateInlineFields(entry, ['title', 'short', 'description'], label, errors);
     if (typeof entry.id === 'string') {
       if (!/^[a-z0-9][a-z0-9-]{0,79}$/.test(entry.id)) errors.push(`${label}.id must contain lowercase letters, numbers, or hyphens.`);
       if (seenResearchIds.has(entry.id)) errors.push(`${label}.id duplicates "${entry.id}".`);
@@ -381,6 +421,7 @@ function validateKnownShape(content, errors) {
     if (!isPlainRecord(entry)) return;
     const label = `members.${index}`;
     ['name', 'role', 'period', 'email', 'research', 'photo'].forEach((field) => requireString(entry, field, label, errors));
+    validateInlineFields(entry, ['name', 'role', 'period', 'research'], label, errors);
     if (typeof entry.photo === 'string') validateAssetPath(entry.photo, `${label}.photo`, errors);
     validateEmail(entry.email, `${label}.email`, errors);
     validateOptionalImageDisplay(entry, 'photoDisplay', label, errors);
@@ -388,7 +429,9 @@ function validateKnownShape(content, errors) {
 
   (Array.isArray(content.alumni) ? content.alumni : []).forEach((entry, index) => {
     if (!isPlainRecord(entry)) return;
-    ['date', 'name', 'next'].forEach((field) => requireString(entry, field, `alumni.${index}`, errors));
+    const label = `alumni.${index}`;
+    ['date', 'name', 'next'].forEach((field) => requireString(entry, field, label, errors));
+    validateInlineFields(entry, ['name', 'next'], label, errors);
   });
 
   const seenPublicationNumbers = new Set();
@@ -403,9 +446,8 @@ function validateKnownShape(content, errors) {
       seenPublicationNumbers.add(entry.number);
     }
     ['year', 'title', 'authors', 'journal'].forEach((field) => requireString(entry, field, label, errors, { allowEmpty: false }));
-    validatePublicationInlineMarkup(entry.title, `${label}.title`, PUBLICATION_TITLE_TAGS, errors);
-    validatePublicationInlineMarkup(entry.authors, `${label}.authors`, PUBLICATION_AUTHOR_TAGS, errors);
     requireString(entry, 'note', label, errors);
+    validateInlineFields(entry, ['title', 'authors', 'journal', 'note'], label, errors);
     validateOptionalExternalUrl(entry, 'link_url', label, errors);
   });
 
@@ -413,6 +455,7 @@ function validateKnownShape(content, errors) {
     if (!isPlainRecord(entry)) return;
     const label = `patents.${index}`;
     ['year', 'title', 'inventors', 'number'].forEach((field) => requireString(entry, field, label, errors));
+    validateInlineFields(entry, ['title', 'inventors'], label, errors);
     validateOptionalExternalUrl(entry, 'link_url', label, errors);
   });
 
@@ -421,6 +464,7 @@ function validateKnownShape(content, errors) {
     const label = `gallery.${index}`;
     ['date', 'title'].forEach((field) => requireString(entry, field, label, errors, { allowEmpty: false }));
     ['summary', 'image', 'body'].forEach((field) => requireString(entry, field, label, errors));
+    validateInlineFields(entry, ['title', 'summary', 'body'], label, errors);
     requireStringArray(entry, 'images', label, errors);
     if (Array.isArray(entry.images) && entry.images.length === 0) errors.push(`${label}.images must contain at least one image.`);
     if (typeof entry.image === 'string') validateAssetPath(entry.image, `${label}.image`, errors);

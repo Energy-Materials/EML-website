@@ -6,7 +6,7 @@ const stylesSource = await readFile(new URL('../styles.css', import.meta.url), '
 
 assert.match(
   appSource,
-  /<p class="hero-label">\$\{escapeHTML\(h\.eyebrow \|\| s\.university \|\| ''\)\}<\/p>/,
+  /<p class="hero-label">\$\{renderRichText\(h\.eyebrow \|\| s\.university \|\| ''\)\}<\/p>/,
   'The university name must remain in the Home hero without an adjacent logo.',
 );
 assert.doesNotMatch(

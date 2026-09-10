@@ -127,13 +127,17 @@ for (const path of publicPaths) {
   const call = `pageContentText([${path.map((part) => `'${part}'`).join(', ')}])`;
   const index = appText.indexOf(call);
   assert.notEqual(index, -1, `app.js must read ${path.join('.')}.`);
-  assert.match(appText.slice(Math.max(0, index - 28), index), /escape(?:Multiline)?HTML\($/);
+  assert.match(
+    appText.slice(Math.max(0, index - 36), index),
+    /renderRich(?:Multiline)?Text\($/,
+    `${path.join('.')} must use the restricted rich-text renderer.`,
+  );
 }
 const subHero = topFunction(appText, 'renderSubHero');
 for (const field of ['smallLabel', 'title', 'description']) {
   assert.ok(subHero.includes(`pageContentText([pageKey, 'banner', '${field}']`));
 }
-for (const value of ['smallLabel', 'bannerTitle', 'description']) assert.ok(subHero.includes(`escapeHTML(${value})`));
+for (const value of ['smallLabel', 'bannerTitle', 'description']) assert.ok(subHero.includes(`renderRichText(${value})`));
 
 assert.match(adminHtml, /data-section="pageContent"/);
 assert.match(adminText, /pageContent\s*:\s*renderPageContent/);
@@ -153,8 +157,8 @@ for (const key of ['research', 'members', 'publications', 'gallery', 'contact'])
 for (const path of ['home.eyebrow', 'home.subtitleKr', 'home.ctaPrimary', 'home.ctaSecondary', 'home.ctaSecondaryRoute', 'home.titleLines', 'home.intro']) {
   assert.ok(adminText.includes(`'${path}'`), `Existing ${path} editor must remain available.`);
 }
-assert.match(topFunction(adminText, 'renderPageContentResearch'), /textareaField\(['"]researchStatement['"]/);
-assert.match(topFunction(adminText, 'renderPageContentContact'), /textareaField\(['"]site\.joinMessage['"]/);
+assert.match(topFunction(adminText, 'renderPageContentResearch'), /contentTextareaField\(['"]researchStatement['"]/);
+assert.match(topFunction(adminText, 'renderPageContentContact'), /contentTextareaField\(['"]site\.joinMessage['"]/);
 assert.doesNotMatch(topFunction(adminText, 'renderPageContentHome'), /home\.ctaSecondaryRoute/);
 
-console.log('Page Content CMS schema, fallback, escaping, and editor contract passed.');
+console.log('Page Content CMS schema, fallback, safe rich rendering, and editor contract passed.');

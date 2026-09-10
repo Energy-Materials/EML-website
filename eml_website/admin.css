@@ -228,14 +228,23 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:pl
 .rich-text-format-button[aria-pressed="true"] { color: #fff; background: #1d65c1; border-color: #1d65c1; box-shadow: 0 7px 18px rgba(29,101,193,.22); }
 .rich-text-format-button sup,
 .rich-text-format-button sub { font-size: .72em; line-height: 0; }
+.rich-text-format-button em { font-family: Georgia, serif; font-weight: 700; }
 .rich-text-editor { width: 100%; min-width: 0; min-height: 116px; max-width: 100%; padding: 14px 15px; overflow-wrap: anywhere; white-space: pre-wrap; border: 1px solid var(--line); border-radius: 0 0 16px 16px; background: #fff; color: var(--ink); outline: none; line-height: 1.55; transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease); }
+.rich-text-field.is-compact .rich-text-editor { min-height: 52px; }
 .rich-text-editor:focus { position: relative; z-index: 1; border-color: rgba(95,145,191,.62); box-shadow: 0 0 0 4px rgba(95,145,191,.12); }
 .rich-text-editor[aria-invalid="true"] { border-color: rgba(167,43,43,.65); box-shadow: 0 0 0 4px rgba(167,43,43,.08); }
-.rich-text-editor:empty::before { content: attr(data-placeholder); color: #7a8996; pointer-events: none; }
+.rich-text-editor[data-empty="true"]::before { content: attr(data-placeholder); color: #7a8996; pointer-events: none; }
 .rich-text-editor strong { font-weight: 850; }
+.rich-text-editor em { font-style: italic; }
 .rich-text-editor sup,
 .rich-text-editor sub { font-size: .72em; line-height: 0; }
 .rich-text-help { margin-top: 0; }
+.rich-text-array-field { display: grid; gap: 12px; }
+.rich-text-array-list { display: grid; gap: 14px; }
+.rich-text-array-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; min-width: 0; }
+.rich-text-array-actions { align-self: end; padding-bottom: 1px; }
+.rich-text-array-actions button { min-width: 44px; min-height: 44px; padding: 8px 10px; }
+.rich-text-array-add { justify-self: start; }
 
 .primary, .secondary, .danger, .ghost-btn {
   border: 0;
@@ -431,6 +440,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], input:invalid:not(:pl
   .inline-actions > * { flex: 1 1 120px; }
   .rich-text-toolbar { gap: 7px; padding: 7px; }
   .rich-text-format-button { flex: 1 1 72px; }
+  .rich-text-array-item { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+  .rich-text-array-actions { justify-content: flex-end; padding-bottom: 0; }
   .item-card { border-radius: 18px; }
   .item-card summary { padding-inline: 14px; }
   .item-fields { padding: 0 14px 14px; }

@@ -17,6 +17,9 @@ const helperNames = [
   'parseInlineFormatting',
   'renderInlineFormatting',
   'plainInlineText',
+  'renderRichText',
+  'renderRichMultilineText',
+  'plainRichText',
   'externalLinkUrl',
   'renderPublicationExternalLink',
   'publicationYear',
@@ -29,7 +32,8 @@ const helperNames = [
   'patentDisplayNumber',
 ];
 const helpers = new Function(
-  `${helperNames.map(extractTopLevelFunction).join('\n')}\nreturn { ${helperNames.join(', ')} };`,
+  `const richTextFormatNames = Object.freeze(['strong', 'em', 'sup', 'sub']);\n`
+  + `${helperNames.map(extractTopLevelFunction).join('\n')}\nreturn { ${helperNames.join(', ')} };`,
 )();
 
 const fixtures = [
@@ -98,7 +102,7 @@ const rendererFactory = new Function(
   'renderPublicationExternalLink',
   'escapeAttr',
   'escapeHTML',
-  'renderInlineFormatting',
+  'renderRichText',
   'publicationYear',
   `${extractTopLevelFunction('renderPaperList')}\n${extractTopLevelFunction('renderPatentList')}\nreturn { renderPaperList, renderPatentList };`,
 );
@@ -110,7 +114,7 @@ const renderers = rendererFactory(
   helpers.renderPublicationExternalLink,
   helpers.escapeAttr,
   helpers.escapeHTML,
-  helpers.renderInlineFormatting,
+  helpers.renderRichText,
   helpers.publicationYear,
 );
 

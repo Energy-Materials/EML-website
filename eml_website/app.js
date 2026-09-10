@@ -1,5 +1,6 @@
 (function () {
   const routes = ['home', 'research', 'members', 'publications', 'gallery', 'contact'];
+  const richTextFormatNames = Object.freeze(['strong', 'em', 'sup', 'sub']);
   const app = document.getElementById('app');
   const modal = document.querySelector('[data-modal]');
   const modalContent = document.querySelector('[data-modal-content]');
@@ -152,8 +153,7 @@
     const allowed = new Set(Array.isArray(allowedFormats) ? allowedFormats : []);
     const tokenPattern = /<[^>]*>|[<>]/g;
     let cursor = 0;
-    let activeFormat = '';
-    let activeTextStart = 0;
+    const activeFormats = [];
     let html = '';
     let text = '';
     let tokenCount = 0;
@@ -170,7 +170,7 @@
       cursor = match.index + match[0].length;
       tokenCount += 1;
 
-      const tag = match[0].match(/^<(\/?)((?:strong|sup|sub))>$/);
+      const tag = match[0].match(/^<(\/?)((?:strong|em|sup|sub))>$/);
       if (!tag || !allowed.has(tag[2]) || tokenCount > 1000) {
         return { valid: false, html: escapeHTML(raw), text: raw };
       }
@@ -178,15 +178,19 @@
       const closing = tag[1] === '/';
       const format = tag[2];
       if (!closing) {
-        if (activeFormat) return { valid: false, html: escapeHTML(raw), text: raw };
-        activeFormat = format;
-        activeTextStart = text.length;
+        const duplicate = activeFormats.some((active) => active.format === format);
+        const verticalConflict = (format === 'sup' || format === 'sub')
+          && activeFormats.some((active) => active.format === 'sup' || active.format === 'sub');
+        if (duplicate || verticalConflict) return { valid: false, html: escapeHTML(raw), text: raw };
+        activeFormats.push({ format, textStart: text.length });
         html += `<${format}>`;
       } else {
-        if (activeFormat !== format || !/[^\s\u200B-\u200D\u2060\uFEFF]/u.test(text.slice(activeTextStart))) {
+        const active = activeFormats[activeFormats.length - 1];
+        if (!active || active.format !== format
+          || !/[^\s\u200B-\u200D\u2060\uFEFF]/u.test(text.slice(active.textStart))) {
           return { valid: false, html: escapeHTML(raw), text: raw };
         }
-        activeFormat = '';
+        activeFormats.pop();
         html += `</${format}>`;
       }
     }
@@ -194,7 +198,7 @@
     const remaining = raw.slice(cursor);
     html += escapeHTML(remaining);
     text += remaining;
-    if (activeFormat) {
+    if (activeFormats.length) {
       return { valid: false, html: escapeHTML(raw), text: raw };
     }
     return { valid: true, html, text };
@@ -206,6 +210,18 @@
 
   function plainInlineText(value, allowedFormats = []) {
     return parseInlineFormatting(value, allowedFormats).text;
+  }
+
+  function renderRichText(value) {
+    return renderInlineFormatting(value, richTextFormatNames);
+  }
+
+  function renderRichMultilineText(value) {
+    return renderInlineFormatting(value, richTextFormatNames).replace(/\r\n|\r|\n/g, '<br />');
+  }
+
+  function plainRichText(value) {
+    return plainInlineText(value, richTextFormatNames);
   }
 
   function asset(path, fallback = '') {
@@ -272,7 +288,7 @@
   function renderPublicationExternalLink(item, typeLabel) {
     const href = externalLinkUrl(item?.link_url);
     if (!href) return '';
-    const title = plainInlineText(item?.title, ['sup', 'sub']).trim();
+    const title = plainRichText(item?.title).trim();
     const label = `${typeLabel} 외부 링크${title ? `: ${title}` : ''} (새 탭에서 열림)`;
     return `
       <a class="publication-external-link" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(label)}" title="외부 링크를 새 탭에서 열기">
@@ -335,12 +351,12 @@
     const addressEl = document.querySelector('[data-footer-address]');
     const emailEl = document.querySelector('[data-footer-email]');
     const copyrightEl = document.querySelector('[data-footer-copyright]');
-    if (addressEl) addressEl.textContent = s.address || '';
+    if (addressEl) addressEl.innerHTML = renderRichText(s.address || '');
     if (emailEl) {
       emailEl.textContent = s.email || '';
       emailEl.href = `mailto:${s.email || ''}`;
     }
-    if (copyrightEl) copyrightEl.textContent = s.copyright || '';
+    if (copyrightEl) copyrightEl.innerHTML = renderRichText(s.copyright || '');
   }
 
   function render(options = {}) {
@@ -378,15 +394,15 @@
       <section class="hero" aria-label="Main home banner" style="--hero-image: url('${escapeAttr(heroImage)}')">
         <canvas class="hero-particles" data-particles data-particle-scene-image="${escapeAttr(heroImage)}" aria-hidden="true"></canvas>
         <div class="hero-content">
-          <p class="hero-label">${escapeHTML(h.eyebrow || s.university || '')}</p>
+          <p class="hero-label">${renderRichText(h.eyebrow || s.university || '')}</p>
           <h1 class="hero-title">
-            ${(h.titleLines || ['Energy Materials', 'Laboratory']).map((line) => `<span>${escapeHTML(line)}</span>`).join('')}
+            ${(h.titleLines || ['Energy Materials', 'Laboratory']).map((line) => `<span>${renderRichText(line)}</span>`).join('')}
           </h1>
-          <p class="hero-subtitle">${escapeHTML(h.subtitleKr || s.labNameKr || '')}</p>
-          <p class="hero-copy">${escapeHTML(h.intro || '')}</p>
+          <p class="hero-subtitle">${renderRichText(h.subtitleKr || s.labNameKr || '')}</p>
+          <p class="hero-copy">${renderRichText(h.intro || '')}</p>
           <div class="hero-actions">
-            <button class="btn primary" type="button" data-go="research">${escapeHTML(h.ctaPrimary || 'Explore Research')} <span class="button-icon" aria-hidden="true">→</span></button>
-            <button class="btn ghost" type="button" data-go="${escapeAttr(secondRoute)}">${escapeHTML(h.ctaSecondary || 'Contact')} <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn primary" type="button" data-go="research">${renderRichText(h.ctaPrimary || 'Explore Research')} <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn ghost" type="button" data-go="${escapeAttr(secondRoute)}">${renderRichText(h.ctaSecondary || 'Contact')} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
         </div>
         <div class="scroll-indicator"><span></span> Scroll</div>
@@ -403,19 +419,19 @@
       <section class="section research-preview">
         <div class="container home-research-layout">
           <div class="home-research-copy reveal">
-            <p class="section-kicker">${escapeHTML(pageContentText(['home', 'research', 'smallLabel']))}</p>
-            <h2 class="section-title">${escapeHTML(pageContentText(['home', 'research', 'title']))}</h2>
-            <h3 class="research-theme-title">${escapeHTML(pageContentText(['home', 'research', 'subtitle']))}</h3>
-            <p class="section-lead">${escapeHTML(pageContentText(['home', 'research', 'description']))}</p>
-            <button class="btn secondary" type="button" data-go="research" style="margin-top:24px">${escapeHTML(pageContentText(['home', 'research', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
+            <p class="section-kicker">${renderRichText(pageContentText(['home', 'research', 'smallLabel']))}</p>
+            <h2 class="section-title">${renderRichText(pageContentText(['home', 'research', 'title']))}</h2>
+            <h3 class="research-theme-title">${renderRichText(pageContentText(['home', 'research', 'subtitle']))}</h3>
+            <p class="section-lead">${renderRichText(pageContentText(['home', 'research', 'description']))}</p>
+            <button class="btn secondary" type="button" data-go="research" style="margin-top:24px">${renderRichText(pageContentText(['home', 'research', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
           <div class="research-card-grid">
             ${topics.map((topic) => `
               <article class="research-card reveal">
-                <img src="${escapeAttr(asset(topic.image, 'assets/research-electrode-interface.svg'))}" alt="${escapeAttr(topic.title)}" />
+                <img src="${escapeAttr(asset(topic.image, 'assets/research-electrode-interface.svg'))}" alt="${escapeAttr(plainRichText(topic.title))}" />
                 <div class="research-card-body">
-                  <h3>${escapeHTML(topic.title)}</h3>
-                  <p>${escapeHTML(topic.short)}</p>
+                  <h3>${renderRichText(topic.title)}</h3>
+                  <p>${renderRichText(topic.short)}</p>
                 </div>
               </article>
             `).join('')}
@@ -426,33 +442,33 @@
       <section class="section highlight-band">
         <div class="container home-split">
           <div class="panel reveal">
-            <p class="section-kicker">${escapeHTML(pageContentText(['home', 'publicationsPreview', 'smallLabel']))}</p>
-            <h3>${escapeHTML(pageContentText(['home', 'publicationsPreview', 'title']))}</h3>
+            <p class="section-kicker">${renderRichText(pageContentText(['home', 'publicationsPreview', 'smallLabel']))}</p>
+            <h3>${renderRichText(pageContentText(['home', 'publicationsPreview', 'title']))}</h3>
             <div class="publication-list">
               ${publications.map((pub) => `
                 <button class="pub-item" type="button" data-go="publications">
-                  <b class="publication-inline publication-title">${renderInlineFormatting(pub.title, ['sup', 'sub'])}</b>
-                  <span>${escapeHTML(pub.journal)} · ${escapeHTML(pub.year)}</span>
+                  <b class="publication-inline publication-title">${renderRichText(pub.title)}</b>
+                  <span>${renderRichText(pub.journal)} · ${escapeHTML(pub.year)}</span>
                 </button>
               `).join('')}
             </div>
-            <button class="btn ghost" type="button" data-go="publications">${escapeHTML(pageContentText(['home', 'publicationsPreview', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn ghost" type="button" data-go="publications">${renderRichText(pageContentText(['home', 'publicationsPreview', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
           <div class="panel reveal">
-            <p class="section-kicker">${escapeHTML(pageContentText(['home', 'galleryPreview', 'smallLabel']))}</p>
-            <h3>${escapeHTML(pageContentText(['home', 'galleryPreview', 'title']))}</h3>
+            <p class="section-kicker">${renderRichText(pageContentText(['home', 'galleryPreview', 'smallLabel']))}</p>
+            <h3>${renderRichText(pageContentText(['home', 'galleryPreview', 'title']))}</h3>
             <div class="news-list">
               ${gallery.map((item) => {
                 const realIndex = (data.gallery || []).indexOf(item);
                 return `
                   <button class="news-item" type="button" data-gallery-index="${realIndex}">
-                    <b>${escapeHTML(item.title)}</b>
-                    <span>${escapeHTML(item.date)} · ${escapeHTML(item.summary)}</span>
+                    <b>${renderRichText(item.title)}</b>
+                    <span>${escapeHTML(item.date)} · ${renderRichText(item.summary)}</span>
                   </button>
                 `;
               }).join('')}
             </div>
-            <button class="btn ghost" type="button" data-go="gallery">${escapeHTML(pageContentText(['home', 'galleryPreview', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
+            <button class="btn ghost" type="button" data-go="gallery">${renderRichText(pageContentText(['home', 'galleryPreview', 'buttonText']))} <span class="button-icon" aria-hidden="true">→</span></button>
           </div>
         </div>
       </section>
@@ -475,9 +491,9 @@
     return `
       <section class="sub-hero" data-sub-hero="${escapeAttr(pageKey)}" style="--hero-image: url('${escapeAttr(heroImage)}')">
         <div class="container">
-          <p class="section-kicker">${escapeHTML(smallLabel)}</p>
-          <h1>${escapeHTML(bannerTitle)}</h1>
-          <p>${escapeHTML(description)}</p>
+          <p class="section-kicker">${renderRichText(smallLabel)}</p>
+          <h1>${renderRichText(bannerTitle)}</h1>
+          <p>${renderRichText(description)}</p>
         </div>
       </section>
     `;
@@ -486,7 +502,7 @@
   function renderResearch() {
     return `
       ${renderSubHero('Research', 'Advanced energy materials, rational electrode interface design, and electrochemical reaction analysis.', 'research')}
-      <div class="single-tab-label"><span>${escapeHTML(pageContentText(['research', 'topicTabLabel']))}</span></div>
+      <div class="single-tab-label"><span>${renderRichText(pageContentText(['research', 'topicTabLabel']))}</span></div>
       <section class="section compact">
         <div class="container">${renderResearchTopics()}</div>
       </section>
@@ -497,23 +513,23 @@
     const topics = data.researchTopics || [];
     return `
       <div class="statement-box reveal">
-        <h2>${escapeHTML(pageContentText(['research', 'statement', 'title']))}</h2>
-        <p>${escapeHTML(data.researchStatement || '')}</p>
+        <h2>${renderRichText(pageContentText(['research', 'statement', 'title']))}</h2>
+        <p>${renderRichText(data.researchStatement || '')}</p>
       </div>
       <div class="section-head reveal">
         <div>
-          <p class="section-kicker">${escapeHTML(pageContentText(['research', 'topics', 'smallLabel']))}</p>
-          <h2 class="section-title">${escapeMultilineHTML(pageContentText(['research', 'topics', 'title']))}</h2>
+          <p class="section-kicker">${renderRichText(pageContentText(['research', 'topics', 'smallLabel']))}</p>
+          <h2 class="section-title">${renderRichMultilineText(pageContentText(['research', 'topics', 'title']))}</h2>
         </div>
       </div>
       <div class="topic-list">
         ${topics.map((topic, index) => `
           <article class="topic-row reveal">
-            <div class="topic-image"><img src="${escapeAttr(asset(topic.image, 'assets/research-electrode-interface.svg'))}" alt="${escapeAttr(topic.title)}" /></div>
+            <div class="topic-image"><img src="${escapeAttr(asset(topic.image, 'assets/research-electrode-interface.svg'))}" alt="${escapeAttr(plainRichText(topic.title))}" /></div>
             <div class="topic-content">
               <span class="num">${String(index + 1).padStart(2, '0')}</span>
-              <h3>${escapeHTML(topic.title)}</h3>
-              <p>${escapeHTML(topic.description)}</p>
+              <h3>${renderRichText(topic.title)}</h3>
+              <p>${renderRichText(topic.description)}</p>
             </div>
           </article>
         `).join('')}
@@ -540,24 +556,24 @@
     return `
       <article class="prof-card reveal">
         <div class="prof-photo image-display-frame" style="${escapeAttr(imageDisplayStyle(p.photoDisplay))}">
-          <img src="${escapeAttr(asset(p.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(p.name || 'Professor')}" />
+          <img src="${escapeAttr(asset(p.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(plainRichText(p.name || 'Professor'))}" />
         </div>
         <div class="prof-info">
-          <h2>${escapeHTML(p.name || '')}</h2>
-          <p class="role">${escapeHTML(p.role || '')}</p>
-          <p class="department">${escapeHTML(p.department || '')}</p>
+          <h2>${renderRichText(p.name || '')}</h2>
+          <p class="role">${renderRichText(p.role || '')}</p>
+          <p class="department">${renderRichText(p.department || '')}</p>
           <div class="info-pill-row">
             <a class="info-pill" href="mailto:${escapeAttr(p.email || '')}">E-mail: ${escapeHTML(p.email || '')}</a>
-            ${(p.interest || []).map((v) => `<span class="info-pill">${escapeHTML(v)}</span>`).join('')}
+            ${(p.interest || []).map((v) => `<span class="info-pill">${renderRichText(v)}</span>`).join('')}
           </div>
           <div class="cv-grid">
             <div>
               <h3>Education</h3>
-              <ul>${(p.education || []).map((v) => `<li>${escapeHTML(v)}</li>`).join('')}</ul>
+              <ul>${(p.education || []).map((v) => `<li>${renderRichText(v)}</li>`).join('')}</ul>
             </div>
             <div>
               <h3>Research Experience</h3>
-              <ul>${(p.experience || []).map((v) => `<li>${escapeHTML(v)}</li>`).join('')}</ul>
+              <ul>${(p.experience || []).map((v) => `<li>${renderRichText(v)}</li>`).join('')}</ul>
             </div>
           </div>
         </div>
@@ -572,14 +588,14 @@
         ${members.map((m) => `
           <article class="member-card reveal">
             <div class="member-photo image-display-frame" style="${escapeAttr(imageDisplayStyle(m.photoDisplay))}">
-              <img src="${escapeAttr(asset(m.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(m.name)}" />
+              <img src="${escapeAttr(asset(m.photo, 'assets/person-placeholder.svg'))}" alt="${escapeAttr(plainRichText(m.name))}" />
             </div>
             <div>
-              <h3>${escapeHTML(m.name)}</h3>
-              <p class="role">${escapeHTML(m.role)}</p>
-              <p><strong>Period</strong><br />${escapeHTML(m.period || '')}</p>
+              <h3>${renderRichText(m.name)}</h3>
+              <p class="role">${renderRichText(m.role)}</p>
+              <p><strong>Period</strong><br />${renderRichText(m.period || '')}</p>
               ${m.email ? `<p><strong>E-mail</strong><br /><a href="mailto:${escapeAttr(m.email)}">${escapeHTML(m.email)}</a></p>` : ''}
-              <p><strong>Research Interest</strong><br />${escapeHTML(m.research || 'Energy materials')}</p>
+              <p><strong>Research Interest</strong><br />${renderRichText(m.research || 'Energy materials')}</p>
             </div>
           </article>
         `).join('')}
@@ -593,8 +609,8 @@
         ${(data.alumni || []).map((a) => `
           <article class="alumni-card reveal">
             <span class="date">${escapeHTML(a.date)}</span>
-            <h3>${escapeHTML(a.name)}</h3>
-            <p>${escapeHTML(a.next)}</p>
+            <h3>${renderRichText(a.name)}</h3>
+            <p>${renderRichText(a.next)}</p>
           </article>
         `).join('')}
       </div>
@@ -641,11 +657,11 @@
       const searchable = [
         item?.year,
         item?.number,
-        plainInlineText(item?.title, ['sup', 'sub']),
-        plainInlineText(item?.authors, ['strong']),
-        item?.inventors,
-        item?.journal,
-        item?.note,
+        plainRichText(item?.title),
+        plainRichText(item?.authors),
+        plainRichText(item?.inventors),
+        plainRichText(item?.journal),
+        plainRichText(item?.note),
         item?.link_url,
       ].filter((field) => field != null).join(' ');
       return normalize(searchable).includes(term);
@@ -716,10 +732,10 @@
               <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
                 <div class="year-badge"><small>#${escapeHTML(pub.number ?? '')}</small>${escapeHTML(publicationYear(pub.year))}</div>
                 <div class="publication-card-content">
-                  <h3 class="publication-inline publication-title">${renderInlineFormatting(pub.title, ['sup', 'sub'])}</h3>
-                  <p class="publication-inline publication-authors">${renderInlineFormatting(pub.authors, ['strong'])}</p>
-                  <p><strong>${escapeHTML(pub.journal)}</strong></p>
-                  ${pub.note ? `<span class="note">${escapeHTML(pub.note)}</span>` : ''}
+                  <h3 class="publication-inline publication-title">${renderRichText(pub.title)}</h3>
+                  <p class="publication-inline publication-authors">${renderRichText(pub.authors)}</p>
+                  <p><strong>${renderRichText(pub.journal)}</strong></p>
+                  ${pub.note ? `<span class="note">${renderRichText(pub.note)}</span>` : ''}
                 </div>
                 ${externalLink}
               </article>
@@ -750,8 +766,8 @@
               <article class="publication-card reveal${externalLink ? ' has-external-link' : ''}">
                 <div class="year-badge"><small>${displayNumber ? `#${displayNumber}` : ''}</small>${escapeHTML(publicationYear(patent.year))}</div>
                 <div class="publication-card-content">
-                  <h3>${escapeHTML(patent.title)}</h3>
-                  <p>${escapeHTML(patent.inventors)}</p>
+                  <h3>${renderRichText(patent.title)}</h3>
+                  <p>${renderRichText(patent.inventors)}</p>
                   <p><strong>${escapeHTML(patent.number)}</strong></p>
                 </div>
                 ${externalLink}
@@ -771,10 +787,10 @@
         <div class="container">
           <div class="section-head reveal">
             <div>
-              <p class="section-kicker">${escapeHTML(pageContentText(['gallery', 'section', 'smallLabel']))}</p>
-              <h2 class="section-title small-title">${escapeMultilineHTML(pageContentText(['gallery', 'section', 'title']))}</h2>
+              <p class="section-kicker">${renderRichText(pageContentText(['gallery', 'section', 'smallLabel']))}</p>
+              <h2 class="section-title small-title">${renderRichMultilineText(pageContentText(['gallery', 'section', 'title']))}</h2>
             </div>
-            <p class="section-lead">${escapeHTML(pageContentText(['gallery', 'section', 'description']))}</p>
+            <p class="section-lead">${renderRichText(pageContentText(['gallery', 'section', 'description']))}</p>
           </div>
           <div class="gallery-grid" aria-live="polite">
             ${(data.gallery || []).length ? (data.gallery || []).map((item, index) => {
@@ -786,8 +802,8 @@
                   </div>
                   <div class="gallery-card-body">
                     <div class="gallery-date">${escapeHTML(item.date)} · ${imgs.length} photos</div>
-                    <h3>${escapeHTML(item.title)}</h3>
-                    <p>${escapeHTML(item.summary || '')}</p>
+                    <h3>${renderRichText(item.title)}</h3>
+                    <p>${renderRichText(item.summary || '')}</p>
                   </div>
                 </button>
               `;
@@ -812,13 +828,13 @@
       <section class="section compact">
         <div class="container contact-grid">
           <div class="contact-card reveal">
-            <p class="section-kicker">${escapeHTML(pageContentText(['contact', 'section', 'smallLabel']))}</p>
-            <h2>${escapeHTML(pageContentText(['contact', 'section', 'title']))}</h2>
-            <div class="contact-row"><strong>Lab</strong><span>${escapeHTML(s.labName)}<br />${escapeHTML(s.labNameKr)}</span></div>
-            <div class="contact-row"><strong>Address</strong><span>${escapeHTML(s.address)}</span></div>
+            <p class="section-kicker">${renderRichText(pageContentText(['contact', 'section', 'smallLabel']))}</p>
+            <h2>${renderRichText(pageContentText(['contact', 'section', 'title']))}</h2>
+            <div class="contact-row"><strong>Lab</strong><span>${renderRichText(s.labName)}<br />${renderRichText(s.labNameKr)}</span></div>
+            <div class="contact-row"><strong>Address</strong><span>${renderRichText(s.address)}</span></div>
             ${s.phone ? `<div class="contact-row"><strong>Phone</strong><span>${escapeHTML(s.phone)}</span></div>` : ''}
             <div class="contact-row"><strong>E-mail</strong><span><a href="mailto:${escapeAttr(s.email)}">${escapeHTML(s.email)}</a></span></div>
-            <div class="contact-row"><strong>Join Us</strong><span>${escapeHTML(s.joinMessage || '')}</span></div>
+            <div class="contact-row"><strong>Join Us</strong><span>${renderRichText(s.joinMessage || '')}</span></div>
           </div>
           <div class="map-card reveal">${map}</div>
         </div>
@@ -1059,11 +1075,11 @@
     if (lightboxState.imageIndex >= images.length) lightboxState.imageIndex = 0;
     const img = lightbox.querySelector('[data-lightbox-image]');
     img.src = asset(images[lightboxState.imageIndex], 'assets/gallery-placeholder-1.svg');
-    img.alt = item.title || 'Gallery image';
+    img.alt = plainRichText(item.title).trim() || 'Gallery image';
     lightbox.querySelector('[data-lightbox-count]').textContent = `${lightboxState.imageIndex + 1} / ${images.length}`;
-    lightbox.querySelector('[data-lightbox-title]').textContent = item.title || '';
-    lightbox.querySelector('[data-lightbox-meta]').textContent = `${item.date || ''}${item.summary ? ' · ' + item.summary : ''}`;
-    lightbox.querySelector('[data-lightbox-body]').textContent = item.body || '';
+    lightbox.querySelector('[data-lightbox-title]').innerHTML = renderRichText(item.title || '');
+    lightbox.querySelector('[data-lightbox-meta]').innerHTML = `${escapeHTML(item.date || '')}${item.summary ? ` · ${renderRichText(item.summary)}` : ''}`;
+    lightbox.querySelector('[data-lightbox-body]').innerHTML = renderRichText(item.body || '');
     lightbox.querySelectorAll('[data-lightbox-prev], [data-lightbox-next]').forEach((button) => {
       button.hidden = images.length < 2;
       button.disabled = images.length < 2;

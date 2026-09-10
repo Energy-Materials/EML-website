@@ -44,7 +44,11 @@
       if (!Object.prototype.hasOwnProperty.call(value, key)) return;
       const expected = schema[key];
       if (expected === 'string') {
-        if (typeof value[key] !== 'string') errors.push(`${label}.${key}는 문자열이어야 합니다.`);
+        if (typeof value[key] !== 'string') {
+          errors.push(`${label}.${key}는 문자열이어야 합니다.`);
+        } else {
+          validateInlineMarkup(value[key], `${label}.${key}`, errors);
+        }
         return;
       }
       validatePageContentNode(value[key], expected, `${label}.${key}`, errors);
@@ -87,26 +91,25 @@
     }
   }
 
-  const publicationTitleTags = ['sup', 'sub'];
-  const publicationAuthorTags = ['strong'];
-  const maxPublicationRichTextLength = 20_000;
-  const maxPublicationRichTextTokens = 1_000;
+  const inlineFormattingTags = ['strong', 'em', 'sup', 'sub'];
+  const maxRichTextLength = 20_000;
+  const maxRichTextTokens = 1_000;
 
-  function hasVisiblePublicationText(value) {
+  function hasVisibleInlineText(value) {
     return /[^\s\u200B-\u200D\u2060\uFEFF]/u.test(value);
   }
 
-  function validatePublicationInlineMarkup(value, label, allowedTags, errors) {
+  function validateInlineMarkup(value, label, errors) {
     if (typeof value !== 'string' || value.trim() === '') return;
-    if (value.length > maxPublicationRichTextLength) {
-      errors.push(`${label}은 ${maxPublicationRichTextLength.toLocaleString()}자 이하여야 합니다.`);
+    if (value.length > maxRichTextLength) {
+      errors.push(`${label}은 ${maxRichTextLength.toLocaleString()}자 이하여야 합니다.`);
       return;
     }
 
-    const allowedMarkup = allowedTags.map((tag) => `<${tag}>...</${tag}>`).join(' 또는 ');
+    const allowedMarkup = inlineFormattingTags.map((tag) => `<${tag}>...</${tag}>`).join(' 또는 ');
     const tokenPattern = /<[^>]*>|[<>]/g;
-    const exactTagPattern = /^<(\/?)((?:strong|sup|sub))>$/;
-    let activeTag = '';
+    const exactTagPattern = /^<(\/?)((?:strong|em|sup|sub))>$/;
+    const stack = [];
     let cursor = 0;
     let visibleText = '';
     let tokenCount = 0;
@@ -115,38 +118,69 @@
     while ((match = tokenPattern.exec(value)) !== null) {
       const textBeforeTag = value.slice(cursor, match.index);
       visibleText += textBeforeTag;
+      if (hasVisibleInlineText(textBeforeTag)) stack.forEach((entry) => { entry.hasVisibleText = true; });
       cursor = match.index + match[0].length;
       tokenCount += 1;
-      if (tokenCount > maxPublicationRichTextTokens) {
-        errors.push(`${label}에는 서식 태그를 ${maxPublicationRichTextTokens.toLocaleString()}개까지만 사용할 수 있습니다.`);
+      if (tokenCount > maxRichTextTokens) {
+        errors.push(`${label}에는 서식 태그를 ${maxRichTextTokens.toLocaleString()}개까지만 사용할 수 있습니다.`);
         return;
       }
 
       const tagMatch = exactTagPattern.exec(match[0]);
-      if (!tagMatch || !allowedTags.includes(tagMatch[2])) {
+      if (!tagMatch) {
         errors.push(`${label}에는 속성이 없는 소문자 ${allowedMarkup} 태그만 사용할 수 있습니다.`);
         return;
       }
 
       const closing = tagMatch[1] === '/';
       const tag = tagMatch[2];
-      if ((!closing && activeTag) || (closing && activeTag !== tag)) {
-        errors.push(`${label}의 서식 태그는 중첩할 수 없으며 여는 태그와 닫는 태그의 짝이 맞아야 합니다.`);
-        return;
+      if (closing) {
+        const active = stack[stack.length - 1];
+        if (!active || active.tag !== tag) {
+          errors.push(`${label}의 서식 태그는 여는 태그와 닫는 태그의 짝이 맞아야 하며, 같은 태그와 <sup>/<sub>는 중첩할 수 없습니다.`);
+          return;
+        }
+        if (!active.hasVisibleText) {
+          errors.push(`${label}의 각 서식 태그 안에는 표시할 텍스트가 있어야 합니다.`);
+          return;
+        }
+        stack.pop();
+      } else {
+        const repeatsTag = stack.some((entry) => entry.tag === tag);
+        const mixesScriptLevel = (tag === 'sup' && stack.some((entry) => entry.tag === 'sub'))
+          || (tag === 'sub' && stack.some((entry) => entry.tag === 'sup'));
+        if (repeatsTag || mixesScriptLevel) {
+          errors.push(`${label}의 서식 태그는 여는 태그와 닫는 태그의 짝이 맞아야 하며, 같은 태그와 <sup>/<sub>는 중첩할 수 없습니다.`);
+          return;
+        }
+        stack.push({ tag, hasVisibleText: false });
       }
-      if (closing && !hasVisiblePublicationText(textBeforeTag)) {
-        errors.push(`${label}의 각 서식 태그 안에는 표시할 텍스트가 있어야 합니다.`);
-        return;
-      }
-      activeTag = closing ? '' : tag;
     }
 
-    visibleText += value.slice(cursor);
-    if (activeTag) {
-      errors.push(`${label}의 서식 태그는 중첩할 수 없으며 여는 태그와 닫는 태그의 짝이 맞아야 합니다.`);
+    const trailingText = value.slice(cursor);
+    visibleText += trailingText;
+    if (hasVisibleInlineText(trailingText)) stack.forEach((entry) => { entry.hasVisibleText = true; });
+    if (stack.length) {
+      errors.push(`${label}의 서식 태그는 여는 태그와 닫는 태그의 짝이 맞아야 하며, 같은 태그와 <sup>/<sub>는 중첩할 수 없습니다.`);
       return;
     }
-    if (!hasVisiblePublicationText(visibleText)) errors.push(`${label}에는 표시할 텍스트가 있어야 합니다.`);
+    if (!hasVisibleInlineText(visibleText)) errors.push(`${label}에는 표시할 텍스트가 있어야 합니다.`);
+  }
+
+  function validateInlineFields(record, fields, label, errors) {
+    fields.forEach((field) => {
+      if (!isRecord(record) || !Object.prototype.hasOwnProperty.call(record, field)) return;
+      if (typeof record[field] !== 'string') {
+        errors.push(`${label}.${field}는 문자열이어야 합니다.`);
+        return;
+      }
+      validateInlineMarkup(record[field], `${label}.${field}`, errors);
+    });
+  }
+
+  function validateInlineStringArray(record, field, label, errors) {
+    if (!Array.isArray(record?.[field])) return;
+    record[field].forEach((entry, index) => validateInlineMarkup(entry, `${label}.${field}.${index}`, errors));
   }
 
   const imageDisplayKeys = ['positionX', 'positionY', 'zoom'];
@@ -189,6 +223,20 @@
     });
 
     validateOptionalPageContent(value, errors);
+    if (typeof value.researchStatement !== 'string') {
+      errors.push('content.researchStatement는 문자열이어야 합니다.');
+    } else {
+      validateInlineMarkup(value.researchStatement, 'content.researchStatement', errors);
+    }
+
+    if (isRecord(value.site)) {
+      validateInlineFields(
+        value.site,
+        ['labName', 'labNameKr', 'university', 'universityKr', 'address', 'copyright', 'joinMessage'],
+        'site',
+        errors,
+      );
+    }
 
     if (isRecord(value.site) && Object.prototype.hasOwnProperty.call(value.site, 'subHeroImages')) {
       const subHeroImages = value.site.subHeroImages;
@@ -221,6 +269,8 @@
       } else if (!value.home.titleLines.every((item) => typeof item === 'string')) {
         errors.push('home.titleLines의 모든 항목은 문자열이어야 합니다.');
       }
+      validateInlineFields(value.home, ['eyebrow', 'subtitleKr', 'tagline', 'intro', 'ctaPrimary', 'ctaSecondary'], 'home', errors);
+      validateInlineStringArray(value.home, 'titleLines', 'home', errors);
     }
 
     if (isRecord(value.professor)) {
@@ -233,12 +283,30 @@
           }
         }
       });
+      validateInlineFields(value.professor, ['name', 'role', 'department'], 'professor', errors);
+      ['interest', 'education', 'experience']
+        .forEach((field) => validateInlineStringArray(value.professor, field, 'professor', errors));
       validateOptionalImageDisplay(value.professor, 'photoDisplay', 'professor', errors);
+    }
+
+    if (Array.isArray(value.researchTopics)) {
+      value.researchTopics.forEach((item, index) => {
+        if (isRecord(item)) validateInlineFields(item, ['title', 'short', 'description'], `researchTopics.${index}`, errors);
+      });
     }
 
     if (Array.isArray(value.members)) {
       value.members.forEach((item, index) => {
-        if (isRecord(item)) validateOptionalImageDisplay(item, 'photoDisplay', `members.${index}`, errors);
+        if (!isRecord(item)) return;
+        const label = `members.${index}`;
+        validateInlineFields(item, ['name', 'role', 'period', 'research'], label, errors);
+        validateOptionalImageDisplay(item, 'photoDisplay', label, errors);
+      });
+    }
+
+    if (Array.isArray(value.alumni)) {
+      value.alumni.forEach((item, index) => {
+        if (isRecord(item)) validateInlineFields(item, ['name', 'next'], `alumni.${index}`, errors);
       });
     }
 
@@ -272,6 +340,7 @@
               errors.push(`gallery.${index}.${field}는 필수 항목입니다.`);
             }
           });
+          validateInlineFields(item, ['title', 'summary', 'body'], `gallery.${index}`, errors);
         }
       });
     }
@@ -292,8 +361,7 @@
             errors.push(`publications.${index}.${field}는 필수 항목입니다.`);
           }
         });
-        validatePublicationInlineMarkup(item.title, `publications.${index}.title`, publicationTitleTags, errors);
-        validatePublicationInlineMarkup(item.authors, `publications.${index}.authors`, publicationAuthorTags, errors);
+        validateInlineFields(item, ['title', 'authors', 'journal', 'note'], `publications.${index}`, errors);
         validateOptionalExternalUrl(item, `publications.${index}`, errors);
       });
     }
@@ -301,6 +369,7 @@
     if (Array.isArray(value.patents)) {
       value.patents.forEach((item, index) => {
         if (!isRecord(item)) return;
+        validateInlineFields(item, ['title', 'inventors'], `patents.${index}`, errors);
         validateOptionalExternalUrl(item, `patents.${index}`, errors);
       });
     }

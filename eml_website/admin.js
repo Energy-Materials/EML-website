@@ -1,6 +1,7 @@
 (function () {
   const storageKey = 'emlDataV2';
   const defaultSubHeroImage = 'assets/hero-concept-from-pdf.png';
+
   const subHeroPages = Object.freeze([
     { key: 'research', title: 'Research', description: '연구 분야와 Research Topic 상단 배너' },
     { key: 'members', title: 'Members', description: 'Professor, Members, Alumni 상단 배너' },
@@ -260,7 +261,7 @@
   }
   function escapeAttr(value) { return escapeHTML(value).replaceAll('`', '&#096;'); }
 
-  const richTextFormatNames = Object.freeze(['strong', 'sup', 'sub']);
+  const richTextFormatNames = Object.freeze(['strong', 'em', 'sup', 'sub']);
   const richTextDiscardElements = new Set(['script', 'style', 'template', 'iframe', 'object', 'embed', 'svg', 'math']);
   const richTextBlockElements = new Set(['address', 'article', 'aside', 'blockquote', 'div', 'footer', 'header', 'li', 'main', 'nav', 'ol', 'p', 'section', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul']);
 
@@ -272,6 +273,7 @@
   function richTextElementTag(element, formats) {
     const tag = String(element?.localName || '').toLowerCase();
     if ((tag === 'strong' || tag === 'b') && formats.includes('strong')) return 'strong';
+    if ((tag === 'em' || tag === 'i') && formats.includes('em')) return 'em';
     if (tag === 'sup' && formats.includes('sup')) return 'sup';
     if (tag === 'sub' && formats.includes('sub')) return 'sub';
     return '';
@@ -279,7 +281,7 @@
 
   function richTextHasMeaningfulText(value) {
     return Boolean(String(value ?? '')
-      .replace(/<\/?(?:strong|sup|sub)>/g, '')
+      .replace(/<\/?(?:strong|em|sup|sub)>/g, '')
       .replace(/[\u200b-\u200d\u2060\ufeff]/g, '')
       .replace(/\u00a0/g, ' ')
       .trim());
@@ -291,23 +293,24 @@
     do {
       previous = current;
       current = current.replace(
-        /<(strong|sup|sub)>([\s\u200b-\u200d\u2060\ufeff]*)<\/\1>/g,
+        /<(strong|em|sup|sub)>([\s\u200b-\u200d\u2060\ufeff]*)<\/\1>/g,
         '$2',
       );
     } while (current !== previous);
     return current;
   }
 
-  function serializeRichTextNode(node, formats, activeFormats = new Set()) {
+  function serializeRichTextNode(node, formats, activeFormats = new Set(), multiline = false) {
     if (!node) return '';
     if (node.nodeType === 3) {
-      return String(node.nodeValue || '').replace(/[\r\n\t]+/g, ' ');
+      const text = String(node.nodeValue || '').replace(/\r\n|\r/g, '\n').replace(/\t/g, ' ');
+      return multiline ? text : text.replace(/\n+/g, ' ');
     }
     if (node.nodeType !== 1) return '';
 
     const sourceTag = String(node.localName || '').toLowerCase();
     if (richTextDiscardElements.has(sourceTag)) return '';
-    if (sourceTag === 'br') return ' ';
+    if (sourceTag === 'br') return multiline ? '\n' : ' ';
 
     const outputTag = richTextElementTag(node, formats);
     const nextActiveFormats = new Set(activeFormats);
@@ -318,17 +321,27 @@
     if (canWrap) nextActiveFormats.add(outputTag);
 
     const children = Array.from(node.childNodes || [], (child) => (
-      serializeRichTextNode(child, formats, nextActiveFormats)
+      serializeRichTextNode(child, formats, nextActiveFormats, multiline)
     )).join('');
-    if (canWrap && richTextHasMeaningfulText(children)) return `<${outputTag}>${children}</${outputTag}>`;
-    return richTextBlockElements.has(sourceTag) ? ` ${children} ` : children;
+    const formatted = canWrap && richTextHasMeaningfulText(children)
+      ? `<${outputTag}>${children}</${outputTag}>`
+      : children;
+    if (!richTextBlockElements.has(sourceTag)) return formatted;
+    return multiline ? `${formatted}\n` : ` ${formatted} `;
   }
 
-  function serializeRichTextChildren(root, formats) {
+  function serializeRichTextChildren(root, formats, multiline = false) {
     const serialized = Array.from(root?.childNodes || [], (node) => (
-      serializeRichTextNode(node, formats)
-    )).join('').replace(/[\r\n\t]+/g, ' ');
-    return removeEmptyRichTextTags(serialized);
+      serializeRichTextNode(node, formats, new Set(), multiline)
+    )).join('');
+    const withoutEmptyTags = removeEmptyRichTextTags(serialized);
+    if (!multiline) return withoutEmptyTags.replace(/[\r\n\t]+/g, ' ');
+    return withoutEmptyTags
+      .replace(/\r\n|\r/g, '\n')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/^\n+|\n+$/g, '');
   }
 
   function parseRichTextMarkup(value, requestedFormats) {
@@ -336,15 +349,19 @@
     const formats = normalizeRichTextFormats(requestedFormats);
     const tokens = [];
     const tokenPattern = /<[^>]*>|[<>]/g;
-    const exactTagPattern = /^<(\/?)((?:strong|sup|sub))>$/;
-    let activeTag = '';
-    let activeContentStart = 0;
+    const exactTagPattern = /^<(\/?)((?:strong|em|sup|sub))>$/;
+    const activeTags = [];
+    let plainText = '';
     let cursor = 0;
     let tokenCount = 0;
     let match;
     if (source.length > 20000) return { valid: false, tokens: [] };
     while ((match = tokenPattern.exec(source))) {
-      if (match.index > cursor) tokens.push({ type: 'text', value: source.slice(cursor, match.index) });
+      if (match.index > cursor) {
+        const plainChunk = source.slice(cursor, match.index);
+        tokens.push({ type: 'text', value: plainChunk });
+        plainText += plainChunk;
+      }
       const token = match[0];
       const tagMatch = exactTagPattern.exec(token);
       tokenCount += 1;
@@ -354,21 +371,27 @@
       const closing = tagMatch[1] === '/';
       const tag = tagMatch[2];
       if (closing) {
-        if (activeTag !== tag || !richTextHasMeaningfulText(source.slice(activeContentStart, match.index))) {
+        const active = activeTags[activeTags.length - 1];
+        if (!active || active.tag !== tag || !richTextHasMeaningfulText(plainText.slice(active.textStart))) {
           return { valid: false, tokens: [] };
         }
-        activeTag = '';
+        activeTags.pop();
       } else {
-        if (activeTag) return { valid: false, tokens: [] };
-        activeTag = tag;
-        activeContentStart = tokenPattern.lastIndex;
+        const duplicate = activeTags.some((active) => active.tag === tag);
+        const verticalConflict = (tag === 'sup' || tag === 'sub')
+          && activeTags.some((active) => active.tag === 'sup' || active.tag === 'sub');
+        if (duplicate || verticalConflict) return { valid: false, tokens: [] };
+        activeTags.push({ tag, textStart: plainText.length });
       }
       tokens.push({ type: 'tag', value: token });
       cursor = tokenPattern.lastIndex;
     }
-    if (activeTag) return { valid: false, tokens: [] };
-    if (cursor < source.length) tokens.push({ type: 'text', value: source.slice(cursor) });
-    return { valid: true, tokens };
+    if (cursor < source.length) {
+      const remaining = source.slice(cursor);
+      tokens.push({ type: 'text', value: remaining });
+      plainText += remaining;
+    }
+    return { valid: activeTags.length === 0, tokens };
   }
 
   function sanitizeRichTextMarkup(value, requestedFormats) {
@@ -558,7 +581,7 @@
       invalidField.focus({ preventScroll: true });
       invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       toast(invalidRichText
-        ? '논문 제목과 저자 필수 항목을 입력해 주세요.'
+        ? '필수 텍스트 항목을 입력해 주세요.'
         : '필수 항목, 숫자와 URL 형식을 확인하세요.');
       return false;
     }
@@ -658,6 +681,10 @@
   }
 
   function inputField(path, label, value = '', type = 'text', options = {}) {
+    const formats = normalizeRichTextFormats(options.formats);
+    if (type === 'text' && formats.length) {
+      return richTextEditorField(path, label, value, { ...options, compact: true, multiline: false });
+    }
     const numberAttributes = type === 'number' ? ' min="1" step="1" inputmode="numeric"' : '';
     const urlAttributes = type === 'url' ? ' inputmode="url" autocomplete="url" spellcheck="false" maxlength="2048"' : '';
     const requiredAttributes = options.required ? ' required aria-required="true"' : '';
@@ -672,10 +699,16 @@
   function richTextFormatButton(format, editorId, index) {
     const config = {
       strong: {
-        label: '선택한 저자 이름 굵게',
+        label: '선택한 텍스트 굵게',
         title: '굵게 (Ctrl/Cmd+B)',
         content: '<strong aria-hidden="true">B</strong>',
         shortcut: ' aria-keyshortcuts="Control+B Meta+B"',
+      },
+      em: {
+        label: '선택한 텍스트 기울임꼴',
+        title: '기울임꼴 (Ctrl/Cmd+I)',
+        content: '<em aria-hidden="true">I</em>',
+        shortcut: ' aria-keyshortcuts="Control+I Meta+I"',
       },
       sup: {
         label: '선택한 문자를 위첨자로 전환',
@@ -694,32 +727,78 @@
     return `<button class="rich-text-format-button" type="button" data-rich-text-format="${escapeAttr(format)}" aria-label="${escapeAttr(config.label)}" aria-controls="${escapeAttr(editorId)}" aria-pressed="false" title="${escapeAttr(config.title)}" tabindex="${index === 0 ? '0' : '-1'}"${config.shortcut}>${config.content}</button>`;
   }
 
+  function richTextEditorField(path, label, value = '', options = {}) {
+    const marker = options.required ? '<em class="required-mark">필수</em>' : '';
+    const formats = normalizeRichTextFormats(options.formats);
+    const idBase = `rich-text-${String(path).replace(/[^a-z0-9_-]+/gi, '-')}`;
+    const editorId = `${idBase}-editor`;
+    const labelId = `${idBase}-label`;
+    const helpId = `${idBase}-help`;
+    const placeholder = options.placeholder || '내용을 입력하세요.';
+    const showHelp = options.help !== false;
+    const helpText = typeof options.help === 'string'
+      ? options.help
+      : '서식을 적용하거나 해제할 부분을 먼저 선택한 뒤 위의 버튼을 누르세요.';
+    const safeValue = sanitizeRichTextMarkup(value, formats);
+    const compactClass = options.compact ? ' is-compact' : '';
+    const multiline = options.multiline !== false;
+    const describedBy = showHelp ? ` aria-describedby="${escapeAttr(helpId)}"` : '';
+    return `<div class="field rich-text-field${compactClass}" data-rich-text-field>
+      <span class="rich-text-label" id="${escapeAttr(labelId)}">${escapeHTML(label)}${marker}</span>
+      <div class="rich-text-toolbar" role="toolbar" aria-label="${escapeAttr(`${label} 부분 서식`)}" aria-controls="${escapeAttr(editorId)}" data-rich-text-toolbar>
+        ${formats.map((format, index) => richTextFormatButton(format, editorId, index)).join('')}
+      </div>
+      <div class="rich-text-editor" id="${escapeAttr(editorId)}" contenteditable="true" role="textbox" aria-multiline="${String(multiline)}" aria-labelledby="${escapeAttr(labelId)}"${describedBy} aria-required="${String(Boolean(options.required))}" aria-invalid="false" spellcheck="true" autocapitalize="sentences" data-path="${escapeAttr(path)}" data-rich-text-editor data-rich-text-formats="${escapeAttr(formats.join(' '))}" data-rich-text-multiline="${String(multiline)}" data-empty="${String(!richTextHasMeaningfulText(value))}" data-placeholder="${escapeAttr(placeholder)}">${safeValue}</div>
+      ${showHelp ? `<p class="help rich-text-help" id="${escapeAttr(helpId)}">${escapeHTML(helpText)}</p>` : ''}
+    </div>`;
+  }
+
   function textareaField(path, label, value = '', options = {}) {
     const requiredAttributes = options.required ? ' required aria-required="true"' : '';
     const marker = options.required ? '<em class="required-mark">필수</em>' : '';
     const formats = normalizeRichTextFormats(options.formats);
-    if (formats.length) {
-      const idBase = `rich-text-${String(path).replace(/[^a-z0-9_-]+/gi, '-')}`;
-      const editorId = `${idBase}-editor`;
-      const labelId = `${idBase}-label`;
-      const helpId = `${idBase}-help`;
-      const placeholder = options.placeholder || '내용을 입력하세요.';
-      const helpText = options.help || '서식을 적용할 부분을 먼저 선택한 뒤 위의 버튼을 누르세요.';
-      const safeValue = sanitizeRichTextMarkup(value, formats);
-      return `<div class="field rich-text-field" data-rich-text-field>
-        <span class="rich-text-label" id="${escapeAttr(labelId)}">${escapeHTML(label)}${marker}</span>
-        <div class="rich-text-toolbar" role="toolbar" aria-label="${escapeAttr(`${label} 부분 서식`)}" aria-controls="${escapeAttr(editorId)}" data-rich-text-toolbar>
-          ${formats.map((format, index) => richTextFormatButton(format, editorId, index)).join('')}
-        </div>
-        <div class="rich-text-editor" id="${escapeAttr(editorId)}" contenteditable="true" role="textbox" aria-multiline="false" aria-labelledby="${escapeAttr(labelId)}" aria-describedby="${escapeAttr(helpId)}" aria-required="${String(Boolean(options.required))}" aria-invalid="false" spellcheck="true" autocapitalize="sentences" data-path="${escapeAttr(path)}" data-rich-text-editor data-rich-text-formats="${escapeAttr(formats.join(' '))}" data-placeholder="${escapeAttr(placeholder)}">${safeValue}</div>
-        <p class="help rich-text-help" id="${escapeAttr(helpId)}">${escapeHTML(helpText)}</p>
-      </div>`;
-    }
+    if (formats.length) return richTextEditorField(path, label, value, options);
     return `<label class="field"><span>${escapeHTML(label)}${marker}</span><textarea data-path="${escapeAttr(path)}"${requiredAttributes}>${escapeHTML(value ?? '')}</textarea></label>`;
   }
 
-  function arrayField(path, label, value = []) {
+  function arrayField(path, label, value = [], options = {}) {
+    const formats = normalizeRichTextFormats(options.formats);
+    if (formats.length) {
+      const items = Array.isArray(value) && value.length ? value : [''];
+      return `<div class="field array-field rich-text-array-field" data-rich-text-array-field data-rich-text-array-path="${escapeAttr(path)}">
+        <span>${escapeHTML(label)}</span>
+        <div class="rich-text-array-list">
+          ${items.map((item, index) => `<div class="rich-text-array-item">
+            ${richTextEditorField(`${path}.${index}`, `${label} ${index + 1}`, item, {
+              formats,
+              compact: true,
+              multiline: false,
+              help: false,
+            })}
+            <div class="inline-actions rich-text-array-actions">
+              <button class="ghost-btn" type="button" data-rich-text-array-move data-rich-text-array-path="${escapeAttr(path)}" data-index="${index}" data-dir="-1" aria-label="${escapeAttr(`${label} ${index + 1} 위로 이동`)}"${index === 0 ? ' disabled' : ''}>↑</button>
+              <button class="ghost-btn" type="button" data-rich-text-array-move data-rich-text-array-path="${escapeAttr(path)}" data-index="${index}" data-dir="1" aria-label="${escapeAttr(`${label} ${index + 1} 아래로 이동`)}"${index === items.length - 1 ? ' disabled' : ''}>↓</button>
+              <button class="danger" type="button" data-rich-text-array-delete data-rich-text-array-path="${escapeAttr(path)}" data-index="${index}" aria-label="${escapeAttr(`${label} ${index + 1} 삭제`)}">삭제</button>
+            </div>
+          </div>`).join('')}
+        </div>
+        <button class="secondary rich-text-array-add" type="button" data-rich-text-array-add data-rich-text-array-path="${escapeAttr(path)}">+ 항목 추가</button>
+        <p class="help">각 항목에서 원하는 부분을 선택해 굵게·기울임·위첨자·아래첨자를 적용할 수 있습니다.</p>
+      </div>`;
+    }
     return `<label class="field array-field"><span>${escapeHTML(label)}</span><textarea data-array-path="${escapeAttr(path)}">${escapeHTML((value || []).join('\n'))}</textarea><p class="help">한 줄에 하나씩 입력하세요.</p></label>`;
+  }
+
+  function contentInputField(path, label, value = '', options = {}) {
+    return inputField(path, label, value, 'text', { formats: richTextFormatNames, help: false, ...options });
+  }
+
+  function contentTextareaField(path, label, value = '', options = {}) {
+    return textareaField(path, label, value, { formats: richTextFormatNames, multiline: true, ...options });
+  }
+
+  function contentArrayField(path, label, value = []) {
+    return arrayField(path, label, value, { formats: richTextFormatNames });
   }
 
   function uploadField(path, label, value = '', options = {}) {
@@ -945,11 +1024,11 @@
       'Top Banner Text',
       '배너 이미지는 Subpage Banners에서 관리하고, 이곳에서는 배너 문구만 수정합니다.',
       `<div class="grid-2">
-        ${inputField(`pageContent.${pageKey}.banner.smallLabel`, 'Small Label', pageContentValue(`pageContent.${pageKey}.banner.smallLabel`, smallLabelFallback))}
-        ${inputField(`pageContent.${pageKey}.banner.title`, 'Page Title', pageContentValue(`pageContent.${pageKey}.banner.title`, defaults.title))}
+        ${contentInputField(`pageContent.${pageKey}.banner.smallLabel`, 'Small Label', pageContentValue(`pageContent.${pageKey}.banner.smallLabel`, smallLabelFallback))}
+        ${contentInputField(`pageContent.${pageKey}.banner.title`, 'Page Title', pageContentValue(`pageContent.${pageKey}.banner.title`, defaults.title))}
       </div>
       <div class="page-content-wide-field">
-        ${textareaField(`pageContent.${pageKey}.banner.description`, 'Description', pageContentValue(`pageContent.${pageKey}.banner.description`, defaults.description))}
+        ${contentTextareaField(`pageContent.${pageKey}.banner.description`, 'Description', pageContentValue(`pageContent.${pageKey}.banner.description`, defaults.description))}
       </div>`,
     );
   }
@@ -963,25 +1042,25 @@
         'Home Hero',
         '기존 Home 메뉴와 같은 메인 배너 문구를 편집합니다.',
         `<div class="grid-2">
-          ${inputField('home.eyebrow', 'Eyebrow', h.eyebrow)}
-          ${inputField('home.subtitleKr', 'Korean Subtitle', h.subtitleKr)}
-          ${inputField('home.ctaPrimary', 'Primary Button Text', h.ctaPrimary)}
-          ${inputField('home.ctaSecondary', 'Secondary Button Text', h.ctaSecondary)}
+          ${contentInputField('home.eyebrow', 'Eyebrow', h.eyebrow)}
+          ${contentInputField('home.subtitleKr', 'Korean Subtitle', h.subtitleKr)}
+          ${contentInputField('home.ctaPrimary', 'Primary Button Text', h.ctaPrimary)}
+          ${contentInputField('home.ctaSecondary', 'Secondary Button Text', h.ctaSecondary)}
         </div>
-        <div class="page-content-wide-field">${arrayField('home.titleLines', 'Main Title Lines', h.titleLines || [])}</div>
-        <div class="page-content-wide-field">${textareaField('home.intro', 'Intro Text', h.intro || '')}</div>`,
+        <div class="page-content-wide-field">${contentArrayField('home.titleLines', 'Main Title Lines', h.titleLines || [])}</div>
+        <div class="page-content-wide-field">${contentTextareaField('home.intro', 'Intro Text', h.intro || '')}</div>`,
       )}
       ${pageContentGroup(
         'home-research',
         'Our Research Preview',
         'Home 화면의 왼쪽 Research 소개 문구와 버튼을 수정합니다.',
         `<div class="grid-2">
-          ${inputField('pageContent.home.research.smallLabel', 'Small Label', pageContentValue('pageContent.home.research.smallLabel', defaults.research.smallLabel))}
-          ${inputField('pageContent.home.research.title', 'Title', pageContentValue('pageContent.home.research.title', defaults.research.title))}
-          ${inputField('pageContent.home.research.subtitle', 'Subtitle', pageContentValue('pageContent.home.research.subtitle', defaults.research.subtitle))}
-          ${inputField('pageContent.home.research.buttonText', 'Button Text', pageContentValue('pageContent.home.research.buttonText', defaults.research.buttonText))}
+          ${contentInputField('pageContent.home.research.smallLabel', 'Small Label', pageContentValue('pageContent.home.research.smallLabel', defaults.research.smallLabel))}
+          ${contentInputField('pageContent.home.research.title', 'Title', pageContentValue('pageContent.home.research.title', defaults.research.title))}
+          ${contentInputField('pageContent.home.research.subtitle', 'Subtitle', pageContentValue('pageContent.home.research.subtitle', defaults.research.subtitle))}
+          ${contentInputField('pageContent.home.research.buttonText', 'Button Text', pageContentValue('pageContent.home.research.buttonText', defaults.research.buttonText))}
         </div>
-        <div class="page-content-wide-field">${textareaField('pageContent.home.research.description', 'Description', pageContentValue('pageContent.home.research.description', defaults.research.description))}</div>`,
+        <div class="page-content-wide-field">${contentTextareaField('pageContent.home.research.description', 'Description', pageContentValue('pageContent.home.research.description', defaults.research.description))}</div>`,
       )}
       ${pageContentGroup(
         'home-previews',
@@ -990,15 +1069,15 @@
         `<div class="page-content-preview-grid">
           <section class="page-content-subgroup" aria-labelledby="page-content-home-publications-heading">
             <h3 id="page-content-home-publications-heading">Publications Preview</h3>
-            ${inputField('pageContent.home.publicationsPreview.smallLabel', 'Small Label', pageContentValue('pageContent.home.publicationsPreview.smallLabel', defaults.publicationsPreview.smallLabel))}
-            ${inputField('pageContent.home.publicationsPreview.title', 'Title', pageContentValue('pageContent.home.publicationsPreview.title', defaults.publicationsPreview.title))}
-            ${inputField('pageContent.home.publicationsPreview.buttonText', 'Button Text', pageContentValue('pageContent.home.publicationsPreview.buttonText', defaults.publicationsPreview.buttonText))}
+            ${contentInputField('pageContent.home.publicationsPreview.smallLabel', 'Small Label', pageContentValue('pageContent.home.publicationsPreview.smallLabel', defaults.publicationsPreview.smallLabel))}
+            ${contentInputField('pageContent.home.publicationsPreview.title', 'Title', pageContentValue('pageContent.home.publicationsPreview.title', defaults.publicationsPreview.title))}
+            ${contentInputField('pageContent.home.publicationsPreview.buttonText', 'Button Text', pageContentValue('pageContent.home.publicationsPreview.buttonText', defaults.publicationsPreview.buttonText))}
           </section>
           <section class="page-content-subgroup" aria-labelledby="page-content-home-gallery-heading">
             <h3 id="page-content-home-gallery-heading">Gallery Preview</h3>
-            ${inputField('pageContent.home.galleryPreview.smallLabel', 'Small Label', pageContentValue('pageContent.home.galleryPreview.smallLabel', defaults.galleryPreview.smallLabel))}
-            ${inputField('pageContent.home.galleryPreview.title', 'Title', pageContentValue('pageContent.home.galleryPreview.title', defaults.galleryPreview.title))}
-            ${inputField('pageContent.home.galleryPreview.buttonText', 'Button Text', pageContentValue('pageContent.home.galleryPreview.buttonText', defaults.galleryPreview.buttonText))}
+            ${contentInputField('pageContent.home.galleryPreview.smallLabel', 'Small Label', pageContentValue('pageContent.home.galleryPreview.smallLabel', defaults.galleryPreview.smallLabel))}
+            ${contentInputField('pageContent.home.galleryPreview.title', 'Title', pageContentValue('pageContent.home.galleryPreview.title', defaults.galleryPreview.title))}
+            ${contentInputField('pageContent.home.galleryPreview.buttonText', 'Button Text', pageContentValue('pageContent.home.galleryPreview.buttonText', defaults.galleryPreview.buttonText))}
           </section>
         </div>`,
       )}
@@ -1014,12 +1093,12 @@
         'Research Page Text',
         'Research Statement 내용은 기존 Research 메뉴와 같은 데이터를 사용합니다.',
         `<div class="grid-2">
-          ${inputField('pageContent.research.topicTabLabel', 'Topic Tab Label', pageContentValue('pageContent.research.topicTabLabel', defaults.topicTabLabel))}
-          ${inputField('pageContent.research.statement.title', 'Statement Title', pageContentValue('pageContent.research.statement.title', defaults.statement.title))}
-          ${inputField('pageContent.research.topics.smallLabel', 'Topics Small Label', pageContentValue('pageContent.research.topics.smallLabel', defaults.topics.smallLabel))}
+          ${contentInputField('pageContent.research.topicTabLabel', 'Topic Tab Label', pageContentValue('pageContent.research.topicTabLabel', defaults.topicTabLabel))}
+          ${contentInputField('pageContent.research.statement.title', 'Statement Title', pageContentValue('pageContent.research.statement.title', defaults.statement.title))}
+          ${contentInputField('pageContent.research.topics.smallLabel', 'Topics Small Label', pageContentValue('pageContent.research.topics.smallLabel', defaults.topics.smallLabel))}
         </div>
-        <div class="page-content-wide-field">${textareaField('pageContent.research.topics.title', 'Topics Title', pageContentValue('pageContent.research.topics.title', defaults.topics.title))}</div>
-        <div class="page-content-wide-field">${textareaField('researchStatement', 'Research Statement', data.researchStatement || '')}</div>`,
+        <div class="page-content-wide-field">${contentTextareaField('pageContent.research.topics.title', 'Topics Title', pageContentValue('pageContent.research.topics.title', defaults.topics.title))}</div>
+        <div class="page-content-wide-field">${contentTextareaField('researchStatement', 'Research Statement', data.researchStatement || '')}</div>`,
       )}
     </div>`;
   }
@@ -1047,10 +1126,10 @@
         'Gallery Section Text',
         'Gallery 카드 목록 위에 표시되는 소개 문구입니다.',
         `<div class="grid-2">
-          ${inputField('pageContent.gallery.section.smallLabel', 'Small Label', pageContentValue('pageContent.gallery.section.smallLabel', defaults.section.smallLabel))}
-          ${textareaField('pageContent.gallery.section.title', 'Title', pageContentValue('pageContent.gallery.section.title', defaults.section.title))}
+          ${contentInputField('pageContent.gallery.section.smallLabel', 'Small Label', pageContentValue('pageContent.gallery.section.smallLabel', defaults.section.smallLabel))}
+          ${contentTextareaField('pageContent.gallery.section.title', 'Title', pageContentValue('pageContent.gallery.section.title', defaults.section.title))}
         </div>
-        <div class="page-content-wide-field">${textareaField('pageContent.gallery.section.description', 'Description', pageContentValue('pageContent.gallery.section.description', defaults.section.description))}</div>`,
+        <div class="page-content-wide-field">${contentTextareaField('pageContent.gallery.section.description', 'Description', pageContentValue('pageContent.gallery.section.description', defaults.section.description))}</div>`,
       )}
     </div>`;
   }
@@ -1064,10 +1143,10 @@
         'Contact Section Text',
         '연락처 카드 위에 표시되는 제목 문구입니다. 실제 주소와 이메일은 Contact / Footer에서 관리합니다.',
         `<div class="grid-2">
-          ${inputField('pageContent.contact.section.smallLabel', 'Small Label', pageContentValue('pageContent.contact.section.smallLabel', defaults.section.smallLabel))}
-          ${inputField('pageContent.contact.section.title', 'Title', pageContentValue('pageContent.contact.section.title', defaults.section.title))}
+          ${contentInputField('pageContent.contact.section.smallLabel', 'Small Label', pageContentValue('pageContent.contact.section.smallLabel', defaults.section.smallLabel))}
+          ${contentInputField('pageContent.contact.section.title', 'Title', pageContentValue('pageContent.contact.section.title', defaults.section.title))}
         </div>
-        <div class="page-content-wide-field">${textareaField('site.joinMessage', 'Join Us Description', data.site?.joinMessage || '')}</div>`,
+        <div class="page-content-wide-field">${contentTextareaField('site.joinMessage', 'Join Us Description', data.site?.joinMessage || '')}</div>`,
       )}
     </div>`;
   }
@@ -1114,17 +1193,17 @@
     return `<section class="editor-card">
       ${header('Contact / Footer', '주소, 이메일, 지도, Footer 정보를 수정합니다.')}
       <div class="grid-2">
-        ${inputField('site.labName', 'Lab Name', s.labName)}
-        ${inputField('site.labNameKr', 'Korean Lab Name', s.labNameKr)}
-        ${inputField('site.university', 'University', s.university)}
-        ${inputField('site.universityKr', 'Department / Korean University', s.universityKr)}
+        ${contentInputField('site.labName', 'Lab Name', s.labName)}
+        ${contentInputField('site.labNameKr', 'Korean Lab Name', s.labNameKr)}
+        ${contentInputField('site.university', 'University', s.university)}
+        ${contentInputField('site.universityKr', 'Department / Korean University', s.universityKr)}
         ${inputField('site.email', 'E-mail', s.email, 'email')}
         ${inputField('site.phone', 'Phone', s.phone || '')}
       </div>
-      <div style="margin-top:16px">${textareaField('site.address', 'Address', s.address)}</div>
+      <div style="margin-top:16px">${contentTextareaField('site.address', 'Address', s.address)}</div>
       <div class="grid-2" style="margin-top:16px">
-        ${textareaField('site.joinMessage', 'Join Us Message', s.joinMessage || '')}
-        ${textareaField('site.copyright', 'Copyright', s.copyright || '')}
+        ${contentTextareaField('site.joinMessage', 'Join Us Message', s.joinMessage || '')}
+        ${contentTextareaField('site.copyright', 'Copyright', s.copyright || '')}
       </div>
       <div class="grid-2" style="margin-top:16px">
         ${textareaField('site.mapEmbed', 'Google Maps Embed URL', s.mapEmbed || '')}
@@ -1139,14 +1218,14 @@
     return `<section class="editor-card">
       ${header('Home', '메인 홈 배너의 문구와 버튼을 관리합니다.')}
       <div class="grid-2">
-        ${inputField('home.eyebrow', 'Eyebrow', h.eyebrow)}
-        ${inputField('home.subtitleKr', 'Korean Subtitle', h.subtitleKr)}
-        ${inputField('home.ctaPrimary', 'Primary Button Text', h.ctaPrimary)}
-        ${inputField('home.ctaSecondary', 'Secondary Button Text', h.ctaSecondary)}
+        ${contentInputField('home.eyebrow', 'Eyebrow', h.eyebrow)}
+        ${contentInputField('home.subtitleKr', 'Korean Subtitle', h.subtitleKr)}
+        ${contentInputField('home.ctaPrimary', 'Primary Button Text', h.ctaPrimary)}
+        ${contentInputField('home.ctaSecondary', 'Secondary Button Text', h.ctaSecondary)}
         ${inputField('home.ctaSecondaryRoute', 'Secondary Button Route', h.ctaSecondaryRoute || 'contact')}
       </div>
-      <div style="margin-top:16px">${arrayField('home.titleLines', 'Main Title Lines', h.titleLines || [])}</div>
-      <div style="margin-top:16px">${textareaField('home.intro', 'Intro Text', h.intro || '')}</div>
+      <div style="margin-top:16px">${contentArrayField('home.titleLines', 'Main Title Lines', h.titleLines || [])}</div>
+      <div style="margin-top:16px">${contentTextareaField('home.intro', 'Intro Text', h.intro || '')}</div>
       ${saveBar()}
     </section>`;
   }
@@ -1155,17 +1234,17 @@
     data.researchTopics = data.researchTopics || [];
     return `<section class="editor-card">
       ${header('Research', 'Research Statement와 Research Topic 카드를 관리합니다.', '<button class="primary" type="button" data-add="research">+ Add Topic</button>')}
-      ${textareaField('researchStatement', 'Research Statement', data.researchStatement || '')}
+      ${contentTextareaField('researchStatement', 'Research Statement', data.researchStatement || '')}
       <div class="item-list" style="margin-top:18px">
         ${data.researchTopics.map((t, i) => `<details class="item-card" ${i < 2 ? 'open' : ''}>
-          <summary>${escapeHTML(String(i + 1).padStart(2, '0'))} · ${escapeHTML(t.title || 'Research Topic')}</summary>
+          <summary>${escapeHTML(String(i + 1).padStart(2, '0'))} · ${escapeHTML(richTextPlainText(t.title || 'Research Topic'))}</summary>
           <div class="item-fields">
             <div class="grid-2">
-              ${inputField(`researchTopics.${i}.title`, 'Title', t.title)}
-              ${inputField(`researchTopics.${i}.short`, 'Short Description', t.short)}
+              ${contentInputField(`researchTopics.${i}.title`, 'Title', t.title)}
+              ${contentInputField(`researchTopics.${i}.short`, 'Short Description', t.short)}
             </div>
             ${uploadField(`researchTopics.${i}.image`, 'Topic Image', t.image, { wide: true, placeholder: 'assets/research-electrode-interface.svg' })}
-            ${textareaField(`researchTopics.${i}.description`, 'Detailed Description', t.description)}
+            ${contentTextareaField(`researchTopics.${i}.description`, 'Detailed Description', t.description)}
             <div class="inline-actions">
               <button class="ghost-btn" type="button" data-move="research" data-index="${i}" data-dir="-1">↑ Move up</button>
               <button class="ghost-btn" type="button" data-move="research" data-index="${i}" data-dir="1">↓ Move down</button>
@@ -1185,19 +1264,19 @@
       <div class="grid-2">
         <div class="profile-image-fields">
           ${uploadField('professor.photo', 'Profile Photo', p.photo, { placeholder: 'assets/person-placeholder.svg', displayPath: 'professor.photoDisplay' })}
-          ${imageDisplayEditor('professor.photoDisplay', p.photo, p.photoDisplay, `${p.name || 'Professor'} 프로필 사진`, { profile: true, placeholder: 'assets/person-placeholder.svg' })}
+          ${imageDisplayEditor('professor.photoDisplay', p.photo, p.photoDisplay, `${richTextPlainText(p.name || 'Professor')} 프로필 사진`, { profile: true, placeholder: 'assets/person-placeholder.svg' })}
         </div>
         <div class="grid-2">
-          ${inputField('professor.name', 'Name', p.name)}
-          ${inputField('professor.role', 'Role', p.role)}
-          ${inputField('professor.department', 'Department', p.department)}
+          ${contentInputField('professor.name', 'Name', p.name)}
+          ${contentInputField('professor.role', 'Role', p.role)}
+          ${contentInputField('professor.department', 'Department', p.department)}
           ${inputField('professor.email', 'E-mail', p.email, 'email')}
         </div>
       </div>
       <div class="grid-3" style="margin-top:16px">
-        ${arrayField('professor.interest', 'Research Interest Tags', p.interest || [])}
-        ${arrayField('professor.education', 'Education', p.education || [])}
-        ${arrayField('professor.experience', 'Research Experience', p.experience || [])}
+        ${contentArrayField('professor.interest', 'Research Interest Tags', p.interest || [])}
+        ${contentArrayField('professor.education', 'Education', p.education || [])}
+        ${contentArrayField('professor.experience', 'Research Experience', p.experience || [])}
       </div>
       ${saveBar()}
     </section>`;
@@ -1209,21 +1288,21 @@
       ${header('Members', '현재 구성원 카드를 추가, 수정, 삭제합니다.', '<button class="primary" type="button" data-add="member">+ Add Member</button>')}
       <div class="item-list">
         ${data.members.map((m, i) => `<details class="item-card" ${i < 2 ? 'open' : ''}>
-          <summary>${escapeHTML(m.name || `Member ${i + 1}`)}</summary>
+          <summary>${escapeHTML(richTextPlainText(m.name || `Member ${i + 1}`))}</summary>
           <div class="item-fields">
             <div class="grid-2">
               <div class="profile-image-fields">
                 ${uploadField(`members.${i}.photo`, 'Photo', m.photo, { placeholder: 'assets/person-placeholder.svg', displayPath: `members.${i}.photoDisplay` })}
-                ${imageDisplayEditor(`members.${i}.photoDisplay`, m.photo, m.photoDisplay, `${m.name || `Member ${i + 1}`} 프로필 사진`, { profile: true, placeholder: 'assets/person-placeholder.svg' })}
+                ${imageDisplayEditor(`members.${i}.photoDisplay`, m.photo, m.photoDisplay, `${richTextPlainText(m.name || `Member ${i + 1}`)} 프로필 사진`, { profile: true, placeholder: 'assets/person-placeholder.svg' })}
               </div>
               <div class="grid-2">
-                ${inputField(`members.${i}.name`, 'Name', m.name)}
-                ${inputField(`members.${i}.role`, 'Role', m.role)}
-                ${inputField(`members.${i}.period`, 'Period', m.period)}
+                ${contentInputField(`members.${i}.name`, 'Name', m.name)}
+                ${contentInputField(`members.${i}.role`, 'Role', m.role)}
+                ${contentInputField(`members.${i}.period`, 'Period', m.period)}
                 ${inputField(`members.${i}.email`, 'E-mail', m.email)}
               </div>
             </div>
-            ${textareaField(`members.${i}.research`, 'Research Interest', m.research)}
+            ${contentTextareaField(`members.${i}.research`, 'Research Interest', m.research)}
             <div class="inline-actions">
               <button class="ghost-btn" type="button" data-move="member" data-index="${i}" data-dir="-1">↑ Move up</button>
               <button class="ghost-btn" type="button" data-move="member" data-index="${i}" data-dir="1">↓ Move down</button>
@@ -1244,8 +1323,8 @@
         ${data.alumni.map((a, i) => `<div class="item-card"><div class="item-fields" style="padding-top:18px">
           <div class="grid-3">
             ${inputField(`alumni.${i}.date`, 'Graduation', a.date)}
-            ${inputField(`alumni.${i}.name`, 'Name', a.name)}
-            ${inputField(`alumni.${i}.next`, 'Current Position', a.next)}
+            ${contentInputField(`alumni.${i}.name`, 'Name', a.name)}
+            ${contentInputField(`alumni.${i}.next`, 'Current Position', a.next)}
           </div>
           <div class="inline-actions">
             <button class="ghost-btn" type="button" data-move="alumni" data-index="${i}" data-dir="-1">↑ Move up</button>
@@ -1268,28 +1347,28 @@
         ${data.publications.map((p, i) => `<details class="item-card">
           <summary>#${escapeHTML(p.number ?? '')} · ${escapeHTML(p.year)} · ${escapeHTML(
             typeof richTextPlainText === 'function'
-              ? richTextPlainText(p.title, ['sup', 'sub'])
-              : String(p.title ?? '').replace(/<\/?(?:sup|sub)>/g, ''),
+              ? richTextPlainText(p.title)
+              : String(p.title ?? '').replace(/<\/?(?:strong|em|sup|sub)>/g, ''),
           )}</summary>
           <div class="item-fields">
             <div class="grid-3">
               ${inputField(`publications.${i}.number`, 'No.', p.number ?? '', 'number', { required: true })}
               ${inputField(`publications.${i}.year`, 'Year', p.year, 'text', { required: true })}
-              ${inputField(`publications.${i}.journal`, 'Journal', p.journal, 'text', { required: true })}
+              ${contentInputField(`publications.${i}.journal`, 'Journal', p.journal, { required: true })}
             </div>
-            ${textareaField(`publications.${i}.title`, 'Title', p.title, {
+            ${contentTextareaField(`publications.${i}.title`, 'Title', p.title, {
               required: true,
-              formats: ['sup', 'sub'],
+              multiline: false,
               placeholder: '논문 제목을 입력하세요.',
-              help: '위첨자 또는 아래첨자로 표시할 문자만 선택한 뒤 해당 서식 버튼을 누르세요.',
+              help: '원하는 부분을 선택해 굵게·기울임·위첨자·아래첨자를 적용하거나 해제할 수 있습니다.',
             })}
-            ${textareaField(`publications.${i}.authors`, 'Authors', p.authors, {
+            ${contentTextareaField(`publications.${i}.authors`, 'Authors', p.authors, {
               required: true,
-              formats: ['strong'],
+              multiline: false,
               placeholder: '논문 저자를 입력하세요.',
-              help: '굵게 표시할 이름만 선택한 뒤 B 버튼을 누르세요. Ctrl/Cmd+B도 사용할 수 있습니다.',
+              help: '교수님 이름 등 원하는 부분만 선택해 서식을 적용하거나 다시 눌러 해제할 수 있습니다.',
             })}
-            ${inputField(`publications.${i}.note`, 'Note', p.note || '')}
+            ${contentInputField(`publications.${i}.note`, 'Note', p.note || '')}
             ${inputField(`publications.${i}.link_url`, '외부 링크 URL (선택)', p.link_url || '', 'url', {
               placeholder: 'https://example.com/paper',
               help: 'http:// 또는 https://로 시작하는 논문 외부 페이지 주소를 입력하세요. 비워두거나 기존 주소를 지우면 홈페이지에 링크 아이콘이 표시되지 않습니다.',
@@ -1305,14 +1384,14 @@
       <h3 style="margin-top:28px">Patents (${data.patents.length})</h3>
       <div class="item-list" style="margin-top:14px">
         ${data.patents.map((p, i) => `<details class="item-card">
-          <summary>${escapeHTML(p.year || '')} · ${escapeHTML(p.title)}</summary>
+          <summary>${escapeHTML(p.year || '')} · ${escapeHTML(richTextPlainText(p.title))}</summary>
           <div class="item-fields">
             <div class="grid-2">
               ${inputField(`patents.${i}.year`, 'Year', p.year || '')}
               ${inputField(`patents.${i}.number`, 'Patent Number', p.number)}
             </div>
-            ${textareaField(`patents.${i}.title`, 'Title', p.title)}
-            ${textareaField(`patents.${i}.inventors`, 'Inventors', p.inventors)}
+            ${contentTextareaField(`patents.${i}.title`, 'Title', p.title, { multiline: false })}
+            ${contentTextareaField(`patents.${i}.inventors`, 'Inventors', p.inventors, { multiline: false })}
             ${inputField(`patents.${i}.link_url`, '외부 링크 URL (선택)', p.link_url || '', 'url', {
               placeholder: 'https://example.com/patent',
               help: 'http:// 또는 https://로 시작하는 특허 외부 페이지 주소를 입력하세요. 비워두거나 기존 주소를 지우면 홈페이지에 링크 아이콘이 표시되지 않습니다.',
@@ -1376,14 +1455,14 @@
           const images = Array.isArray(g.images) ? g.images : (g.image ? [g.image] : []);
           const displays = alignedImageDisplays(images, g.imageDisplays);
           return `<details class="item-card" ${i < 2 ? 'open' : ''}>
-            <summary>${escapeHTML(g.date || '')} · ${escapeHTML(g.title || 'Gallery Post')} · ${images.length} photos</summary>
+            <summary>${escapeHTML(g.date || '')} · ${escapeHTML(richTextPlainText(g.title || 'Gallery Post'))} · ${images.length} photos</summary>
             <div class="item-fields">
               <div class="grid-3">
                 ${inputField(`gallery.${i}.date`, 'Date', g.date, 'text', { required: true })}
-                ${inputField(`gallery.${i}.title`, 'Title', g.title, 'text', { required: true })}
-                ${inputField(`gallery.${i}.summary`, 'Summary', g.summary)}
+                ${contentInputField(`gallery.${i}.title`, 'Title', g.title, { required: true })}
+                ${contentInputField(`gallery.${i}.summary`, 'Summary', g.summary)}
               </div>
-              ${textareaField(`gallery.${i}.body`, 'Detail Body', g.body)}
+              ${contentTextareaField(`gallery.${i}.body`, 'Detail Body', g.body)}
               ${multiUploadField(`gallery.${i}.images`, 'Gallery Images')}
               ${imageList(`gallery.${i}.images`, images, displays)}
               <div class="inline-actions">
@@ -1457,7 +1536,7 @@
     const selection = window.getSelection?.();
     const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
     const selectionInside = richTextSelectionIsInside(editor, range);
-    const commandForFormat = { strong: 'bold', sup: 'superscript', sub: 'subscript' };
+    const commandForFormat = { strong: 'bold', em: 'italic', sup: 'superscript', sub: 'subscript' };
     toolbar.querySelectorAll('[data-rich-text-format]').forEach((button) => {
       let active = false;
       if (selectionInside && typeof document.queryCommandState === 'function') {
@@ -1499,6 +1578,7 @@
     const required = editor?.getAttribute('aria-required') === 'true';
     const empty = !richTextHasMeaningfulText(editor?.textContent || '');
     const invalid = required && empty;
+    editor?.setAttribute('data-empty', String(empty));
     editor?.setAttribute('aria-invalid', String(invalid));
     editor?.classList.toggle('is-invalid', invalid);
     return !invalid;
@@ -1507,7 +1587,8 @@
   function syncRichTextEditor(editor) {
     const path = editor?.dataset.path;
     if (!path) return;
-    const nextValue = serializeRichTextChildren(editor, richTextFormatsFor(editor));
+    const multiline = editor.dataset.richTextMultiline === 'true';
+    const nextValue = serializeRichTextChildren(editor, richTextFormatsFor(editor), multiline);
     updateRichTextValidity(editor);
     if (getPath(path) === nextValue) return;
     setPath(path, nextValue);
@@ -1531,7 +1612,9 @@
   }
 
   function insertPlainRichText(editor, value) {
-    const text = String(value || '').replace(/[\r\n\t]+/g, ' ');
+    const multiline = editor?.dataset.richTextMultiline === 'true';
+    const normalized = String(value || '').replace(/\r\n|\r/g, '\n').replace(/\t/g, ' ');
+    const text = multiline ? normalized : normalized.replace(/\n+/g, ' ');
     if (!text) return;
     editor.focus({ preventScroll: true });
     const range = currentRichTextRange(editor);
@@ -1539,6 +1622,25 @@
     const textNode = document.createTextNode(text);
     range.insertNode(textNode);
     range.setStartAfter(textNode);
+    range.collapse(true);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+    rememberRichTextSelection(editor);
+  }
+
+  function insertRichTextLineBreak(editor) {
+    editor.focus({ preventScroll: true });
+    const range = currentRichTextRange(editor);
+    const trailingRange = range.cloneRange();
+    trailingRange.setEnd(editor, editor.childNodes.length);
+    const isAtTextEnd = trailingRange.toString().length === 0;
+    range.deleteContents();
+    const breakElement = document.createElement('br');
+    range.insertNode(breakElement);
+    if (isAtTextEnd && !breakElement.nextSibling) breakElement.after(document.createElement('br'));
+    range.setStartAfter(breakElement);
     range.collapse(true);
     const selection = window.getSelection();
     selection.removeAllRanges();
@@ -1564,13 +1666,13 @@
       return;
     }
 
-    const commandForFormat = { strong: 'bold', sup: 'superscript', sub: 'subscript' };
+    const commandForFormat = { strong: 'bold', em: 'italic', sup: 'superscript', sub: 'subscript' };
     const oppositeCommand = format === 'sup' ? 'subscript' : format === 'sub' ? 'superscript' : '';
     try {
       if (oppositeCommand && document.queryCommandState?.(oppositeCommand)) {
         document.execCommand(oppositeCommand, false, null);
       }
-      if (format === 'strong') document.execCommand('styleWithCSS', false, false);
+      if (format === 'strong' || format === 'em') document.execCommand('styleWithCSS', false, false);
       document.execCommand(commandForFormat[format], false, null);
       syncRichTextEditor(editor);
       rememberRichTextSelection(editor);
@@ -1583,6 +1685,9 @@
   function bindRichTextEditors() {
     if (!richTextSelectionListenerBound) {
       document.addEventListener('selectionchange', () => {
+        content.querySelectorAll('[data-rich-text-format][aria-pressed="true"]').forEach((button) => {
+          button.setAttribute('aria-pressed', 'false');
+        });
         const selection = window.getSelection?.();
         const anchor = selection?.anchorNode;
         const anchorElement = anchor?.nodeType === 1 ? anchor : anchor?.parentElement;
@@ -1607,17 +1712,24 @@
       });
       editor.addEventListener('keydown', (event) => {
         if (event.isComposing) return;
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && editor.dataset.richTextMultiline !== 'true') {
           event.preventDefault();
           return;
         }
-        if (event.key.toLowerCase() !== 'b' || (!event.ctrlKey && !event.metaKey) || event.altKey) return;
+        const shortcut = event.key.toLowerCase();
+        if (!['b', 'i'].includes(shortcut) || (!event.ctrlKey && !event.metaKey) || event.altKey) return;
         event.preventDefault();
-        if (formats.includes('strong')) applyRichTextFormat(editor, 'strong');
+        const format = shortcut === 'b' ? 'strong' : 'em';
+        if (formats.includes(format)) applyRichTextFormat(editor, format);
       });
       editor.addEventListener('beforeinput', (event) => {
-        if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') event.preventDefault();
+        if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') {
+          event.preventDefault();
+          if (editor.dataset.richTextMultiline === 'true') insertRichTextLineBreak(editor);
+          return;
+        }
         if (event.inputType === 'formatBold' && !formats.includes('strong')) event.preventDefault();
+        if (event.inputType === 'formatItalic' && !formats.includes('em')) event.preventDefault();
         if (event.inputType === 'formatSuperscript' && !formats.includes('sup')) event.preventDefault();
         if (event.inputType === 'formatSubscript' && !formats.includes('sub')) event.preventDefault();
       });
@@ -1653,6 +1765,47 @@
               : (current - 1 + buttons.length) % buttons.length;
         buttons.forEach((button, index) => { button.tabIndex = index === next ? 0 : -1; });
         buttons[next].focus();
+      });
+    });
+  }
+
+  function bindRichTextArrayEditors() {
+    content.querySelectorAll('[data-rich-text-array-add]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const path = button.dataset.richTextArrayPath;
+        const current = getPath(path);
+        const next = Array.isArray(current) ? [...current] : [];
+        next.push('');
+        setPath(path, next);
+        markDirty();
+        renderPreservingPosition();
+      });
+    });
+    content.querySelectorAll('[data-rich-text-array-delete]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const path = button.dataset.richTextArrayPath;
+        const current = getPath(path);
+        if (!Array.isArray(current)) return;
+        const next = [...current];
+        next.splice(Number(button.dataset.index), 1);
+        setPath(path, next);
+        markDirty();
+        renderPreservingPosition();
+      });
+    });
+    content.querySelectorAll('[data-rich-text-array-move]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const path = button.dataset.richTextArrayPath;
+        const current = getPath(path);
+        if (!Array.isArray(current)) return;
+        const index = Number(button.dataset.index);
+        const target = index + Number(button.dataset.dir);
+        if (index < 0 || target < 0 || index >= current.length || target >= current.length) return;
+        const next = [...current];
+        [next[index], next[target]] = [next[target], next[index]];
+        setPath(path, next);
+        markDirty();
+        renderPreservingPosition();
       });
     });
   }
@@ -1725,6 +1878,7 @@
       });
     });
     bindRichTextEditors();
+    bindRichTextArrayEditors();
     if (typeof bindPageContentTabs === 'function') bindPageContentTabs();
     content.querySelectorAll('[data-save]').forEach((button) => button.addEventListener('click', async () => saveData(true)));
     content.querySelectorAll('[data-preview]').forEach((button) => button.addEventListener('click', async () => {

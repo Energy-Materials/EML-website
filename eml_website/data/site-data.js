@@ -1319,7 +1319,7 @@ window.EML_DATA = {
       "id": "operando-analysis",
       "image": "assets/research-operando.svg",
       "short": "Real-time reaction visualization",
-      "title": "In situ/Operando Analysis"
+      "title": "<em>In situ</em>/Operando Analysis"
     },
     {
       "description": "Phase dynamics by multi-phase conversion reactions between solid, liquid, and gas.",

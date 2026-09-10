@@ -21,18 +21,26 @@ const escapeMarkup = (value) => String(value ?? '')
 const inputField = new Function(
   'escapeAttr',
   'escapeHTML',
-  `${extractTopLevelFunction('inputField')}; return inputField;`,
-)(escapeMarkup, escapeMarkup);
+  'richTextEditorField',
+  `const richTextFormatNames = Object.freeze(['strong', 'em', 'sup', 'sub']);
+  ${extractTopLevelFunction('normalizeRichTextFormats')}
+  ${extractTopLevelFunction('inputField')}; return inputField;`,
+)(escapeMarkup, escapeMarkup, () => '');
 
 const renderPublications = new Function(
   'data',
   'header',
   'inputField',
   'textareaField',
+  'contentInputField',
+  'contentTextareaField',
   'saveBar',
   'escapeHTML',
+  'richTextPlainText',
   `${extractTopLevelFunction('renderPublications')}; return renderPublications;`,
 );
+
+const contentField = (path, label, value = '') => `<textarea data-path="${escapeMarkup(path)}">${escapeMarkup(value)}</textarea>`;
 
 const content = {
   publications: [{
@@ -57,9 +65,12 @@ const html = renderPublications(
   content,
   () => '',
   inputField,
-  (path, label, value = '') => `<textarea data-path="${escapeMarkup(path)}">${escapeMarkup(value)}</textarea>`,
+  contentField,
+  contentField,
+  contentField,
   () => '',
   escapeMarkup,
+  (value) => String(value ?? '').replace(/<\/?(?:strong|em|sup|sub)>/g, ''),
 )();
 
 assert.match(
@@ -88,9 +99,12 @@ const legacyHtml = renderPublications(
   },
   () => '',
   inputField,
-  (path, label, value = '') => `<textarea data-path="${escapeMarkup(path)}">${escapeMarkup(value)}</textarea>`,
+  contentField,
+  contentField,
+  contentField,
   () => '',
   escapeMarkup,
+  (value) => String(value ?? '').replace(/<\/?(?:strong|em|sup|sub)>/g, ''),
 )();
 assert.match(legacyHtml, /type="url" value="" data-path="publications\.0\.link_url"/);
 assert.match(legacyHtml, /type="url" value="" data-path="patents\.0\.link_url"/);
@@ -129,6 +143,7 @@ const bindCommon = new Function(
   'deleteItem',
   'moveItem',
   'bindRichTextEditors',
+  'bindRichTextArrayEditors',
   'bindUploads',
   'bindMultiUploads',
   'bindImageDisplayEditors',
@@ -148,6 +163,7 @@ const bindCommon = new Function(
   async () => true,
   () => {},
   async () => true,
+  () => {},
   () => {},
   () => {},
   () => {},

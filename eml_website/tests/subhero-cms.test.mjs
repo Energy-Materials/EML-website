@@ -99,12 +99,13 @@ const makeRenderSubHero = new Function(
   'asset',
   'escapeAttr',
   'escapeHTML',
+  'renderRichText',
   `${renderSubHeroSource}; return renderSubHero;`
 );
 const assetStub = (value, fallback = '') => String(value || '').trim() || fallback;
 const identity = (value) => String(value);
 const renderBannerWith = (site, pageKey = 'research') => {
-  const renderSubHero = makeRenderSubHero({ site }, assetStub, identity, identity);
+  const renderSubHero = makeRenderSubHero({ site }, assetStub, identity, identity, identity);
   return renderSubHero('Research', 'Description', pageKey);
 };
 
