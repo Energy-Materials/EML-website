@@ -929,6 +929,42 @@ window.EML_DATA = {
   },
   "publications": [
     {
+      "authors": "Seyoung Han, Taehyun Lee, Haeun Kim, Ji Hyun Um, Dongkyoung Lee",
+      "journal": "Adv. Sci. 2026, e77286",
+      "link_url": "https://doi.org/10.1002/advs.77286",
+      "note": "",
+      "number": 41,
+      "title": "Geometry-Regulated Electrode-Wide Nucleation Patterns in Aqueous Zinc Anodes",
+      "year": "2026"
+    },
+    {
+      "authors": "Jiwon Jeong, Young-Hoon Lee, June Huh, Ji Hyun Um, Seung-Ho Yu, Yung-Eun Sung",
+      "journal": "Small 2026, e74134",
+      "link_url": "https://doi.org/10.1002/smll.74134",
+      "note": "",
+      "number": 40,
+      "title": "Spherical Sn Deposition Enabled by Lignosulfonate for Stable Aqueous Sn Metal Batteries",
+      "year": "2026"
+    },
+    {
+      "authors": "Taehyun Lee, Min-Kun Kim  Ji Hyun Um",
+      "journal": "J. Ind. Eng. Chem. 2026, 160",
+      "link_url": "https://doi.org/10.1007/s13391-026-00663-2",
+      "note": "",
+      "number": 39,
+      "title": "Rational Hydrophilic/Hydrophobic PDA/PVDF Bilayer Configuration for Stable Aqueous Zn Metal Batteries",
+      "year": "2026"
+    },
+    {
+      "authors": "Ji Hyun Um, Huiseong Kim, Jun Hee Jung, Taehyun Lee",
+      "journal": "J. Electrochem. Sci. Technol. 2026, 17, 00080",
+      "link_url": "https://doi.org/10.33961/jecst.2026.00080",
+      "note": "",
+      "number": 38,
+      "title": "Stable Interfacial Regulation via Hydrophilic Polydopamine for Aqueous Zinc Batteries",
+      "year": "2026"
+    },
+    {
       "authors": "Wonchul Park, Jongmin Lee, Baeck B. Choi, Ji Hyun Um, Dong Young Chung ",
       "journal": "Korean J. Chem. Eng. 2025, 42, 3405",
       "link_url": "https://doi.org/10.1007/s11814-025-00491-4",
