@@ -92,7 +92,7 @@ window.EML_DATA = {
         "assets/uploads/2026-09-04/image-D0xTRFvmYqPPo3rL3oxmTSLy.webp"
       ],
       "summary": "Best Oral Presentation Award 수상",
-      "title": "ISChE 2025"
+      "title": "ISChE 2025 입상"
     },
     {
       "body": "",
