@@ -947,7 +947,7 @@ window.EML_DATA = {
       "year": "2026"
     },
     {
-      "authors": "Taehyun Lee, Min-Kun Kim  Ji Hyun Um",
+      "authors": "Taehyun Lee, Min-Kun Kim, Ji Hyun Um",
       "journal": "J. Ind. Eng. Chem. 2026, 160",
       "link_url": "https://doi.org/10.1007/s13391-026-00663-2",
       "note": "",
@@ -956,7 +956,7 @@ window.EML_DATA = {
       "year": "2026"
     },
     {
-      "authors": "Ji Hyun Um, Huiseong Kim, Jun Hee Jung, Taehyun Lee",
+      "authors": " Huiseong Kim, Jun Hee Jung, Taehyun Lee, Ji Hyun Um",
       "journal": "J. Electrochem. Sci. Technol. 2026, 17, 00080",
       "link_url": "https://doi.org/10.33961/jecst.2026.00080",
       "note": "",
