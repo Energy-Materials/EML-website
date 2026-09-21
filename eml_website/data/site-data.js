@@ -877,10 +877,17 @@ window.EML_DATA = {
   },
   "patents": [
     {
-      "inventors": "Won-Sub Yoon, Kowsalya Palanisamy, Ji Hyun Um, Mihee Jeong",
+      "inventors": "조준희, 김수연, 이지원, 엄지현 ",
+      "link_url": "",
+      "number": "Korea Patent Grant #KR102986245",
+      "title": "수계 아연전지용 친수성 코팅 전극 및 이를 포함하는 수계 아연전지 ",
+      "year": "2026"
+    },
+    {
+      "inventors": "윤원섭, Kowsalya Palanisamy, 엄지현, 정미희",
       "link_url": "",
       "number": "Korea Patent Grant #KR102040236",
-      "title": "Nanocomposite containing tin ferrite",
+      "title": "틴 페라이트를 함유하는 나노 복합체 ",
       "year": "2019"
     },
     {
@@ -891,10 +898,10 @@ window.EML_DATA = {
       "year": "2019"
     },
     {
-      "inventors": "Ji Hyun Um, Yung-Eun Sung, Yong-Hun Cho, Hyelim Choi, Heeman Choe",
+      "inventors": "엄지현, 성영은, 조용훈, 최혜림, 최희만 ",
       "link_url": "",
       "number": "Korea Patent Grant #KR101353262",
-      "title": "Metal foam for electrode of lithium secondary battery, preparing method thereof and lithium secondary battery including the metal foam",
+      "title": "리튬이차전지 전극용 메탈폼, 상기 메탈폼의 제조방법 및 상기 메탈폼을 포함하는 리튬이차전지 ",
       "year": "2014"
     }
   ],
