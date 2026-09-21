@@ -955,7 +955,7 @@ window.EML_DATA = {
     },
     {
       "authors": "Taehyun Lee, Min-Kun Kim*, Ji Hyun Um* ",
-      "journal": "J. Ind. Eng. Chem. 2026, 160",
+      "journal": "Electron. Mater. Lett. 2026",
       "link_url": "https://doi.org/10.1007/s13391-026-00663-2",
       "note": "",
       "number": 40,
