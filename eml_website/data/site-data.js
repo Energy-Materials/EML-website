@@ -926,11 +926,11 @@ window.EML_DATA = {
       "Solid-state Chemistry"
     ],
     "name": "Ji Hyun Um | 엄지현",
-    "photo": "assets/uploads/2026-09-23/image-5JJXyAIcEURExn87bDdUk6MU.webp",
+    "photo": "assets/uploads/2026-09-23/image-DC9JZNnVrZdTFIuuNp9MgcBm.webp",
     "photoDisplay": {
       "positionX": 50,
       "positionY": 50,
-      "zoom": 1
+      "zoom": 1.2
     },
     "role": "Associate Professor"
   },
