@@ -877,6 +877,13 @@ window.EML_DATA = {
   },
   "patents": [
     {
+      "inventors": "엄지현, 김태현, 이예나, 김현서, 이태현",
+      "link_url": "",
+      "number": "Korea Patent Application #10-2026-0180433",
+      "title": "수계 아연전지용 친수성/소수성 이중층 코팅 아연 전극 및 이를 포함하는 수계 아연전지 ",
+      "year": "2026"
+    },
+    {
       "inventors": "조준희, 김수연, 이지원, 엄지현 ",
       "link_url": "",
       "number": "Korea Patent Grant #KR102986245",
