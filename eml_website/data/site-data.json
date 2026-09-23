@@ -936,7 +936,7 @@
   },
   "publications": [
     {
-      "authors": "Shaheryar Ahmed, Hui Seong Kim, Ji Hyun Um*, Joonghan Shin* ",
+      "authors": "Shaheryar Ahmed, Hui Seong Kim, Ji Hyun Um<sup>*</sup>, Joonghan Shin<sup>*</sup> ",
       "journal": "J. Mater. Res. Technol. (Accepted) ",
       "link_url": "",
       "note": "",
@@ -945,7 +945,7 @@
       "year": "2026"
     },
     {
-      "authors": "Seyoung Han†, Taehyun Lee†, Haeun Kim, Ji Hyun Um*, Dongkyoung Lee* ",
+      "authors": "Seyoung Han<sup>†</sup>, Taehyun Lee<sup>†</sup>, Haeun Kim, Ji Hyun Um<sup>*</sup>, Dongkyoung Lee<sup>*</sup> ",
       "journal": "Adv. Sci. 2026, e77286",
       "link_url": "https://doi.org/10.1002/advs.77286",
       "note": "",
@@ -954,7 +954,7 @@
       "year": "2026"
     },
     {
-      "authors": "Taehyun Lee, Min-Kun Kim*, Ji Hyun Um* ",
+      "authors": "Taehyun Lee, Min-Kun Kim<sup>*</sup>, Ji Hyun Um<sup>* </sup>",
       "journal": "Electron. Mater. Lett. 2026",
       "link_url": "https://doi.org/10.1007/s13391-026-00663-2",
       "note": "",
@@ -963,7 +963,7 @@
       "year": "2026"
     },
     {
-      "authors": "Jiwon Jeong†, Young-Hoon Lee†, June Huh, Ji Hyun Um*, Seung-Ho Yu*, Yung-Eun Sung* ",
+      "authors": "Jiwon Jeong<sup>†</sup>, Young-Hoon Lee<sup>†</sup>, June Huh, Ji Hyun Um<sup>*</sup>, Seung-Ho Yu<sup>*</sup>, Yung-Eun Sung<sup>* </sup>",
       "journal": "Small 2026, e74134",
       "link_url": "https://doi.org/10.1002/smll.74134",
       "note": "",
@@ -972,7 +972,7 @@
       "year": "2026"
     },
     {
-      "authors": "Huiseong Kim†, Jun Hee Jung†, Taehyun Lee, Ji Hyun Um* ",
+      "authors": "Huiseong Kim<sup>†</sup>, Jun Hee Jung<sup>†</sup>, Taehyun Lee, Ji Hyun Um<sup>*</sup> ",
       "journal": "J. Electrochem. Sci. Technol. 2026, 17, 00080",
       "link_url": "https://doi.org/10.33961/jecst.2026.00080",
       "note": "",
@@ -981,7 +981,7 @@
       "year": "2026"
     },
     {
-      "authors": "Wonchul Park†, Jongmin Lee†, Baeck B. Choi*, Ji Hyun Um*, Dong Young Chung* ",
+      "authors": "Wonchul Park<sup>†</sup>, Jongmin Lee<sup>†</sup>, Baeck B. Choi<sup>*</sup>, Ji Hyun Um<sup>*</sup>, Dong Young Chung* ",
       "journal": "Korean J. Chem. Eng. 2025, 42, 3405",
       "link_url": "https://doi.org/10.1007/s11814-025-00491-4",
       "note": "",
@@ -990,7 +990,7 @@
       "year": "2025"
     },
     {
-      "authors": "Ji Hyun Um†, Seong-Jun Kim†, Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho ",
+      "authors": "Ji Hyun Um<sup>†</sup>, Seong-Jun Kim<sup>†</sup>, Jae-Hwan Hyun, Mihyun Kim, Si-Hwan Lee, Seung-Ho ",
       "journal": "Acc. Chem. Res. 2023, 56, 440",
       "link_url": "https://doi.org/10.1021/acs.accounts.2c00652",
       "note": "Supplementary Cover",
@@ -1008,7 +1008,7 @@
       "year": "2023"
     },
     {
-      "authors": "Ji Hyun Um†, Aihua Jin†, Xin Huang, Jeesoo Seok, Seong Soo Park, Janghyuk Moon, Mihyun Kim, So Hee Kim, Hyun Sik Kim, Sung-Pyo Cho, Héctor D. Abruña, Seung-Ho Yu",
+      "authors": "Ji Hyun Um<sup>†</sup>, Aihua Jin<sup>†</sup>, Xin Huang, Jeesoo Seok, Seong Soo Park, Janghyuk Moon, Mihyun Kim, So Hee Kim, Hyun Sik Kim, Sung-Pyo Cho, Héctor D. Abruña, Seung-Ho Yu",
       "journal": "Energy Environ. Sci. 2022, 15, 1493",
       "link_url": "https://doi.org/10.1039/d1ee03619j",
       "note": "Inside Front Cover",
@@ -1062,7 +1062,7 @@
       "year": "2021"
     },
     {
-      "authors": "Ji Hyun Um†, Kookhan Kim†, Jungjin Park†, Yung-Eun Sung, Seung-Ho Yu",
+      "authors": "Ji Hyun Um<sup>†</sup>, Kookhan Kim<sup>†</sup>, Jungjin Park<sup>†</sup>, Yung-Eun Sung, Seung-Ho Yu",
       "journal": "J. Mater. Chem. A 2020, 8, 13874",
       "link_url": "https://doi.org/10.1039/d0ta03774e",
       "note": "",
@@ -1116,7 +1116,7 @@
       "year": "2020"
     },
     {
-      "authors": "Ji Hyun Um†, Kowsalya Palanisamy†, Mihee Jeong†, Hyunchul Kim, Won-Sub Yoon",
+      "authors": "Ji Hyun Um<sup>†</sup>, Kowsalya Palanisamy<sup>†</sup>, Mihee Jeong<sup>†</sup>, Hyunchul Kim, Won-Sub Yoon",
       "journal": "ACS Nano 2019, 13, 5674",
       "link_url": "https://doi.org/10.1021/acsnano.9b00964",
       "note": "",
@@ -1125,7 +1125,7 @@
       "year": "2019"
     },
     {
-      "authors": "Ji Hyun Um†, Joohyun Lim†, Katharina Hengge, Christina Scheu, Won-Sub Yoon, Jin-Kyu Lee, Yung-Eun Sung",
+      "authors": "Ji Hyun Um<sup>†</sup>, Joohyun Lim<sup>†</sup>, Katharina Hengge, Christina Scheu, Won-Sub Yoon, Jin-Kyu Lee, Yung-Eun Sung",
       "journal": "Compos. B Eng. 2019, 166, 613",
       "link_url": "https://doi.org/10.1016/j.compositesb.2019.02.063",
       "note": "",
@@ -1161,7 +1161,7 @@
       "year": "2018"
     },
     {
-      "authors": "Ji Hyun Um†, Yunok Kim†, Chi-Yeong Ahn, Jinsoo Kim, Yung-Eun Sung, Yong-Hun Cho, Seung-Soo Kim, Won-Sub Yoon",
+      "authors": "Ji Hyun Um<sup>†</sup>, Yunok Kim<sup>†</sup>, Chi-Yeong Ahn, Jinsoo Kim, Yung-Eun Sung, Yong-Hun Cho, Seung-Soo Kim, Won-Sub Yoon",
       "journal": "J. Electrochem. Sci. Technol. 2018, 9, 163",
       "link_url": "https://doi.org/10.5229/JECST.2018.9.3.163",
       "note": "",
@@ -1179,7 +1179,7 @@
       "year": "2018"
     },
     {
-      "authors": "Rajendra C. Pawar†, Ji Hyun Um†, Suhee Kang, Won-Sub Yoon, Heeman Choe, Caroline S. Leea",
+      "authors": "Rajendra C. Pawar<sup>†</sup>, Ji Hyun Um<sup>†</sup>, Suhee Kang, Won-Sub Yoon, Heeman Choe, Caroline S. Leea",
       "journal": "Electrochim. Acta 2017, 245, 643",
       "link_url": "https://doi.org/10.1016/j.electacta.2017.05.070",
       "note": "",
@@ -1215,7 +1215,7 @@
       "year": "2017"
     },
     {
-      "authors": "Kowsalya Palanisamy†, Ji Hyun Um†, Mihee Jeong, Won-Sub Yoon",
+      "authors": "Kowsalya Palanisamy<sup>†</sup>, Ji Hyun Um<sup>†</sup>, Mihee Jeong, Won-Sub Yoon",
       "journal": "Sci. Rep. 2016, 6, 31275",
       "link_url": "https://doi.org/10.1038/srep31275",
       "note": "",
@@ -1224,7 +1224,7 @@
       "year": "2016"
     },
     {
-      "authors": "Joohyun Lim†, Ji Hyun Um†, Kyung Jae Lee, Seung-Ho Yu, Young-Jae Kim, Yung-Eun Sung, Jin-Kyu Lee",
+      "authors": "Joohyun Lim<sup>†</sup>, Ji Hyun Um<sup>†</sup>, Kyung Jae Lee, Seung-Ho Yu, Young-Jae Kim, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Nanoscale 2016, 8, 5688",
       "link_url": "https://doi.org/10.1039/c6nr00104a",
       "note": "",
@@ -1251,7 +1251,7 @@
       "year": "2016"
     },
     {
-      "authors": "Joohyun Lim†, Ji Hyun Um†, Jihoon Ahn, Seung-Ho Yu, Yung-Eun Sung, Jin-Kyu Lee",
+      "authors": "Joohyun Lim<sup>†</sup>, Ji Hyun Um<sup>†</sup>, Jihoon Ahn, Seung-Ho Yu, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Chem. Eur. J. 2015, 21, 7954",
       "link_url": "https://doi.org/10.1002/chem.201406667",
       "note": "",
