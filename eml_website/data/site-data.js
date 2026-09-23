@@ -1098,7 +1098,7 @@ window.EML_DATA = {
       "year": "2020"
     },
     {
-      "authors": "Yunok Kim†, Ji Hyun Um†, Hyunjoon Lee, Woosung Choi, Woon Ih Choi, Hyo Sug Lee, Ok-Hee Kim, Ji Man Kim, Yong-Hun Cho, Won-Sub Yoon",
+      "authors": "Yunok Kim<sup>†</sup>, Ji Hyun Um<sup>†</sup>, Hyunjoon Lee, Woosung Choi, Woon Ih Choi, Hyo Sug Lee, Ok-Hee Kim, Ji Man Kim, Yong-Hun Cho, Won-Sub Yoon",
       "journal": "Small 2020, 16, 1905868",
       "link_url": "https://doi.org/10.1002/smll.201905868",
       "note": "",
@@ -1251,7 +1251,7 @@ window.EML_DATA = {
       "year": "2016"
     },
     {
-      "authors": "Joohyun Lim†, Ji Hyun Um†,† Jihoon Ahn, Seung-Ho Yu, Yung-Eun Sung, Jin-Kyu Lee",
+      "authors": "Joohyun Lim†, Ji Hyun Um†, Jihoon Ahn, Seung-Ho Yu, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Chem. Eur. J. 2015, 21, 7954",
       "link_url": "https://doi.org/10.1002/chem.201406667",
       "note": "",
@@ -1269,7 +1269,7 @@ window.EML_DATA = {
       "year": "2015"
     },
     {
-      "authors": "Joohyun Lim†, Ji Hyun Um†, Yun Ji Park, Yung-Eun Sung, Jin-Kyu Lee",
+      "authors": "Joohyun Lim<sup>†</sup>, Ji Hyun Um<sup>†</sup>, Yun Ji Park, Yung-Eun Sung, Jin-Kyu Lee",
       "journal": "Bull. Korean Chem. Soc. 2015, 36, 1258",
       "link_url": "https://doi.org/10.1002/bkcs.10208",
       "note": "",
