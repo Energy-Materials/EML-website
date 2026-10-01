@@ -1338,11 +1338,11 @@ window.EML_DATA = {
       "title": "Electrode Structuring"
     },
     {
-      "description": "<em>In situ</em> analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrode surfaces evolve during charge and discharge.",
+      "description": "<em>In-situ</em> analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrode surfaces evolve during charge and discharge.",
       "id": "operando-analysis",
       "image": "assets/uploads/2026-10-01/image-Mf7TCVr-1IL42XnUccD9BY_L.webp",
       "short": "Real-time reaction visualization",
-      "title": "<em>In situ </em>/<em>Operando</em> Analysis"
+      "title": "<em>In-situ </em>/<em>Operando</em> Analysis"
     },
     {
       "description": "Phase dynamics by multi-phase conversion reactions between solid, liquid, and gas.",
