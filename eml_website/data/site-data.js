@@ -700,9 +700,9 @@ window.EML_DATA = {
     "ctaPrimary": "Explore Research",
     "ctaSecondary": "Contact",
     "ctaSecondaryRoute": "contact",
-    "eyebrow": "Welcome to EML at Kongju National University",
+    "eyebrow": "국립공주대학교 에너지재료연구실",
     "intro": "Discovering new materials has driven a paradigm shift in existing science and technology. Our research group aims to overcome the energy limitations of today's batteries and provide new solutions with improved efficiency and stability.\nWe are working to explore new electrode materials and elucidate their electrochemical reaction behaviors. Especially, our group focuses on a rational electrode interface design, wherein the electrode surface & bulk structures, ionic & electrical conductivities, and electrolyte infiltration properties are comprehensively considered.",
-    "subtitleKr": "국립공주대학교 에너지재료연구실",
+    "subtitleKr": "Welcome to EML at Kongju National University",
     "tagline": "Energy · Materials · Innovation",
     "titleLines": [
       "Energy Materials",
