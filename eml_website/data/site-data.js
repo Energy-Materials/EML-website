@@ -1340,7 +1340,7 @@ window.EML_DATA = {
     {
       "description": "<em>In situ</em> analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrode surfaces evolve during charge and discharge.",
       "id": "operando-analysis",
-      "image": "assets/research-operando.svg",
+      "image": "assets/uploads/2026-10-01/image-Mf7TCVr-1IL42XnUccD9BY_L.webp",
       "short": "Real-time reaction visualization",
       "title": "<em>In situ </em>/<em>Operando</em> Analysis"
     },
