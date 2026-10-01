@@ -937,7 +937,7 @@ window.EML_DATA = {
     "photoDisplay": {
       "positionX": 50,
       "positionY": 50,
-      "zoom": 1
+      "zoom": 1.1
     },
     "role": "Associate Professor"
   },
