@@ -943,7 +943,7 @@
   },
   "publications": [
     {
-      "authors": "Shaheryar Ahmed<sup>†</sup>, Hui Seong Kim<sup>†</sup>, Ji Hyun Um<sup>*</sup>, Joonghan Shin<sup>*</sup> ",
+      "authors": "Shaheryar Ahmed<sup>†</sup>, Hui Seong Kim<sup>†</sup>, Ji Hyun Um*, Joonghan Shin* ",
       "journal": "J. Mater. Res. Technol., <em>Accepted</em>",
       "link_url": "",
       "note": "",
@@ -952,7 +952,7 @@
       "year": "2026"
     },
     {
-      "authors": "Seyoung Han<sup>†</sup>, Taehyun Lee<sup>†</sup>, Haeun Kim, Ji Hyun Um<sup>*</sup>, Dongkyoung Lee<sup>*</sup> ",
+      "authors": "Seyoung Han<sup>†</sup>, Taehyun Lee<sup>†</sup>, Haeun Kim, Ji Hyun Um*, Dongkyoung Lee* ",
       "journal": "Adv. Sci. 2026, e77286",
       "link_url": "https://doi.org/10.1002/advs.77286",
       "note": "",
@@ -961,7 +961,7 @@
       "year": "2026"
     },
     {
-      "authors": "Taehyun Lee, Min-Kun Kim<sup>*</sup>, Ji Hyun Um<sup>* </sup>",
+      "authors": "Taehyun Lee, Min-Kun Kim*, Ji Hyun Um* ",
       "journal": "Electron. Mater. Lett. 2026",
       "link_url": "https://doi.org/10.1007/s13391-026-00663-2",
       "note": "",
@@ -970,7 +970,7 @@
       "year": "2026"
     },
     {
-      "authors": "Jiwon Jeong<sup>†</sup>, Young-Hoon Lee<sup>†</sup>, June Huh, Ji Hyun Um<sup>*</sup>, Seung-Ho Yu<sup>*</sup>, Yung-Eun Sung<sup>* </sup>",
+      "authors": "Jiwon Jeong<sup>†</sup>, Young-Hoon Lee<sup>†</sup>, June Huh, Ji Hyun Um*, Seung-Ho Yu*, Yung-Eun Sung* ",
       "journal": "Small 2026, e74134",
       "link_url": "https://doi.org/10.1002/smll.74134",
       "note": "",
@@ -979,7 +979,7 @@
       "year": "2026"
     },
     {
-      "authors": "Huiseong Kim<sup>†</sup>, Jun Hee Jung<sup>†</sup>, Taehyun Lee, Ji Hyun Um<sup>*</sup> ",
+      "authors": "Huiseong Kim<sup>†</sup>, Jun Hee Jung<sup>†</sup>, Taehyun Lee, Ji Hyun Um* ",
       "journal": "J. Electrochem. Sci. Technol. 2026, 17, 00080",
       "link_url": "https://doi.org/10.33961/jecst.2026.00080",
       "note": "",
@@ -988,7 +988,7 @@
       "year": "2026"
     },
     {
-      "authors": "Wonchul Park<sup>†</sup>, Jongmin Lee<sup>†</sup>, Baeck B. Choi<sup>*</sup>, Ji Hyun Um<sup>*</sup>, Dong Young Chung* ",
+      "authors": "Wonchul Park<sup>†</sup>, Jongmin Lee<sup>†</sup>, Baeck B. Choi*, Ji Hyun Um*, Dong Young Chung* ",
       "journal": "Korean J. Chem. Eng. 2025, 42, 3405",
       "link_url": "https://doi.org/10.1007/s11814-025-00491-4",
       "note": "",
@@ -1338,11 +1338,11 @@
       "title": "Electrode Structuring"
     },
     {
-      "description": "In situ analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrode surfaces evolve during charge and discharge.",
+      "description": "<em>In situ</em> analyses of electrode morphological changes, surface electrochemical reactions, and ionic bulk diffusion. These tools help reveal how electrode surfaces evolve during charge and discharge.",
       "id": "operando-analysis",
       "image": "assets/research-operando.svg",
       "short": "Real-time reaction visualization",
-      "title": "<em>In situ </em>/Operando Analysis"
+      "title": "<em>In situ </em>/<em>Operando</em> Analysis"
     },
     {
       "description": "Phase dynamics by multi-phase conversion reactions between solid, liquid, and gas.",
