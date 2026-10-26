@@ -944,7 +944,7 @@ window.EML_DATA = {
   "publications": [
     {
       "authors": "Shaheryar Ahmed<sup>†</sup>, Hui Seong Kim<sup>†</sup>, Ji Hyun Um*, Joonghan Shin* ",
-      "journal": "J. Mater. Res. Technol. 2026",
+      "journal": "J. Mater. Res. Technol. 2026, 45, 1831",
       "link_url": "https://doi.org/10.1016/j.jmrt.2026.09.177",
       "note": "",
       "number": 42,
