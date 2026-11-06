@@ -718,7 +718,7 @@ window.EML_DATA = {
       "photoDisplay": {
         "positionX": 50,
         "positionY": 50,
-        "zoom": 1
+        "zoom": 1.05
       },
       "research": "Energy materials",
       "role": "Integrated B.S.-M.S."
