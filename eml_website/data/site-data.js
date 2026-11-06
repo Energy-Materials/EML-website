@@ -49,6 +49,41 @@ window.EML_DATA = {
   "gallery": [
     {
       "body": "",
+      "date": "2026.10.28",
+      "image": "assets/uploads/2026-11-06/image-FaJMD23rROaEZqXQI9kA_sV5.webp",
+      "imageDisplays": [
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        },
+        {
+          "positionX": 50,
+          "positionY": 50,
+          "zoom": 1
+        }
+      ],
+      "images": [
+        "assets/uploads/2026-11-06/image-FaJMD23rROaEZqXQI9kA_sV5.webp",
+        "assets/uploads/2026-11-06/image-0hfwoibnMPSvEzqwCnw8Hmfo.webp",
+        "assets/uploads/2026-11-06/image-fne8wkxnABK7OAIn0IwHSox9.webp",
+        "assets/uploads/2026-11-06/image-3e_TgxWewUaP326j4cpoZGQl.webp"
+      ],
+      "summary": "2026 KSIEC Fall Conference",
+      "title": "2026 추계 한국공업화학회"
+    },
+    {
+      "body": "",
       "date": "2025.12.06",
       "image": "assets/uploads/2026-09-04/image-Xph4htB7v28yHyph6tMAQrdM.webp",
       "imageDisplays": [
