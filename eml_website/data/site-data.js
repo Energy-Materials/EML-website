@@ -714,11 +714,11 @@ window.EML_DATA = {
       "email": "",
       "name": "Hui Seong Kim | 김희성",
       "period": "2024.03. - present",
-      "photo": "assets/uploads/2026-09-04/image-FG1uuoG6Qy1oInrXUlUZIY9k.webp",
+      "photo": "assets/uploads/2026-11-06/image-fn0aaiSlJpLq_ZMOMJLh-Zm9.webp",
       "photoDisplay": {
         "positionX": 50,
         "positionY": 50,
-        "zoom": 1.05
+        "zoom": 1
       },
       "research": "Energy materials",
       "role": "Integrated B.S.-M.S."
